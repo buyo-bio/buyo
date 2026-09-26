@@ -1,0 +1,30 @@
+﻿번호,반영 대상,작업 내용,담당,시점,상태,변경 행 수(v0.5)
+1,B 시트 buyo_modality / mapping_status,BIO Monoclonal antibody 7행의 buyo_modality를 antibody_mAb로 바꾸고 mapping_status를 limited → direct로 승격. 상위 antibody는 값 미확보. (재분류표 파일 T01 시트에 태그 정의 초안),이승현,v0.5 (9/24),완료(v0.5),B 7행 (buyo_modality·mapping_status)
+1,입력 화면 스키마,모달리티 입력에 항체 유형 선택 추가(antibody_mAb / antibody_bispecific / antibody_fragment / antibody_Fc_fusion / antibody_other).,진모 → 외주,9/24 UI 시안 검수 전,지시,
+2,axes_v3.yaml modality_enum · T01,"cell_therapy 하위 태그 8개 등록: cell_CART / cell_TCRT / cell_NK / cell_MSC / cell_iPSC / cell_somatic / cell_DC_CIK / cell_other. BIO CAR-T 7행 buyo_modality를 cell_CART로 변경. value_status: cell_CART=값 있음, 나머지 7개=미확보(출처 탐색 중).",진모(yaml) / 이승현(B 시트),"9/22 yaml, v0.5 B 시트",완료(v0.5) · B 시트 부분,B 7행 (buyo_modality·mapping_status). yaml·T01은 진모 담당
+2,신규 과제,"CAR-T 외 7개 유형(TCR-T, NK, MSC, iPSC, 체세포, DC·CIK·TIL, 기타)별 성공확률 1차 출처 탐색. 발견 시 데이터 기간·모집단·계산 방법을 A 시트 형식으로 보고.",이승현,발표 후,지시,
+3·4·5,B 시트 재분류(67행),"재분류표 파일의 ""재분류_B"" 시트 그대로 반영: buyo_disease_group 값 교체, rare_flag·oncology_scope·display_role_draft 열 신설. 나머지 229행은 rare_flag=N, 다른 열 변경 없음. source_subgroup·probability는 절대 수정하지 않음.",이승현,v0.5 (9/24),완료(v0.5) → 9/22 재분류표로 갱신(R-1),"B 67행 (buyo_disease_group·mapping_status·note·rare). rare=Y 17행. 열 이름은 지시서대로 rare·rare_scope, display_role_draft 미생성(E#7 확정 전)"
+3·4,C 시트 열 추가(88행),"C 시트에 buyo_disease_group 열이 없으므로 신설. 재분류표 파일의 ""재분류_C"" 시트(88행 전체) 값을 record_id 기준으로 붙여 넣음. 대사·내분비 기간 기본값 규칙은 duration_default_rule 열로 표시.",이승현,v0.5 (9/24),완료(v0.5) · 3행 보류 → 9/22 재분류표로 갱신(R-3),"C 45행 buyo_disease_group 기입(이 중 25행 mapping_status 변경), 3행 보류 note, 40행 hold 분류 빈칸. duration_default_rule 열 미생성(재분류_C 파일 미첨부)"
+3·4·5,9/25 재변환,v0.5 기준 재변환 시 대사·내분비 / 심혈관 / 중추신경(신경) / 중추신경(정신) 청크와 rare_flag 청크를 인덱스에 포함. v0.4 대비 probability·duration_value·cost_value 열 변경 0건 비교 결과를 convert_report에 한 줄로 첨부.,진모,9/25,지시,
+5,스키마 설명 문구,"유전자치료(gene therapy)는 모달리티, 유전질환은 적응증 속성이라는 구분을 스키마 설명에 명시. genetic 플래그 여부는 대표 보류.",진모,9/22 yaml,지시,
+6,출처 메타데이터,"유효기간: 데이터 종료연도 + 15년(BIO 2035, Wong 2030). 기간 미보고 출처는 배지. 경과 출처는 상세 근거만. 비용 출처는 규칙 제외(산업 참고값).",이승현,v0.5 (9/24),완료(v0.5),B 296 · C 88 (valid_until) / D 32 (valid_until 빈칸·validity_badge)
+6,신규 과제,BIO Clinical Development Success Rates 후속판 발행 여부 확인 후 보고.,이승현,발표 후,지시,
+7,E#7 기본 출처,"대표 의견(BIO 기본 / Wong 보조, Wong 우선 조건 4가지)에 대해 동의 또는 대안을 근거와 함께 제출. 대표 9/24 확정 후 default_source 열 규칙을 진모에게 전달. 확정 전 C04 청크는 임시 배지. 재분류표의 display_role_draft 열은 이 확정 전까지 임시값.",이승현 → 대표,9/24,제안 제출(v0.5 동봉) · 대표 확정 대기,0 (데이터 변경 없음)
+8,D 시트 default_candidate,"DiMasi mean 3행 → default, median 3행 → secondary.",이승현,v0.5 (9/24),완료(v0.5),D 6행 (default 3 · secondary 3)
+9,D 시트 환산 필드,"cost_value_current / conversion_index(BRDPI) / conversion_base_date(연초) / conversion_factor / conversion_updated 신설. 화면 환산값 * 표시, 상세에 원문값·기준연도·지수·적용 연도·배수·갱신일 전부 표시. Paul은 기준연도 미보고 배지.",이승현 / 진모,"v0.5 필드, 화면은 외주",완료(v0.5) · 필드만,D 32행 열 추가 / 25행 conversion_index=BRDPI (환산 계산은 9/26)
+10,재무 카드,"MVP: 자동 gap 없음, 벤치마크와 현재 자금 병렬 표시 + ""정식 버전에서는 회사별 계획 비용을 입력하면 잔여 필요자금과 갭이 계산됩니다"" 안내 필수. 정식 버전: 잔여 계획 비용 1개 입력 시에만 gap 계산.",진모 → 외주,MVP / MVP 이후,지시,
+지시서 3,표 양식 5종,"M02·M03·F01·T01·T04 열 이름을 재분류표 파일 ""표양식_확정"" 시트대로 확정. 진모는 이 열 이름으로 mapping yaml 작성. 채우는 사람은 열을 바꾸지 않음.",진모,9/22,확정,
+지시서 4,마스터스크립트 적재,"7개 프로젝트 마스터스크립트를 /masters/{F,T,C,R,M,N,B}.md로 적재(B=투자의사결정_통합). VC 평가 도구 시절 문서이므로 참고용으로만 쓰고, 생성 프롬프트에 ""회사 가치평가 관점 문장은 제외"" 지시를 넣음.",대표(적재) / 진모(프롬프트),9/22,지시,
+지시서 5,검수 게이트,"9/25 대표 30분: buyo_disease_group 값 목록·rare 열 + 진모의 수치 열 변경 0건 비교. 9/26~27 R01·R02·M01 표본 10% 대표 판정, C축 표본 승현. 9/28 validate_errors 없음 + 도메인별 건수 일치 시 export 승인.",대표 / 진모 / 이승현,9/25~9/28,확정,
+v0.5 지시 6,B 시트 buyo_modality,"Wong Vaccines (Infectious Disease) 5행: vaccine 후보 → vaccine, mapping_status limited 유지, discrepancy_note에 치료영역 분류 문구 추가.",이승현,v0.5 (9/24),완료(v0.5),B 5행
+v0.5 지시 7,B 시트 to_phase,Wong 행 to_phase APP → Approval.,이승현,v0.5 (9/24),완료(v0.5),B 39행
+R-1,B 시트 재분류(67행) — 9/22 재분류표,"재분류_B를 record_id로 1:1 적용. buyo_disease_group·mapping_status를 new_ 값으로 교체. 희귀 열 이름을 확정안대로 rare→rare_flag, rare_scope→oncology_scope로 변경하고 display_role_draft 열 신설. v0.5에서 limited→direct로 올렸던 Neurology·Psychiatry·Metabolic·Cardiovascular·Rare diseases(non-oncology) 35행은 재분류표(new_mapping_status=limited)를 우선해 limited로 되돌림. Wong Orphan Overall 5행 oncology_scope all→incl_oncology.",이승현,v0.5 reclassified (9/24),완료,B 67행 (mapping_status 35 · oncology_scope 5 · display_role_draft 67 · disease_group 0 · rare_flag 0)
+R-2,B 시트 rare_flag 비대상,재분류_B에 없는 229행은 rare_flag=N만 확인. oncology_scope·display_role_draft·질환군·mapping 변경 없음.,이승현,v0.5 reclassified (9/24),검증 완료,"0 (229행 모두 이미 N, 열 이름만 변경)"
+R-3,C 시트 재분류(88행) — 9/22 재분류표,"재분류_C를 record_id로 1:1 적용. buyo_disease_group·mapping_status 반영, duration_default_rule 열 신설. v0.5에서 direct로 올렸던 BIO Neurology·Psychiatry·Metabolic·Cardiovascular 20행은 재분류표대로 limited. WONG_B_0005~0007 보류 해제(전체·detail), note의 v0.5 보류 문구 교체. B와 열 이름을 맞추기 위해 C의 rare·rare_scope도 rare_flag·oncology_scope로 변경(값 변경 없음).",이승현,v0.5 reclassified (9/24),완료,C 43행 (duration_default_rule 43 · mapping_status 20 · disease_group 3 · note 3)
+R-4,B 시트 antibody_mAb,"BIO Monoclonal antibody 7행 buyo_modality=antibody_mAb, mapping_status=direct 상태 확인.",이승현,v0.5 reclassified (9/24),검증 완료,0 (7행 이미 반영)
+R-5,B 시트 cell_CART,"BIO CAR-T 7행 buyo_modality=cell_CART, mapping_status=direct 상태 확인.",이승현,v0.5 reclassified (9/24),검증 완료,0 (7행 이미 반영)
+R-6,D 시트 DiMasi default/secondary,"DIMASI_C_0001~0003 default, DIMASI_C_0011~0013 secondary 확인. 환산 필드 5개 존재 확인(환산 계산 없음).",이승현,v0.5 reclassified (9/24),검증 완료,0 (6행 이미 반영)
+대표 보류 항목,,,,,,
+번호,항목,내용,,,,
+5,유전 축,genetic=Y/N 플래그 유지 또는 분류에서 제외 — 대표 보류.,,,,
+7,BIO·Wong 기본 출처 최종 확정,9/24 승현 제안 후 확정.,,,,

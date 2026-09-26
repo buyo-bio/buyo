@@ -1,0 +1,11 @@
+﻿deal_id,licensor,counterparty,partner_tier,modality,asset,signed,deal_stage,upfront,upfront_nonrefundable,tdv_total,received_to_date,milestone_split,royalty_rate,territory,term,note,near_term_milestone,equity,signing_fee,received_milestone,modality_fix
+T-SD5-DEAL-001-fact,리가켐바이오,J&J(얀센),big,M6_ADC_TROP2,LCB84,2023-12,preclin_p1,$130.4M(1304억),True,$1.72B(2.4조),base_required,base_required,base_required,global,base_required,2026 옵션행사 시 단계 마일스톤 ~$200M 예고,,,,,
+T-SD5-DEAL-002-fact,리가켐바이오,오노약품,big,M6_ADC_L1CAM,LCB97/ONO-7429+ConjuAll,2024-10,preclin,base_required,base_required,9435억(~$673M),,base_required,base_required,base_required,,,,,,,
+T-SD5-DEAL-003-fact,리가켐바이오,암젠,big,M6_ADC_platform,ADC 플랫폼,2022,,base_required,,~1.6조,,base_required,base_required,base_required,,"리가켐 공개계약 합산 ~9.3조, 총 10조+ 누적 기술수출",,,,,
+T-SD5-DEAL-004-fact,에이비엘바이오,GSK,top10,M5_BBB이중항체_platform,Grabody-B 플랫폼사용권,2025-04,platform_preclin,£38.5M(739억),True,£2.14B(4.1조),,base_required,base_required,global,,JPM 첫 악수 후 3개월 클로징,선불+단기MS £77.1M(1480억),,,,
+T-SD5-DEAL-005-fact,에이비엘바이오,Eli Lilly,top10,M5_BBB이중항체_platform,Grabody-B 플랫폼사용권,2025-11,platform_preclin,$40M(585억),True,$2.562B(3.75조),,base_required,base_required,global,,"빅파마의 국내사 첫 지분투자, 동일플랫폼 3연속",,$15M(220억),,,
+T-SD5-DEAL-006-fact,에이비엘바이오,사노피,top10,M5_이중항체,ABL301,2022-01,p1,$75M(900억),True,$985M~$1.06B(1.27~1.52조),,base_required,base_required,global,,그랩바디-B BBB셔틀 최초 검증딜(앵커),,,,,
+T-SD5-DEAL-007-fact,알테오젠,MSD,top10,SC제형전환_플랫폼_ALT-B4,히알루로니다제,2020(2024 변경),commercial,$16M,,MSD향 마일스톤 총 $1B,,,순매출 연동,,,"MSD/AZ/다이이찌산쿄/산도즈/GSK/인타스 등 7개사 L/O, 2025 하반기 상업화(키트루다SC)",,,$20M(2024),2025 US/EU 허가분 ~570억,
+T-SD5-DEAL-008-fact,유한양행,J&J(얀센),top10,M1_저분자_EGFR_TKI,레이저티닙(렉라자/라즈클루즈),2018-11,p1_2,$50M(560억),True,$1.255B→정정 $950M,마일스톤 $270M / 잔여 $680M + 로열티 별도,"{""dev_reg"": [""병용개발 $35M(2020-04)"", ""P3투약 $65M(2020-11)"", ""US상업화 $60M(2024-09)"", ""日 $15M(2025-05)"", ""中 $45M(2025-10)""], ""sales"": ""경상로열티 두자릿수%""}",두자릿수%,ex-KR,국가별 특허만료 or 최초판매+12년,韓 첫 빅파마딜→FDA→로열티 완주. 마일스톤 스케줄 공개(희귀 케이스),,,,,
+T-SD5-DEAL-009-fact,아델,사노피,top10,M4_항체_tau,ADEL-Y01,2025-12,early,$80M,True,$1.04B(1.53조),,base_required,base_required,base_required,,,,,,,"v1 M3->M4(항체) 수정, archetype A"
+T-SD5-DEAL-010-fact,올릭스,Eli Lilly,top10,M9_siRNA_MASH,MASH siRNA,2025,,base_required,,~9000억,,base_required,base_required,base_required,,,,,,,

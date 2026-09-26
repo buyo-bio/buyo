@@ -1,0 +1,32 @@
+{
+  "total_chunks": 285,
+  "by_domain": {
+    "C01": 185,
+    "C02": 43,
+    "C03": 11,
+    "C04": 46
+  },
+  "detail": {
+    "C01": {
+      "exported": 185,
+      "skip_hold": 111
+    },
+    "C02": {
+      "exported": 43,
+      "skip_hold": 41,
+      "skip_sum_of_phase_medians": 1,
+      "skip_range": 1,
+      "skip_difference": 2
+    },
+    "C03": {
+      "exported": 11,
+      "skip_reference_only": 21
+    },
+    "C04": {
+      "cautions_exported": 36,
+      "decisions_exported": 10
+    }
+  },
+  "validate_errors": [],
+  "mvp_index_eligible": 285
+}

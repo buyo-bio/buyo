@@ -1,0 +1,23 @@
+﻿ipc_prefix,modality_hint,note,trust_tier,source
+C07K16,antibody,항체(면역글로불린) — 단클론·이중항체 청구항의 기본 코드,3,BUYO 내부 휴리스틱 v0.1
+C07K14,peptide|protein,펩타이드·단백질(수용체·리간드 포함),3,BUYO 내부 휴리스틱 v0.1
+C07K7,peptide,펩타이드(5~20 아미노산),3,BUYO 내부 휴리스틱 v0.1
+C07K5,peptide,짧은 펩타이드,3,BUYO 내부 휴리스틱 v0.1
+A61K39,vaccine|antibody,항원·항체·백신 제제,3,BUYO 내부 휴리스틱 v0.1
+A61K38,peptide,펩타이드 의약,3,BUYO 내부 휴리스틱 v0.1
+A61K31,small_molecule,유기 화합물 의약(저분자),3,BUYO 내부 휴리스틱 v0.1
+C07D,small_molecule,헤테로환 화합물(저분자 골격),3,BUYO 내부 휴리스틱 v0.1
+C07C,small_molecule,비환식·탄소환 화합물,3,BUYO 내부 휴리스틱 v0.1
+C12N15,gene_therapy,재조합 DNA·벡터·유전자 조작,3,BUYO 내부 휴리스틱 v0.1
+C12N5,cell_therapy,세포 배양·세포주(세포치료),3,BUYO 내부 휴리스틱 v0.1
+A61K35/17,cell_therapy,면역세포(림프구) 투여,3,BUYO 내부 휴리스틱 v0.1
+A61K35/28,cell_therapy,골수·줄기세포 투여,3,BUYO 내부 휴리스틱 v0.1
+A61K48,gene_therapy,유전자 치료용 제제,3,BUYO 내부 휴리스틱 v0.1
+C12N7,gene_therapy|vaccine,바이러스 벡터·바이러스,3,BUYO 내부 휴리스틱 v0.1
+A61K47/68,ADC,약물-항체 접합체(링커·페이로드),3,BUYO 내부 휴리스틱 v0.1
+A61K47,other,"제제·전달체(LNP 등) — 모달리티 아님, 전달 기술",3,BUYO 내부 휴리스틱 v0.1
+A61K9,other,제형(서방·주사 등) — 모달리티 아님,3,BUYO 내부 휴리스틱 v0.1
+A61K36,other,천연물·생약,3,BUYO 내부 휴리스틱 v0.1
+A61P,other,"치료 용도(적응증) 분류 — 모달리티 아님, 적응증 힌트",3,BUYO 내부 휴리스틱 v0.1
+G16B,other,바이오인포매틱스 — 플랫폼 힌트,3,BUYO 내부 휴리스틱 v0.1
+G01N33,other,진단·분석(체외진단),3,BUYO 내부 휴리스틱 v0.1

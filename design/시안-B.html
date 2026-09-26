@@ -1,0 +1,913 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUYO 진단 화면 시안 B</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F4F8F5; --panel:#FFFFFF; --field:#EFF4F1; --field-2:#E3EBE6;
+  --line:#E2EAE5;
+  --ink:#16201B; --ink-2:#4A5852; --ink-3:#626F68;
+  --brand:#14714F; --brand-ink:#0E5B3F; --brand-soft:#E4F0EA; --on-brand:#FFFFFF;
+  --ok:#14714F; --ok-soft:#E4F0EA;
+  --warn:#8A5410; --warn-soft:#FBF1E2;
+  --none:#626F68; --none-soft:#ECEFED;
+  --r-lg:18px; --r-md:12px; --r-sm:9px;
+  --sans:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --out:cubic-bezier(.23,1,.32,1);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101613; --panel:#18211D; --field:#222D28; --field-2:#2B3832;
+    --line:#26312C;
+    --ink:#E9EFEB; --ink-2:#B0BDB7; --ink-3:#889691;
+    --brand:#6FC49F; --brand-ink:#8FD6B6; --brand-soft:#163024; --on-brand:#101613;
+    --ok:#6FC49F; --ok-soft:#163024;
+    --warn:#D99C4A; --warn-soft:#2E2515;
+    --none:#889691; --none-soft:#222D28;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101613; --panel:#18211D; --field:#222D28; --field-2:#2B3832;
+  --line:#26312C;
+  --ink:#E9EFEB; --ink-2:#B0BDB7; --ink-3:#889691;
+  --brand:#6FC49F; --brand-ink:#8FD6B6; --brand-soft:#163024; --on-brand:#101613;
+  --ok:#6FC49F; --ok-soft:#163024;
+  --warn:#D99C4A; --warn-soft:#2E2515;
+  --none:#889691; --none-soft:#222D28;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;word-break:keep-all}
+h1,h2,h3,h4{margin:0;font-weight:700;line-height:1.35;letter-spacing:-.02em}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:where(button,input,select):focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* ══ L1 랜딩 ══ */
+.land{max-width:1040px;margin:0 auto;padding:0 clamp(16px,5vw,32px) 60px}
+.land-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px;
+  border-bottom:1px solid var(--line)}
+.brandmark{display:flex;align-items:center;gap:10px}
+.brandmark .dot{width:28px;height:28px;border-radius:9px;background:var(--brand);color:var(--on-brand);
+  display:grid;place-items:center;font-size:11.5px;font-weight:700;letter-spacing:-.04em}
+.brandmark b{font-size:15.5px;letter-spacing:-.01em}
+.brandmark span{font-size:12px;color:var(--ink-3);font-weight:400}
+.top-cta{padding:8px 16px;border-radius:999px;border:1px solid var(--line);font-size:13px;color:var(--ink-2);
+  transition:border-color 140ms ease,color 140ms ease}
+.top-cta:hover{border-color:var(--brand);color:var(--brand)}
+
+.hero{text-align:center;padding-block:clamp(48px,9vw,96px) clamp(40px,6vw,64px)}
+.badge{display:inline-block;background:var(--brand-soft);color:var(--brand);border-radius:999px;
+  padding:5px 14px;font-size:12.5px;font-weight:500}
+.hero h1{margin-top:20px;font-size:clamp(26px,4.6vw,42px);line-height:1.38;max-width:22ch;margin-inline:auto}
+.hero h1 b{color:var(--brand)}
+.hero .sub{margin-top:16px;font-size:15.5px;color:var(--ink-2);max-width:44ch;margin-inline:auto}
+.hero .act{margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.big{padding:14px 34px;border-radius:999px;background:var(--brand);color:var(--on-brand);
+  font-weight:700;font-size:15.5px;transition:transform 160ms var(--out)}
+.big:active{transform:scale(.975)}
+.hero .act small{font-size:12.5px;color:var(--ink-3)}
+
+.how{margin-top:8px}
+.how > h2{font-size:12.5px;color:var(--ink-3);margin-bottom:14px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:760px){.steps{grid-template-columns:1fr}}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+.step .n{width:26px;height:26px;border-radius:8px;background:var(--brand-soft);color:var(--brand);
+  display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:500}
+.step h3{margin-top:14px;font-size:15.5px}
+.step p{margin-top:8px;font-size:13px;color:var(--ink-2)}
+.step .shot{margin-top:14px;background:var(--field);border-radius:var(--r-md);height:104px;
+  display:grid;place-items:center;padding:12px;text-align:center;font-size:11.5px;color:var(--ink-3);line-height:1.5}
+.landfoot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:8px 24px;font-size:12.5px;color:var(--ink-3)}
+
+/* ══ 도구 화면 (3단) ══ */
+.app{display:grid;grid-template-columns:60px 380px 1fr;height:100dvh;min-height:560px}
+.rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0;
+  background:var(--panel);border-right:1px solid var(--line)}
+.rail .mark{width:34px;height:34px;border-radius:10px;background:var(--brand);color:var(--on-brand);
+  display:grid;place-items:center;font-size:13px;font-weight:700;letter-spacing:-.04em;margin-bottom:12px}
+.rail .spacer{flex:1}
+.ricon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--ink-3);
+  transition:background 140ms ease,color 140ms ease}
+.ricon:hover{background:var(--field)}
+.ricon[aria-current="true"]{background:var(--brand-soft);color:var(--brand)}
+.ricon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+.side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side-head{padding:22px 24px 14px}
+.side-head h1{font-size:19px}
+.side-head p{margin-top:6px;font-size:12.5px;color:var(--ink-3)}
+.side-body{flex:1;overflow-y:auto;padding:4px 24px 20px}
+.side-foot{padding:14px 24px 18px;border-top:1px solid var(--line);background:var(--panel)}
+
+.demo{display:flex;gap:6px;margin-bottom:20px}
+.demo button{flex:1;padding:9px 4px;border-radius:var(--r-sm);background:var(--field);font-size:12px;color:var(--ink-2);
+  transition:background 140ms ease,color 140ms ease}
+.demo button:hover{background:var(--field-2)}
+.demo button[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand);font-weight:500}
+
+.group{margin-bottom:22px}
+.group > h2{font-size:12px;font-weight:700;color:var(--ink-3);margin-bottom:10px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12px;color:var(--ink-2)}
+.field label .req{color:var(--brand)}
+input,select{width:100%;background:var(--field);border:1px solid transparent;border-radius:var(--r-sm);
+  padding:10px 11px;font:inherit;font-size:13.5px;color:var(--ink);
+  transition:background 140ms ease,border-color 140ms ease}
+input::placeholder{color:var(--ink-3)}
+input:hover,select:hover{background:var(--field-2)}
+input:focus,select:focus{background:var(--panel);border-color:var(--brand);outline:0}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 18px,calc(100% - 10px) 18px;background-size:5px 5px;background-repeat:no-repeat;padding-right:28px}
+input[inputmode="numeric"]{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.field.bad input,.field.bad select{border-color:var(--warn);background:var(--warn-soft)}
+.field .err{font-size:11.5px;color:var(--warn)}
+.hint{font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+.tip{background:var(--field);border-radius:var(--r-md);padding:11px 13px;font-size:12px;color:var(--ink-2);line-height:1.6}
+
+.go{width:100%;padding:13px;border-radius:var(--r-md);background:var(--brand);color:var(--on-brand);
+  font-weight:700;font-size:14.5px;transition:transform 160ms var(--out)}
+.go:active{transform:scale(.985)}
+.go[disabled]{background:var(--field-2);color:var(--ink-3);cursor:not-allowed}
+.go-why{margin-top:8px;font-size:11.5px;color:var(--ink-3);text-align:center}
+.go-why.warn{color:var(--warn)}
+.devnote{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--ink-3)}
+.devnote button{text-decoration:underline;text-underline-offset:2px}
+
+.main{overflow-y:auto;padding:22px clamp(16px,3vw,32px) 44px;min-height:0}
+.main-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.crumb{display:flex;flex-wrap:wrap;gap:6px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--ink-2)}
+.asof{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+
+.blank{height:100%;min-height:400px;display:grid;place-items:center;text-align:center}
+.blank .art{width:88px;height:88px;border-radius:26px;background:var(--brand-soft);color:var(--brand);
+  display:grid;place-items:center;margin:0 auto 20px}
+.blank .art svg{width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.blank h3{font-size:16px}
+.blank p{margin-top:8px;font-size:13.5px;color:var(--ink-3);max-width:34ch;margin-inline:auto}
+.blank .retry{margin-top:20px;display:flex;gap:8px;justify-content:center}
+.btn-sm{padding:9px 18px;border-radius:999px;font-size:13px;font-weight:500;background:var(--brand);color:var(--on-brand)}
+.btn-sm.ghost{background:none;border:1px solid var(--line);color:var(--ink-2)}
+.art.err{background:var(--warn-soft);color:var(--warn)}
+
+.sk{background:var(--field);border-radius:6px;height:12px;animation:pulse 1.3s ease-in-out infinite}
+.sk.w70{width:70%} .sk.w45{width:45%} .sk.w90{width:90%} .sk.w30{width:30%}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.sk{animation:none}}
+.sk-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;
+  display:flex;flex-direction:column;gap:10px}
+.loading-note{display:flex;align-items:center;gap:9px;margin-bottom:16px;font-size:13px;color:var(--ink-2)}
+.spin{width:15px;height:15px;border-radius:50%;border:2px solid var(--field-2);border-top-color:var(--brand);
+  animation:spin .7s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;
+  display:flex;flex-direction:column;gap:12px;
+  opacity:0;transform:translateY(6px);animation:rise 380ms var(--out) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.card{animation:none;opacity:1;transform:none}}
+.card.wide{grid-column:1/-1}
+.card.none{background:var(--none-soft)}
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-top h4{font-size:15px}
+.tagf{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px;font-size:11.5px;font-weight:500}
+.tagf::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.t-ok{color:var(--ok);background:var(--ok-soft)}
+.t-caution{color:var(--warn);background:var(--warn-soft)}
+.t-none{color:var(--none);background:var(--none-soft)}
+.card.none .t-none{background:var(--panel)}
+.card .txt{font-size:13.5px;line-height:1.75;color:var(--ink)}
+.card .src{margin-top:7px;font-family:var(--mono);font-size:11px;color:var(--ink-3);line-height:1.55}
+.ev + .ev{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.more{align-self:flex-start;font-size:12px;color:var(--brand);font-weight:500;
+  padding:5px 11px;border-radius:999px;background:var(--brand-soft);transition:opacity 140ms ease}
+.more:hover{opacity:.78}
+.detail{background:var(--field);border-radius:var(--r-md);padding:13px 15px;margin-top:10px}
+.detail dl{display:grid;grid-template-columns:auto 1fr;gap:5px 16px;margin:0;font-size:12px}
+.detail dt{color:var(--ink-3)}
+.detail dd{margin:0;word-break:break-all}
+.chip-warn{display:inline-block;margin-top:10px;font-size:11px;color:var(--warn);background:var(--warn-soft);
+  border-radius:999px;padding:3px 10px}
+.blankcard{color:var(--ink-3);font-size:13.5px}
+
+.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fig{background:var(--field);border-radius:var(--r-md);padding:12px 14px}
+.fig dt{font-size:11.5px;color:var(--ink-3)}
+.fig dd{margin:5px 0 0;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.fig dd.absent{font-size:13px;font-weight:400;color:var(--ink-3)}
+@media (max-width:700px){.figs{grid-template-columns:repeat(2,1fr)}}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:13px}
+th,td{text-align:left;padding:11px 14px 11px 0;border-bottom:1px solid var(--line)}
+thead th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+tbody tr:last-child td{border-bottom:0}
+td.m{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+
+/* ══ 최근 조회 · 자료 상태 ══ */
+.app.solo{grid-template-columns:60px 1fr}
+.app.solo .side{display:none}
+.page-head{margin-bottom:20px}
+.page-head h2{font-size:21px}
+.page-head p{margin-top:6px;font-size:13px;color:var(--ink-3);max-width:60ch}
+.optional{display:inline-block;margin-left:8px;vertical-align:3px;font-size:11px;font-weight:400;
+  color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:2px 9px}
+.list{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;
+  display:grid;grid-template-columns:1fr auto;gap:10px 18px;align-items:center;text-align:left;width:100%;
+  transition:border-color 140ms ease,transform 160ms var(--out)}
+.row:hover{border-color:var(--brand)}
+.row:active{transform:scale(.995)}
+.row .when{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.row h4{margin-top:3px;font-size:14.5px}
+.row .sub{margin-top:5px;display:flex;flex-wrap:wrap;gap:5px}
+.mini{border-radius:999px;padding:2px 9px;font-size:11.5px;background:var(--field);color:var(--ink-2)}
+.tally{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tally span{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:500}
+.tally span::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+@media (max-width:640px){.row{grid-template-columns:1fr}.tally{justify-content:flex-start}}
+
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 17px}
+.tile dt{font-size:11.5px;color:var(--ink-3)}
+.tile dd{margin:6px 0 0;font-size:23px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile dd small{font-size:12px;font-weight:400;color:var(--ink-3);margin-left:4px}
+@media (max-width:820px){.tiles{grid-template-columns:repeat(2,1fr)}}
+
+.panel-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
+.panel-box + .panel-box{margin-top:14px}
+.panel-box > h3{font-size:15px;margin-bottom:4px}
+.panel-box > .cap{font-size:12.5px;color:var(--ink-3);margin-bottom:14px}
+.dot-st{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;white-space:nowrap}
+.dot-st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-ok{color:var(--ok)} .s-late{color:var(--warn)} .s-off{color:var(--none)}
+.bar{height:8px;border-radius:99px;background:var(--field);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+
+/* ══ 좁은 화면: 3단 → 위아래로 ══ */
+@media (max-width:980px){
+  .app{grid-template-columns:1fr;height:auto;min-height:0}
+
+  /* 아이콘 레일을 가로 바로 */
+  .rail{flex-direction:row;align-items:center;gap:4px;
+    height:auto;padding:8px 14px;border-right:0;border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:5;overflow-x:auto}
+  .rail .mark{width:30px;height:30px;border-radius:9px;margin:0 10px 0 0;font-size:12px;flex:none}
+  .rail .ricon{width:34px;height:34px;flex:none}
+  .rail .spacer{display:block;flex:1;min-width:0}
+
+  .side{border-right:0;border-bottom:1px solid var(--line)}
+  .side-body{overflow:visible;padding-bottom:10px}
+  .side-foot{position:sticky;bottom:0;z-index:4}
+  .main{padding-bottom:64px}
+  .blank{min-height:300px}
+}
+@media (max-width:560px){
+  .g2{grid-template-columns:1fr}
+  .g2 .field{grid-column:1/-1 !important}
+  .demo{flex-wrap:wrap}
+  .demo button{flex:1 1 30%}
+}
+</style>
+
+<!-- ══════ L1 랜딩 ══════ -->
+<div id="view-landing" class="land">
+  <div class="land-top">
+    <div class="brandmark"><span class="dot">BY</span><b>BUYO</b><span>임상 진입 전 사업성 진단</span></div>
+    <button class="top-cta" data-go="app">진단 시작</button>
+  </div>
+
+  <section class="hero">
+    <span class="badge">근거가 없으면 없다고 씁니다</span>
+    <h1>임상 진입 전에, 이 설계로 사업이 되는지<br><b>근거와 함께 확인합니다</b></h1>
+    <p class="sub">시드~프리A 바이오텍이 설계안을 확정하기 전에 여섯 관점으로 점검하는 도구입니다.</p>
+    <div class="act">
+      <button class="big" data-go="app">진단 시작</button>
+      <small>필수 입력 3항목 · 약 30초</small>
+    </div>
+  </section>
+
+  <section class="how">
+    <h2>작동 방식 3단계</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>약과 설계를 입력</h3>
+        <p>약물 종류·적응증·개발 단계를 고르고, 있으면 설계안과 재무를 채웁니다.</p>
+        <div class="shot">입력 화면 캡처<br>(약물 종류·적응증·단계 / 설계·재무 값을 적는 화면)</div>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>조건에 맞는 근거를 찾음</h3>
+        <p>공개 임상·공시 자료에서 검증을 통과한 판단 기준 문장만 골라냅니다.</p>
+        <div class="shot">검색 과정 캡처<br>(조건 필터 → 의미 검색 → 등급 정렬)</div>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>여섯 관점으로 확인</h3>
+        <p>임상·시장·규제·재무·특허·뉴스. 문장마다 출처와 신뢰 등급이 붙습니다.</p>
+        <div class="shot">결과 화면 캡처<br>(카드 6장과 근거 보기)</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="landfoot">
+    <span>회원가입 없음</span><span>결과 저장·공유 없음</span><span>노트북 화면 기준</span>
+    <span>표시되는 수치는 시안용 예시</span>
+  </div>
+</div>
+
+<!-- ══════ 도구 화면 ══════ -->
+<div id="view-app" class="app" hidden>
+  <nav class="rail">
+    <button class="mark" data-go="landing" title="처음 화면으로">BY</button>
+    <button class="ricon" data-view="diagnose" aria-current="true" title="진단">
+      <svg viewBox="0 0 24 24"><path d="M4 14h4l2 5 4-14 2 7h4"/></svg>
+    </button>
+    <button class="ricon" data-view="recent" title="최근 조회">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+    </button>
+    <button class="ricon" data-view="data" title="자료 상태">
+      <svg viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+    </button>
+    <div class="spacer"></div>
+    <button class="ricon" title="설정">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z"/></svg>
+    </button>
+  </nav>
+
+  <aside class="side">
+    <div class="side-head">
+      <h1>사업성 진단</h1>
+      <p>필수 3항목만 채우면 시작할 수 있습니다</p>
+    </div>
+
+    <div class="side-body">
+      <div class="demo">
+        <button type="button" data-case="A" aria-pressed="true">A · ABL503</button>
+        <button type="button" data-case="B" aria-pressed="false">B · SB17170</button>
+        <button type="button" data-case="C" aria-pressed="false">C · 수기</button>
+      </div>
+
+      <div class="group">
+        <h2>파이프라인</h2>
+        <div class="g2">
+          <div class="field" id="f-modality" style="grid-column:1/-1">
+            <label for="modality"><span class="req">*</span> 모달리티</label>
+            <select id="modality">
+              <option value="">선택</option>
+              <option value="small_molecule">저분자</option>
+              <option value="tpd">TPD (표적 단백질 분해)</option>
+              <option value="peptide">펩타이드</option>
+              <option value="mab" selected>단일항체</option>
+              <option value="bispecific">이중항체</option>
+              <option value="adc">ADC</option>
+              <option value="cell">세포</option>
+              <option value="gene_editing">유전자편집</option>
+              <option value="rna">RNA</option>
+              <option value="radioligand">방사성</option>
+              <option value="toxin">톡신</option>
+              <option value="biosimilar">시밀러</option>
+            </select>
+            <span class="hint">부요 내부 분류 12종</span>
+          </div>
+          <div class="field" id="f-indication" style="grid-column:1/-1">
+            <label for="indication"><span class="req">*</span> 적응증</label>
+            <input id="indication" list="ind-list" value="HER2 양성 유방암" autocomplete="off" placeholder="질환명을 입력하세요">
+            <datalist id="ind-list">
+              <option value="HER2 양성 유방암"></option>
+              <option value="비소세포폐암"></option>
+              <option value="만성 이식편대숙주질환"></option>
+            </datalist>
+            <span class="hint" id="ind-code">MeSH:D001943 · 질환군 항암</span>
+          </div>
+          <div class="field" id="f-phase">
+            <label for="phase"><span class="req">*</span> 개발 단계</label>
+            <select id="phase">
+              <option value="">선택</option>
+              <option value="preclinical">비임상</option>
+              <option value="P1">임상 1상</option>
+              <option value="P2" selected>임상 2상</option>
+              <option value="P3">임상 3상</option>
+              <option value="NDA">허가 신청</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="exit">출구 경로</label>
+            <select id="exit">
+              <option value="license_out" selected>기술이전</option>
+              <option value="self_develop">자체 개발</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>설계안</h2>
+        <div class="g2">
+          <div class="field"><label for="ep">1차 평가변수</label><input id="ep" value="ORR"></div>
+          <div class="field"><label for="comp">대조군</label>
+            <select id="comp"><option selected>단일군</option><option>위약 대조</option><option>실약 대조</option></select></div>
+          <div class="field"><label for="n">목표 대상자 수</label><input id="n" inputmode="numeric" value="60"></div>
+          <div class="field"><label for="dur">예상 기간 (개월)</label><input id="dur" inputmode="numeric" value="24"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>재무 (억 원)</h2>
+        <div class="g2">
+          <div class="field"><label for="cash">현금</label><input id="cash" inputmode="numeric" value="18"></div>
+          <div class="field"><label for="burn">월 소진액</label><input id="burn" inputmode="numeric" value="1.5"></div>
+          <div class="field"><label for="committed">확정 조달</label><input id="committed" inputmode="numeric" value="0"></div>
+          <div class="field"><label for="planned">예정 조달</label><input id="planned" inputmode="numeric" value="30"></div>
+        </div>
+      </div>
+
+      <p class="tip">부족액은 현금과 확정 조달만 더해 계산합니다. 예정 조달은 넣지 않습니다. 자료를 올려 값을 자동으로 채우는 기능은 이번 버전에 없습니다.</p>
+    </div>
+
+    <div class="side-foot">
+      <button class="go" id="run">진단 시작</button>
+      <p class="go-why" id="why">필수 3항목이 모두 채워졌습니다</p>
+      <div class="devnote">
+        <span>시안 확인용</span>
+        <span><button data-stage="error">조회 실패 화면</button> · <button data-stage="blank">빈 화면</button></span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+   <div id="page-diagnose">
+    <div class="main-head">
+      <div class="crumb" id="crumb"></div>
+      <span class="asof">데이터 기준 2026-10-08</span>
+    </div>
+
+    <!-- 빈 상태 -->
+    <div id="blank" class="blank">
+      <div>
+        <div class="art"><svg viewBox="0 0 24 24"><path d="M4 14h4l2 5 4-14 2 7h4"/></svg></div>
+        <h3>왼쪽에 파이프라인을 입력해 주세요</h3>
+        <p>진단 시작을 누르면 조건에 맞는 판단 기준 문장을 찾아 여섯 관점으로 보여 드립니다.</p>
+      </div>
+    </div>
+
+    <!-- 진행 중 -->
+    <div id="loading" hidden>
+      <div class="loading-note"><span class="spin"></span>조건에 맞는 판단 기준 문장을 찾고 있습니다</div>
+      <div class="grid">
+        <div class="sk-card"><div class="sk w30"></div><div class="sk w90"></div><div class="sk w70"></div></div>
+        <div class="sk-card"><div class="sk w30"></div><div class="sk w70"></div><div class="sk w45"></div></div>
+        <div class="sk-card"><div class="sk w30"></div><div class="sk w90"></div><div class="sk w45"></div></div>
+        <div class="sk-card"><div class="sk w30"></div><div class="sk w70"></div><div class="sk w90"></div></div>
+      </div>
+    </div>
+
+    <!-- 조회 실패 -->
+    <div id="error" class="blank" hidden>
+      <div>
+        <div class="art err"><svg viewBox="0 0 24 24"><path d="M12 8v5"/><path d="M12 16.5v.01"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <h3>결과를 불러오지 못했습니다</h3>
+        <p>잠시 후 다시 시도해 주세요. 계속되면 자료 수집 상태를 확인해야 합니다. 입력값은 그대로 남아 있습니다.</p>
+        <div class="retry">
+          <button class="btn-sm" id="retry">다시 시도</button>
+          <button class="btn-sm ghost" data-stage="blank">입력으로</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div id="result" hidden>
+      <div class="grid" id="cards"></div>
+      <div class="card wide" style="margin-top:14px;animation-delay:320ms">
+        <div class="card-top"><h4>유사 파이프라인</h4><span class="asof" id="sim-count"></span></div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>약물</th><th>의뢰자</th><th>적응증</th><th>단계</th><th>상태</th><th>원천</th></tr></thead>
+            <tbody id="similar"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+   </div>
+
+   <!-- ══ 최근 조회 ══ -->
+   <div id="page-recent" hidden>
+     <div class="page-head">
+       <h2>최근 조회<span class="optional">선택 기능</span></h2>
+       <p>이 브라우저에서 돌린 진단 기록입니다. 일정이 밀리면 가장 먼저 빼는 화면으로 잡아 뒀습니다. 누르면 그때 입력값이 그대로 채워집니다.</p>
+     </div>
+     <div class="list" id="recent-list"></div>
+   </div>
+
+   <!-- ══ 자료 상태 ══ -->
+   <div id="page-data" hidden>
+     <div class="page-head">
+       <h2>자료 상태</h2>
+       <p>진단에 쓰는 판단 기준 문장이 어디서 몇 건 들어와 있고, 마지막으로 언제 갱신됐는지 보여 줍니다. 발표 전에 여기부터 확인합니다.</p>
+     </div>
+
+     <dl class="tiles">
+       <div class="tile"><dt>판단 기준 문장</dt><dd>1,284<small>건</small></dd></div>
+       <div class="tile"><dt>원천 레코드</dt><dd>8,410<small>건</small></dd></div>
+       <div class="tile"><dt>유효기간 만료 임박</dt><dd>37<small>건</small></dd></div>
+       <div class="tile"><dt>임시값</dt><dd>112<small>건</small></dd></div>
+     </dl>
+
+     <div class="panel-box">
+       <h3>수집 원천</h3>
+       <p class="cap">마지막 수집 시각 기준 · 2026-10-08 02:00</p>
+       <div class="tablewrap">
+         <table>
+           <thead><tr><th>원천</th><th>마지막 수집</th><th>레코드</th><th>문장</th><th>상태</th></tr></thead>
+           <tbody id="src-rows"></tbody>
+         </table>
+       </div>
+     </div>
+
+     <div class="panel-box">
+       <h3>신뢰 등급 분포</h3>
+       <p class="cap">1 법령·고시 · 2 표준 문헌 · 3 경험칙</p>
+       <div class="bar">
+         <i style="width:24%;background:var(--brand)"></i>
+         <i style="width:58%;background:var(--ok);opacity:.55"></i>
+         <i style="width:18%;background:var(--warn);opacity:.6"></i>
+       </div>
+       <div class="legend">
+         <span><i style="background:var(--brand)"></i>1등급 308건 (24%)</span>
+         <span><i style="background:var(--ok);opacity:.55"></i>2등급 745건 (58%)</span>
+         <span><i style="background:var(--warn);opacity:.6"></i>3등급 231건 (18%)</span>
+       </div>
+     </div>
+
+     <div class="panel-box">
+       <h3>관점별 문장 수</h3>
+       <p class="cap">문장이 0건인 관점은 결과에서 "근거 없음"으로 표시됩니다</p>
+       <div class="tablewrap">
+         <table>
+           <thead><tr><th>관점</th><th>문장</th><th>임시값</th><th>만료 임박</th><th>상태</th></tr></thead>
+           <tbody id="axis-rows"></tbody>
+         </table>
+       </div>
+     </div>
+   </div>
+  </main>
+</div>
+
+<script>
+const AXES = [
+  {key:"C", label:"임상"}, {key:"M", label:"시장"}, {key:"R", label:"규제"},
+  {key:"FP", label:"재무"}, {key:"T", label:"특허"}, {key:"N", label:"뉴스"}
+];
+const FLAG = {ok:["양호","t-ok"], caution:["주의","t-caution"], none:["근거 없음","t-none"]};
+
+const RECENT = [
+  {when:"오늘 14:22", title:"진행성·전이성 고형암", tags:["이중항체","임상 1상","ABL503"], ok:3, caution:1, none:2, go:"A"},
+  {when:"오늘 11:05", title:"특발성 폐섬유증", tags:["저분자","임상 2상","SB17170"], ok:2, caution:2, none:2, go:"B"},
+  {when:"어제 18:40", title:"비소세포폐암", tags:["저분자","비임상","수기 입력"], ok:1, caution:2, none:3, go:"C"},
+  {when:"어제 09:15", title:"진행성·전이성 고형암", tags:["이중항체","임상 1상","ABL503"], ok:3, caution:1, none:2, go:"A"},
+  {when:"9월 22일", title:"특발성 폐섬유증", tags:["저분자","임상 2상","SB17170"], ok:2, caution:2, none:2, go:"B"},
+  {when:"9월 22일", title:"비소세포폐암", tags:["저분자","비임상","수기 입력"], ok:1, caution:2, none:3, go:"C"}
+];
+
+const SOURCES = [
+  {name:"ClinicalTrials.gov", last:"2026-09-24 02:00", rec:"298", ch:"—", st:"ok", label:"정상"},
+  {name:"DART 전자공시", last:"2026-09-24 02:00", rec:"1", ch:"—", st:"late", label:"smoke test 대기"},
+  {name:"C 트랙 (임상 청크)", last:"2026-09-23 수동", rec:"285", ch:"285", st:"ok", label:"변환 완료"},
+  {name:"F04 트랙 (비용 청크)", last:"2026-09-23 수동", rec:"241", ch:"241", st:"ok", label:"변환 완료"},
+  {name:"md 트랙 (R·M·T)", last:"2026-09-25 예정", rec:"—", ch:"0", st:"off", label:"생성 전"},
+  {name:"뉴스 수집기", last:"—", rec:"—", ch:"0", st:"off", label:"정식판 이관"}
+];
+
+const AXIS_STAT = [
+  {name:"임상", ch:"285", ill:"—", exp:"—", st:"ok", label:"C01~C04 적재"},
+  {name:"시장", ch:"0", ill:"—", exp:"—", st:"off", label:"M01·M03 생성 전"},
+  {name:"규제", ch:"0", ill:"—", exp:"—", st:"off", label:"R01·R02 생성 전"},
+  {name:"재무", ch:"241", ill:"—", exp:"—", st:"ok", label:"F04 적재"},
+  {name:"특허", ch:"0", ill:"—", exp:"—", st:"off", label:"T01·T02 생성 전"},
+  {name:"뉴스", ch:"0", ill:"—", exp:"—", st:"off", label:"범위 밖"}
+];
+
+const CASES = {
+  A: {
+    crumb:["이중항체","진행성·전이성 고형암","임상 1상","기술이전","DART 298380"],
+    finance:{runway:"11.4개월", inflection:"2상 개념증명", need:"600만 달러", gap:"근거 없음", basis:"DART 공시 · 2024년 말(예시값)"},
+    cards:{
+      C:{flag:"ok", ev:[
+        {t:"단클론항체 1상 자산이 최종 승인에 이를 누적 확률은 12.1%이며, 2상 진입 확률은 54.7%입니다(BIO 2021, 2011~2020년 집계). 이중항체 전용 값이 없어 단클론항체 값으로 표시했습니다. 항암 기준 누적 확률은 5.3%로, 두 값 사이에서 읽어야 합니다.",
+         s:"C01-0092 / C01-0096 / C02-0006 · CE-01 · CE-03", trust:2, valid:"2021-01 / 2027-12", basis:"누적 · 조건부", ill:false, nct:"—"},
+        {t:"다음 변곡점(2상 개념증명 결과)까지 항암 산업 평균 6.4년(1상→2상 2.7년, 2상→3상 3.7년), 승인까지는 10.3년이 소요됩니다.",
+         s:"C02-0007 / C02-0010 · CE-02 · FE-D02", trust:2, valid:"2021-01 / 2027-12", basis:"—", ill:false, nct:"—"},
+        {t:"계획 대상자 58명은 고형암 1상 시험 240건의 중앙값 35명 대비 상위 22%입니다. 1상 항암 시험의 평균 등록 인원은 58명으로 보고되었습니다(ASPE 2024).",
+         s:"F04-AS-2025 / CT.gov 풀 · CE-03", trust:2, valid:"2024-01 / 2028-12", basis:"—", ill:false, nct:"NCT04762641"},
+        {t:"고형암 전체에서 현재 모집 중인 2상 2건·3상 3건이 있습니다. 적응증이 넓어 특정 암종으로 좁히면 비교가 정확해집니다.",
+         s:"CT.gov 풀 · CE-07", trust:2, valid:"2026-09 / 갱신형", basis:"—", ill:false, nct:"—"}]},
+      M:{flag:"ok", ev:[
+        {t:"이 단계 자산의 일반적인 출구는 2상 개념증명 이후 기술이전입니다. 파트너링 계약은 2상 결과 이후에 집중되는 경향이 보고되었습니다(Burrill 2007~2010).",
+         s:"M-D05-004 · ME-09", trust:2, valid:"2010-01 / 2027-12", basis:"—", ill:false, nct:"—"},
+        {t:"공개 기술이전 사례 — 동사의 ABL301(전임상, 2022.1, 사노피)은 계약금 7,500만 달러·총 10.6억 달러로 공시되었습니다. 같은 모달리티·단계의 딜 계약금 사분위는 적재 후 표시됩니다.",
+         s:"M03 (DART 기술이전 공시 · T-SD5 이관) · ME-08", trust:2, valid:"2022-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"국내 급여 경로: 항암 항체 신약은 위험분담제 협상 대상이 될 수 있으며, 원내 주사제로 미국에서는 Part B 상환 경로에 해당합니다.",
+         s:"M01 규칙(재태깅) · ME-03", trust:2, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"국내 환자 규모 — 근거 없음. 적응증이 고형암 전체라 특정 암종을 정해야 청구자료로 확인됩니다.",
+         s:"M02 · ME-01 미확보", trust:2, valid:"—", basis:"—", ill:false, nct:"—"}]},
+      R:{flag:"ok", ev:[
+        {t:"허가 경로: 신약(신규 생물학적 제제)으로 안전성·유효성 전체 자료 제출이 필요합니다.",
+         s:"R01 규칙 · RE-01", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"희귀의약품 요건 — 적응증이 특정되지 않아 판정하지 않습니다. 특정 암종(국내 환자 2만 명 이하)으로 좁히면 규모 조건을 다시 확인합니다.",
+         s:"R02 · RE-02 · ME-02", trust:1, valid:"2026-02 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"독점권: 승인 시 미국에서 생물의약품 자료보호 12년, 국내 신약 재심사 기간이 특허와 별개로 발생합니다.",
+         s:"R02 독점권 표 · RE-03", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"신속 프로그램: 항암 자산은 2상 설계 단계에서 객관적 반응률 등 대리 평가변수를 근거로 가속승인·획기적 치료제 지정을 검토할 수 있습니다. 1상 단계에서는 판정하지 않습니다.",
+         s:"R02 · RE-04", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"제조·품질: 이중항체는 공정이 제품을 규정하므로 비교동등성·GMP 시설·공정 특성화 자료가 허가 자료의 핵심입니다.",
+         s:"R01 CMC 규칙 · RE-07", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"}]},
+      FP:{flag:"caution", ev:[
+        {t:"현금 약 560억 원과 월 소진 약 49억 원(공시 기준, 2024년 말·예시값) 기준 런웨이는 11.4개월입니다. 기술료 수입이 있는 회사이므로 마일스톤 유입 시 런웨이가 달라집니다.",
+         s:"입력 / DART · FE-A01", trust:2, valid:"2024-12 / 재수집 필요", basis:"—", ill:true, nct:"—"},
+        {t:"다음 변곡점(2상 개념증명)까지 필요 자금 — 설계안 기준 최소 600만 달러(1상 잔여, 항암 1상 환자당 103,344달러 × 벤치마크 58명, ASPE 2024, 2018년 달러; 사이트·CRO 비용 미포함).",
+         s:"F04-AS-1025 / F04-AS-2025 · FE-A03 · FE-A02", trust:2, valid:"2024-01 / 2028-12", basis:"—", ill:false, nct:"—"},
+        {t:"런웨이 대비 소요 기간 커버리지는 0.15(11.4개월 ÷ 76.8개월)로, 변곡점 전 조달 또는 마일스톤 유입이 여러 차례 필요한 범위입니다. 조달 마감일 — 근거 없음. 조달 소요 기간 규칙(F01) 확정 후 표시합니다.",
+         s:"C02-0006 / C02-0007 / F01 · FE-A05 · FE-A04", trust:2, valid:"2021-01 / 2027-12", basis:"—", ill:false, nct:"—"},
+        {t:"리드 자산 외 백업 자산 다수(ABL301·ABL001 등 파트너 임상) — 실패 시 플랫폼과 기술 자산이 남습니다.",
+         s:"F01 · FE-B10", trust:2, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"같은 단계에서 국내 상장사 3사의 당시 현금 사분위와 월 소진 사분위는 시연 지정 비교군(DART)으로 표시합니다.",
+         s:"DART · FE-C01 · FE-C02", trust:2, valid:"2026-09 / 갱신형", basis:"—", ill:true, nct:"—"}]},
+      T:{flag:"none", ev:[]},
+      N:{flag:"none", ev:[]}
+    },
+    similar:[
+      ["PD-L1×4-1BB 이중항체","국내 상장 바이오텍","진행성 고형암","1상","모집 중","NCT04762641"],
+      ["4-1BB 작용 항체","해외 제약사","진행성 고형암","1상","진행 중","NCT0000002"],
+      ["PD-L1 병용 이중항체","해외 바이오텍","진행성 고형암","2상","모집 중","NCT0000003"]
+    ]
+  },
+  B: {
+    crumb:["저분자","특발성 폐섬유증","임상 2상","기술이전","재무 수기 입력"],
+    finance:{runway:"15.0개월", inflection:"진행 중 2상 결과", need:"880만 달러", gap:"근거 없음", basis:"수기 입력 · 2026.8 기준"},
+    cards:{
+      C:{flag:"ok", ev:[
+        {t:"저분자 2상 자산이 최종 승인에 이를 누적 확률은 14.3%이며, 3상 진입 확률은 28.0%입니다(BIO 2011~2020년 집계). 전체 기준 누적 확률은 15.1%입니다. 희귀질환(비항암) 기준으로는 누적 25.2%, 3상 진입 44.6%로 보고되었습니다(BIO 2021, 제한적 매칭).",
+         s:"C01-0086 / C01-0090 / C01-0079 / C01-0083 · CE-01 · CE-04", trust:2, valid:"2021-01 / 2027-12", basis:"누적 · 조건부", ill:false, nct:"—"},
+        {t:"다음 변곡점(진행 중 2상 결과)까지 전체 기준 2상 평균 3.6년, 승인까지는 8.2년(2상→3상 3.6, 3상→NDA 3.3, 심사 1.3)이 소요됩니다.",
+         s:"C02-0002 / C02-0003 / C02-0004 · CE-02", trust:2, valid:"2021-01 / 2027-12", basis:"—", ill:false, nct:"—"},
+        {t:"계획 대상자 90명은 IPF 2상 시험 46건의 중앙값 120명 대비 하위 31%입니다. 호흡기 2상 시험의 평균 등록 인원은 203명으로 보고되었습니다(ASPE 2024). 위약 대조·이중눈가림 설계는 확증 근거 구성에 유리합니다.",
+         s:"F04-AS-2029 / CT.gov 풀 · CE-03 · CE-04", trust:2, valid:"2024-01 / 2028-12", basis:"—", ill:false, nct:"NCT06747923"},
+        {t:"IPF에서 현재 모집 중인 2상 9건·3상 4건이 있습니다.",
+         s:"CT.gov 풀 · CE-07", trust:2, valid:"2026-09 / 갱신형", basis:"—", ill:false, nct:"—"}]},
+      M:{flag:"ok", ev:[
+        {t:"이 단계 자산의 일반적인 출구는 2상 결과 이후 기술이전입니다.",
+         s:"M-D05-004 · ME-09", trust:2, valid:"2010-01 / 2027-12", basis:"—", ill:false, nct:"—"},
+        {t:"같은 모달리티·단계의 공개 기술이전 계약금 사분위는 M03 적재 후 표시됩니다.",
+         s:"M03 · ME-08", trust:2, valid:"—", basis:"—", ill:false, nct:"—"},
+        {t:"국내 급여 경로: IPF는 희귀·중증난치질환 산정특례(V236) 대상으로 환자 본인부담이 낮아, 급여 등재가 곧 시장 접근입니다. 기존 항섬유화제 2종이 급여 중이므로 비교 약제 대비 경제성 평가가 필요합니다.",
+         s:"M01 규칙 · ME-03", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"국내 환자 규모: 2019년 전국 HIRA 청구자료에서 12,031명(10만 명당 23.20명)으로 보고되었으며, 2011년 3,804명에서 증가 추세입니다.",
+         s:"M02 (HIRA 2011~2019 연구 · 질병관리청 헬프라인) · ME-01", trust:2, valid:"2019-12 / 2027-12", basis:"—", ill:false, nct:"—"}]},
+      R:{flag:"caution", ev:[
+        {t:"허가 경로: 신약(신물질)으로 안전성·유효성 전체 자료 제출이 필요합니다.",
+         s:"R01 규칙 · RE-01", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"희귀질환 규모 조건 — 2019년 전국 HIRA 자료에서 국내 환자 12,031명이 확인되어 개발단계 희귀의약품의 환자 수 기준(2만 명 이하)에 해당하는 근거가 확인됩니다. 지정 여부 — 환자 수 외에 기존 치료대안(피르페니돈·닌테다닙) 대비 개선 가능성과 국내 개발계획의 타당성 검토가 필요합니다.",
+         s:"R02 · M02 · RE-02 (식약처 고시 제2026-8호, 2026.2.2 시행)", trust:1, valid:"2026-02 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"독점권: 희귀의약품 지정 시 국내 품목허가 유효기간 10년·우선 심사·수수료 감면 특례가 적용되며, 미국 희귀의약품 지정 7년, EU 10년의 시장 독점이 특허와 별개로 발생합니다.",
+         s:"R02 독점권 표 · RE-03", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"신속 프로그램: 기존 치료제가 있어 획기적 치료제 지정에는 기존 대비 상당한 개선 근거가 필요합니다. 중대 질환·미충족 수요 근거가 갖춰지면 우선심사 검토 대상입니다.",
+         s:"R02 · RE-04", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"},
+        {t:"제조·품질: 저분자 화합물로 제조 위험은 낮은 편입니다.",
+         s:"R01 CMC 규칙 · RE-07", trust:1, valid:"2026-01 / 계속", basis:"—", ill:false, nct:"—"}]},
+      FP:{flag:"caution", ev:[
+        {t:"현금 120억 원과 월 소진 8억 원(수기 입력, 2026.8 기준) 기준 런웨이는 15.0개월입니다. 현금 소진 예상 시점은 2027년 11월입니다.",
+         s:"수기 입력 · FE-A01", trust:3, valid:"2026-08 / 입력 기준", basis:"—", ill:false, nct:"—"},
+        {t:"진행 중 2상 완료까지 필요 자금 — 설계안 기준 최소 880만 달러(호흡기 2상 환자당 43,563달러 × 벤치마크 203명, ASPE 2024, 2018년 달러; 실제 대상자 수 입력 시 재계산). 참고: 호흡기 2상 시험당 평균 1,220만 달러(Sertkaya 2016, 2004~2012 달러).",
+         s:"F04-AS-1029 / F04-AS-2029 · FE-A03 · FE-A02", trust:2, valid:"2024-01 / 2028-12", basis:"—", ill:false, nct:"—"},
+        {t:"런웨이 대비 소요 기간 커버리지는 0.35(15개월 ÷ 43개월)로, 2상 결과 전 조달 1회 이상이 필요한 범위입니다. 예정 조달 150억(2027.6)은 소진 시점(2027.11)보다 앞서 있어 일정상 겹칩니다.",
+         s:"C02-0002 / F01 · FE-A05 · FE-A04", trust:2, valid:"2021-01 / 2027-12", basis:"—", ill:false, nct:"—"},
+        {t:"리드 자산 외 백업 자산 미입력 — 실패 시 잔존가치는 현금뿐입니다.",
+         s:"F01 · FE-B10", trust:3, valid:"2026-08 / 입력 기준", basis:"—", ill:false, nct:"—"},
+        {t:"비상장사라 자동 비교값이 없어, 같은 단계에서 국내 상장 저분자 개발사 3사(시연 지정)의 당시 현금 사분위를 참고로 표시합니다.",
+         s:"DART 지정 3사 · FE-C02", trust:2, valid:"2026-09 / 갱신형", basis:"—", ill:true, nct:"—"}]},
+      T:{flag:"none", ev:[]},
+      N:{flag:"none", ev:[]}
+    },
+    similar:[
+      ["HMGB1 조절 저분자","국내 비상장 바이오텍","특발성 폐섬유증","2상","모집 중","NCT06747923"],
+      ["항섬유화 저분자","해외 제약사","특발성 폐섬유증","2상","진행 중","NCT0000012"],
+      ["흡입형 저분자","해외 바이오텍","특발성 폐섬유증","2상","모집 중","NCT0000013"]
+    ]
+  },
+  C: {
+    crumb:["저분자","비소세포폐암","비임상","자체 개발","공시 없음"],
+    finance:{runway:"7.2개월", inflection:"1상 개시", need:"근거 없음", gap:"계산 안 함", basis:"수기 입력"},
+    cards:{
+      C:{flag:"caution", ev:[
+        {t:"저분자 비임상 자산이 최종 승인에 이를 누적 확률은 6%입니다(BIO 2011~2020년 집계). 비임상 단계는 표본이 적어 단계별 조건부 확률을 함께 읽어야 합니다.",
+         s:"C01-0012 · CE-01", trust:2, valid:"2021-01 / 2027-12", basis:"누적", ill:false, nct:"—"},
+        {t:"다음 변곡점(1상 개시)까지의 기간은 입력값이 없어 계산하지 않습니다.",
+         s:"C02 · CE-02 미확보", trust:2, valid:"—", basis:"—", ill:false, nct:"—"}]},
+      M:{flag:"none", ev:[]},
+      R:{flag:"none", ev:[]},
+      FP:{flag:"caution", ev:[
+        {t:"현금 7.2억 원과 월 소진 1.0억 원(수기 입력) 기준 런웨이는 7.2개월입니다.",
+         s:"수기 입력 · FE-A01", trust:3, valid:"2026-09 / 입력 기준", basis:"—", ill:false, nct:"—"},
+        {t:"다음 변곡점까지 필요 자금 — 근거 없음. 비임상 단계 비용 청크가 없어 계산하지 않습니다. 평균이나 대표값으로 채우지 않습니다.",
+         s:"F04 미확보 · FE-A03", trust:2, valid:"—", basis:"—", ill:false, nct:"—"}]},
+      T:{flag:"none", ev:[]},
+      N:{flag:"none", ev:[]}
+    },
+    similar:[
+      ["EGFR 표적 저분자","국내 비상장 바이오텍","비소세포폐암","1상","모집 중","NCT0000021"]
+    ]
+  }
+};
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function evHTML(k, e, i){
+  return `
+  <div class="ev">
+    <p class="txt">${e.t}</p>
+    <p class="src">${e.s}</p>
+    <button class="more" data-detail="${k}-${i}" style="margin-top:9px">근거 보기</button>
+    <div class="detail" id="d-${k}-${i}" hidden>
+      <dl>
+        <dt>신뢰 등급</dt><dd>${e.trust} — ${e.trust === 1 ? "법령·고시" : e.trust === 2 ? "표준 문헌" : "경험칙"}</dd>
+        <dt>유효기간</dt><dd>${e.valid}</dd>
+        <dt>확률 구분</dt><dd>${e.basis}</dd>
+        <dt>관련 시험</dt><dd>${e.nct}</dd>
+        <dt>출처</dt><dd>${e.s}</dd>
+      </dl>
+      ${e.ill ? '<span class="chip-warn">임시값 — 1차 출처 확인 전</span>' : ''}
+    </div>
+  </div>`;
+}
+
+function cardHTML(axis, d, fin, i){
+  const [txt, cls] = FLAG[d.flag];
+  const empty = d.flag === "none";
+  const figs = axis.key === "FP" ? `
+    <dl class="figs">
+      <div class="fig"><dt>버틸 기간</dt><dd>${fin.runway}</dd></div>
+      <div class="fig"><dt>다음 변곡점</dt><dd style="font-size:15px">${fin.inflection}</dd></div>
+      <div class="fig"><dt>필요 자금</dt><dd class="${fin.need.includes("근거") ? "absent" : ""}">${fin.need}</dd></div>
+      <div class="fig"><dt>부족액</dt><dd class="${fin.gap.includes("계산") ? "absent" : ""}">${fin.gap}</dd></div>
+    </dl>
+    <p class="src" style="margin-top:0">값의 출처 · ${fin.basis}</p>` : "";
+  const body = empty && axis.key !== "FP"
+    ? '<p class="blankcard">이 관점의 판단 기준이 아직 없습니다. 추정치로 채우지 않습니다.</p>'
+    : figs + d.ev.map((e,j) => evHTML(axis.key, e, j)).join("");
+  return `
+  <article class="card${axis.key === "FP" ? " wide" : ""}${empty && axis.key !== "FP" ? " none" : ""}" style="animation-delay:${i * 45}ms">
+    <div class="card-top"><h4>${axis.label}</h4><span class="tagf ${cls}">${txt}</span></div>
+    <div>${body}</div>
+  </article>`;
+}
+
+function render(key){
+  const c = CASES[key];
+  $("#crumb").innerHTML = c.crumb.map(t => `<span class="pill">${t}</span>`).join("");
+  $("#cards").innerHTML = AXES.map((a,i) => cardHTML(a, c.cards[a.key], c.finance, i)).join("");
+  $("#sim-count").textContent = `${c.similar.length}건 · 같은 적응증·단계`;
+  $("#similar").innerHTML = c.similar.map(r =>
+    `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td class="m">${r[5]}</td></tr>`
+  ).join("");
+  stage("result");
+}
+
+function stage(s){
+  ["blank","loading","error","result"].forEach(k => { $("#" + k).hidden = k !== s; });
+  $(".main").scrollTo({top:0, behavior:"instant"});
+}
+
+function show(v){
+  $("#view-landing").hidden = v !== "landing";
+  $("#view-app").hidden = v !== "app";
+  window.scrollTo({top:0, behavior:"instant"});
+}
+
+function view(v){
+  ["diagnose","recent","data"].forEach(k => { $("#page-" + k).hidden = k !== v; });
+  $(".app").classList.toggle("solo", v !== "diagnose");
+  $$("[data-view]").forEach(b => b.setAttribute("aria-current", String(b.dataset.view === v)));
+  $(".main").scrollTo({top:0, behavior:"instant"});
+}
+
+function paintPages(){
+  $("#recent-list").innerHTML = RECENT.map(r => `
+    <button class="row" data-reopen="${r.go}">
+      <div>
+        <div class="when">${r.when}</div>
+        <h4>${r.title}</h4>
+        <div class="sub">${r.tags.map(t => `<span class="mini">${t}</span>`).join("")}</div>
+      </div>
+      <div class="tally">
+        <span class="t-ok">양호 ${r.ok}</span>
+        <span class="t-caution">주의 ${r.caution}</span>
+        <span class="t-none">근거 없음 ${r.none}</span>
+      </div>
+    </button>`).join("");
+
+  $("#src-rows").innerHTML = SOURCES.map(s => `
+    <tr>
+      <td>${s.name}</td>
+      <td class="m">${s.last}</td>
+      <td class="m">${s.rec}</td>
+      <td class="m">${s.ch}</td>
+      <td><span class="dot-st s-${s.st}">${s.label}</span></td>
+    </tr>`).join("");
+
+  $("#axis-rows").innerHTML = AXIS_STAT.map(a => `
+    <tr>
+      <td>${a.name}</td>
+      <td class="m">${a.ch}</td>
+      <td class="m">${a.ill}</td>
+      <td class="m">${a.exp}</td>
+      <td><span class="dot-st s-${a.st}">${a.label}</span></td>
+    </tr>`).join("");
+}
+paintPages();
+
+function diagnose(key){
+  stage("loading");
+  $("#run").disabled = true;
+  setTimeout(() => { render(key); $("#run").disabled = false; checkRequired(); }, 950);
+}
+
+const FILL = {
+  A:{modality:"bispecific", indication:"진행성·전이성 고형암", code:"MeSH:D009369 · 질환군 항암 · rare=N", phase:"P1",
+     exit:"license_out", ep:"안전성·MTD·RP2D", comp:"단일군", n:"58", dur:"36",
+     cash:"560", burn:"49", committed:"0", planned:"0"},
+  B:{modality:"small_molecule", indication:"특발성 폐섬유증", code:"ICD-10 J84.11 · 산정특례 V236 · rare=Y", phase:"P2",
+     exit:"license_out", ep:"12주 FVC 변화", comp:"위약 대조", n:"90", dur:"12",
+     cash:"120", burn:"8", committed:"0", planned:"150"},
+  C:{modality:"small_molecule", indication:"비소세포폐암", code:"MeSH:D002289 · 질환군 항암 · rare=N", phase:"preclinical",
+     exit:"self_develop", ep:"무진행 생존기간", comp:"실약 대조", n:"120", dur:"30",
+     cash:"7.2", burn:"1.0", committed:"0", planned:"50"}
+};
+let picked = "A";
+
+function fillInputs(key){
+  const f = FILL[key];
+  picked = key;
+  $("#modality").value = f.modality;
+  $("#indication").value = f.indication;
+  $("#ind-code").textContent = f.code;
+  $("#phase").value = f.phase;
+  $("#exit").value = f.exit;
+  ["ep","comp","n","dur","cash","burn","committed","planned"].forEach(id => { $("#" + id).value = f[id]; });
+  $$("[data-case]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.case === key)));
+  checkRequired();
+}
+
+function checkRequired(){
+  const miss = [];
+  const set = (id, ok, label) => {
+    $(id).classList.toggle("bad", !ok);
+    if (!ok) miss.push(label);
+  };
+  set("#f-modality", !!$("#modality").value, "모달리티");
+  set("#f-indication", !!$("#indication").value.trim(), "적응증");
+  set("#f-phase", !!$("#phase").value, "개발 단계");
+  $("#run").disabled = miss.length > 0;
+  $("#why").textContent = miss.length
+    ? `${miss.join(" · ")}을 채우면 시작할 수 있습니다 — 남은 필수 ${miss.length}개`
+    : "필수 3항목이 모두 채워졌습니다";
+  $("#why").classList.toggle("warn", miss.length > 0);
+}
+
+document.addEventListener("click", e => {
+  const d = e.target.closest("[data-detail]");
+  if (d){
+    const box = document.getElementById("d-" + d.dataset.detail);
+    box.hidden = !box.hidden;
+    d.textContent = box.hidden ? "근거 보기" : "근거 접기";
+    return;
+  }
+  const go = e.target.closest("[data-go]");
+  if (go){ show(go.dataset.go); view("diagnose"); return; }
+  const vw = e.target.closest("[data-view]");
+  if (vw){ view(vw.dataset.view); return; }
+  const ro = e.target.closest("[data-reopen]");
+  if (ro){ view("diagnose"); fillInputs(ro.dataset.reopen); diagnose(ro.dataset.reopen); return; }
+  const st = e.target.closest("[data-stage]");
+  if (st){ stage(st.dataset.stage); return; }
+  const cs = e.target.closest("[data-case]");
+  if (cs){ fillInputs(cs.dataset.case); return; }
+  if (e.target.id === "run" || e.target.id === "retry"){ diagnose(picked); }
+});
+
+["#modality","#indication","#phase"].forEach(s => $(s).addEventListener("input", checkRequired));
+checkRequired();
+</script>
+</body></html>

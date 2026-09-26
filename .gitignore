@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.vercel/
+.env.local
+.env
+*.log
+
+# data/ 는 통째로 넣는다. 원본 자료(_orig)까지 포함해야 백업이 된다.
+# 배포에는 next.config.ts 가 필요한 것만 골라 싣는다.
+tsconfig.tsbuildinfo

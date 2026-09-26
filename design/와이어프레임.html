@@ -1,0 +1,508 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUYO 화면 흐름 와이어프레임</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F4F5F7; --paper:#FFFFFF; --ghost:#EDEFF3;
+  --line:#C9CED8; --line-2:#9AA3B2; --ink:#1A2030; --ink-2:#5A6475; --ink-3:#8A93A3;
+  --mark:#2C4E8F; --mark-bg:#E7EDF8;
+  --sans:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151E; --paper:#1A202C; --ghost:#232A38;
+    --line:#39414F; --line-2:#5A6475; --ink:#E9ECF2; --ink-2:#AEB6C4; --ink-3:#7E8796;
+    --mark:#9CB8EC; --mark-bg:#1F2A3E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151E; --paper:#1A202C; --ghost:#232A38;
+  --line:#39414F; --line-2:#5A6475; --ink:#E9ECF2; --ink-2:#AEB6C4; --ink-3:#7E8796;
+  --mark:#9CB8EC; --mark-bg:#1F2A3E;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6}
+.wrap{max-width:1140px;margin:0 auto;padding-inline:16px;padding-block:24px 64px}
+h1{font-size:24px;font-weight:600;margin:0 0 6px}
+h2{font-size:17px;font-weight:600;margin:0}
+.lede{color:var(--ink-2);margin:0 0 28px;max-width:62ch}
+
+/* 흐름도 */
+.flow{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:34px;overflow-x:auto}
+.flow pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.9;color:var(--ink-2);white-space:pre}
+
+/* 프레임 */
+.frame{background:var(--paper);border:1px solid var(--line);border-radius:10px;margin-bottom:26px;overflow:hidden}
+.frame-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--line);background:var(--ghost)}
+.tag{font-family:var(--mono);font-size:11.5px;color:var(--mark);background:var(--mark-bg);
+  border:1px solid var(--line);border-radius:4px;padding:2px 8px}
+.when{font-size:12.5px;color:var(--ink-3)}
+.frame-body{display:grid;grid-template-columns:1fr 280px;gap:0}
+@media (max-width:860px){.frame-body{grid-template-columns:1fr}}
+.canvas{padding:18px;border-right:1px solid var(--line)}
+@media (max-width:860px){.canvas{border-right:0;border-bottom:1px solid var(--line)}}
+.notes{padding:18px;font-size:13px}
+.notes b{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.notes ol{margin:0;padding-left:18px;color:var(--ink-2)}
+.notes li{margin-bottom:6px}
+.notes li::marker{color:var(--mark);font-weight:600}
+
+/* 와이어 요소 */
+.wire{border:1px solid var(--line-2);border-radius:6px;background:var(--paper)}
+.box{border:1px dashed var(--line-2);border-radius:5px;background:var(--ghost);
+  padding:9px 11px;font-size:12.5px;color:var(--ink-2);min-height:38px;display:flex;flex-direction:column;justify-content:center}
+.box .lbl{font-size:11px;color:var(--ink-3)}
+.solid{border-style:solid}
+.filled{background:var(--line-2);color:var(--paper);border-color:var(--line-2);align-items:center;justify-content:center;font-weight:500}
+.bar{height:10px;border-radius:5px;background:var(--ghost);border:1px dashed var(--line-2)}
+.bar.w60{width:60%} .bar.w40{width:40%} .bar.w80{width:80%}
+.stack{display:flex;flex-direction:column;gap:9px}
+.row{display:flex;gap:9px}
+.row > *{flex:1}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+@media (max-width:560px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+.screen{padding:12px;background:var(--paper);border:1px solid var(--line-2);border-radius:8px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:12px;font-size:12px;color:var(--ink-3)}
+.sect{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin:12px 0 6px}
+.sect:first-child{margin-top:0}
+.pin{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;
+  background:var(--mark);color:#fff;font-size:11px;font-family:var(--mono);margin-right:6px;flex:none}
+:root[data-theme="dark"] .pin,:root:not([data-theme="light"]) .pin{color:#11151E}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .pin{color:#fff}}
+.side{display:flex;gap:12px;align-items:flex-start}
+.side > .main{flex:1;min-width:0}
+.side > .rail{width:150px;flex:none}
+@media (max-width:560px){.side{flex-direction:column}.side > .rail{width:100%}}
+.card-ghost{border:1px dashed var(--line-2);border-radius:6px;padding:10px;min-height:96px;
+  display:flex;flex-direction:column;gap:7px;background:var(--paper)}
+.card-ghost.empty{background:var(--ghost)}
+.chip{display:inline-block;border:1px solid var(--line-2);border-radius:999px;padding:1px 9px;font-size:11px;color:var(--ink-2)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--ink-2);
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:30px}
+.legend span{display:flex;align-items:center;gap:7px}
+.sw{width:22px;height:14px;border-radius:3px}
+.sw.dash{border:1px dashed var(--line-2);background:var(--ghost)}
+.sw.sol{border:1px solid var(--line-2);background:var(--paper)}
+.sw.fil{background:var(--line-2)}
+.foot{border-top:1px solid var(--line);margin-top:34px;padding-top:18px;color:var(--ink-2);font-size:13px}
+.foot h2{margin-bottom:10px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);word-break:keep-all}
+th{font-size:12px;color:var(--ink-3);font-weight:500}
+</style>
+
+<div class="wrap">
+  <h1>BUYO 화면 흐름 와이어프레임</h1>
+  <p class="lede">랜딩 1개와 도구 화면 2개, 상태까지 합쳐 9장입니다. 구조만 표시한 문서이며 색·글꼴·간격은 시안에서 정합니다. 기준 해상도는 노트북 1366×768입니다.</p>
+
+  <div class="legend">
+    <span><i class="sw dash"></i> 내용이 들어갈 자리</span>
+    <span><i class="sw sol"></i> 조작할 수 있는 요소</span>
+    <span><i class="sw fil"></i> 주요 버튼</span>
+    <span><i class="pin">1</i> 오른쪽 설명 번호</span>
+  </div>
+
+  <div class="flow">
+<pre>[L1] 랜딩 — 소개 · 작동 방식 3단계 · 시작 버튼
+   │  진단 시작
+   ▼
+[S1] 입력 화면(빈 상태)
+   │  시연 사례 칩 ───────────────┐
+   │                              ▼
+   │                        [S2] 입력 채워짐
+   │                              │
+   └──── 직접 입력 ───────────────┘
+                                  │ 필수 3항목 미입력 → [S3] 검증 표시
+                                  │ 진단 시작
+                                  ▼
+                            [S4] 진행 중
+                                  │
+              ┌───────────────────┼───────────────────┐
+              ▼                   ▼                   ▼
+        [S5] 결과 기본      [S7] 일부 근거 없음   [S8] 조회 실패
+              │
+              ├─ 근거 보기 → [S6] 근거 펼침
+              └─ 다시 입력 → [S2]</pre>
+  </div>
+
+  <!-- L1 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">L1</span> 랜딩</h2>
+      <span class="when">주소로 처음 들어왔을 때 · 발표의 첫 화면</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="topbar"><span>로고 · 서비스명</span><div class="box wire solid" style="min-height:28px;flex:0 0 100px;font-size:11px">진단 시작</div></div>
+          <div class="stack" style="align-items:center;text-align:center;padding:18px 0 10px">
+            <div class="box" style="max-width:520px;min-height:52px;border:0;background:transparent;font-size:15px">
+              한 줄 소개 — 임상 진입 전에 이 설계로 사업이 되는지 근거와 함께 확인합니다
+            </div>
+            <div class="box" style="max-width:420px;min-height:34px;border:0;background:transparent"><span class="lbl">누구를 위한 서비스인지 한 줄 더</span></div>
+            <div class="box filled" style="min-height:42px;max-width:160px">진단 시작</div>
+          </div>
+          <div class="sect">작동 방식 3단계</div>
+          <div class="g3">
+            <div class="card-ghost">
+              <span class="chip">1</span>
+              <b style="font-size:12.5px">약과 설계를 입력</b>
+              <div class="box" style="min-height:44px">약물 종류·적응증·단계와 설계·재무 값을 적는 화면 그림</div>
+            </div>
+            <div class="card-ghost">
+              <span class="chip">2</span>
+              <b style="font-size:12.5px">조건에 맞는 근거를 찾음</b>
+              <div class="box" style="min-height:44px">공개 임상·공시 자료와 판단 기준 문장을 고르는 과정 그림</div>
+            </div>
+            <div class="card-ghost">
+              <span class="chip">3</span>
+              <b style="font-size:12.5px">여섯 관점으로 확인</b>
+              <div class="box" style="min-height:44px">카드 6장과 근거 보기 그림</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>한 화면에 끝냅니다. 스크롤은 3단계까지만 내려가면 됩니다.</li>
+          <li>시작 버튼은 상단 바와 첫 화면 가운데, 두 곳만 둡니다. 3단계 설명 아래에는 두지 않습니다.</li>
+          <li>3단계 그림은 실제 화면 캡처를 씁니다. 아이콘만 있으면 무슨 서비스인지 전달되지 않습니다.</li>
+          <li>가격·문의·회원가입은 넣지 않습니다. 이번 범위 밖입니다.</li>
+          <li>발표는 이 화면에서 시작합니다. 제품 설명과 시연이 한 흐름으로 이어집니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S1 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S1</span> 입력 화면 — 빈 상태</h2>
+      <span class="when">랜딩에서 진단 시작을 눌렀을 때</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="topbar"><span>로고 · 서비스명</span><span>데이터 기준일</span></div>
+          <div class="stack" style="max-width:560px;margin:0 auto">
+            <div class="box" style="border:0;background:transparent;text-align:center;min-height:30px">진단할 파이프라인을 입력해 주세요</div>
+            <div class="wire solid" style="padding:14px;border-radius:8px">
+              <div class="stack">
+                <div class="sect">필수</div>
+                <div class="g2">
+                  <div class="box wire solid">약물 종류 <span class="lbl">12종 중 택 1</span></div>
+                  <div class="box wire solid">적응증 <span class="lbl">자동완성</span></div>
+                  <div class="box wire solid">개발 단계</div>
+                  <div class="box wire solid">출구 경로</div>
+                </div>
+                <div class="sect">설계안 · 선택</div>
+                <div class="g4">
+                  <div class="box">평가변수</div><div class="box">대조군</div>
+                  <div class="box">대상자 수</div><div class="box">예상 기간</div>
+                </div>
+                <div class="sect">재무 · 선택</div>
+                <div class="g4">
+                  <div class="box">현금</div><div class="box">월 소진</div>
+                  <div class="box">확정 조달</div><div class="box">예정 조달</div>
+                </div>
+                <div class="box" style="min-height:28px">업로드 미지원 안내 한 줄</div>
+                <div class="box filled" style="min-height:42px">진단 시작 (비활성)</div>
+                <div class="box" style="border:0;background:transparent;min-height:20px;text-align:center"><span class="lbl">약물 종류·적응증·개발 단계를 채우면 눌립니다</span></div>
+              </div>
+            </div>
+            <div class="box" style="border:0;background:transparent;text-align:center;min-height:22px"><span class="lbl">예시로 먼저 보기</span></div>
+            <div class="row" style="justify-content:center">
+              <div class="box wire solid" style="min-height:32px;font-size:12px">A. 공개 초기 자산</div>
+              <div class="box wire solid" style="min-height:32px;font-size:12px">B. 희귀질환 자산</div>
+              <div class="box wire solid" style="min-height:32px;font-size:12px">C. 익명 비상장</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>가운데 정렬 카드 하나로 놓습니다. 좌우에 다른 요소를 두지 않습니다.</li>
+          <li>필수 4칸을 위에, 선택 8칸을 아래에 둡니다. 묶음마다 필수·선택을 적습니다.</li>
+          <li>시연 사례는 카드 아래에 칩으로 놓습니다. "예시로 먼저 보기"라고 적어 발표용 장치로 보이지 않게 합니다.</li>
+          <li>진단 버튼은 비활성으로 시작하고, 왜 눌리지 않는지 바로 아래에 적습니다.</li>
+          <li>카드 폭은 560px 안팎으로 잡습니다. 더 넓으면 한 줄이 길어져 읽기 어렵습니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S2</span> 입력 화면 — 값이 채워진 상태</h2>
+      <span class="when">사례 버튼을 눌렀거나 직접 입력했을 때</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="topbar"><span>로고 · 서비스명</span><span>데이터 기준일</span></div>
+          <div class="stack" style="max-width:560px;margin:0 auto">
+            <div class="wire solid" style="padding:14px;border-radius:8px">
+              <div class="stack">
+                <div class="g2">
+                  <div class="box wire solid">단일항체 <span class="lbl">선택됨</span></div>
+                  <div class="box wire solid">HER2 양성 유방암 <span class="lbl">코드 잡힘 · 질환군 항암</span></div>
+                  <div class="box wire solid">임상 2상</div>
+                  <div class="box wire solid">기술이전</div>
+                </div>
+                <div class="g4">
+                  <div class="box solid">ORR</div><div class="box solid">단일군</div>
+                  <div class="box solid">60</div><div class="box solid">24</div>
+                </div>
+                <div class="g4">
+                  <div class="box solid">18 <span class="lbl">공시 기준</span></div>
+                  <div class="box solid">1.5</div><div class="box solid">0</div><div class="box solid">30</div>
+                </div>
+                <div class="box" style="min-height:28px">부족액은 현금과 확정 조달만 더해 계산한다는 고정 문구</div>
+                <div class="box filled" style="min-height:42px">진단 시작</div>
+              </div>
+            </div>
+            <div class="row" style="justify-content:center">
+              <div class="box wire solid" style="min-height:32px;font-size:12px;border-width:2px">A. 선택됨</div>
+              <div class="box wire solid" style="min-height:32px;font-size:12px">B</div>
+              <div class="box wire solid" style="min-height:32px;font-size:12px">C</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>사례 칩은 값만 채우고 진단은 하지 않습니다. 발표자가 직접 누릅니다.</li>
+          <li>적응증 아래에 잡힌 코드와 질환군을 표시합니다. 검색이 무엇으로 걸리는지 보여 주는 부분입니다.</li>
+          <li>공시에서 채운 값에는 배지를 붙여 직접 입력값과 구분합니다.</li>
+          <li>선택된 사례 버튼은 테두리로 표시합니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S3</span> 입력 화면 — 필수 항목 미입력</h2>
+      <span class="when">적응증을 비운 채 진단을 시도했을 때</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="stack">
+            <div class="g2">
+              <div class="box wire solid">단일항체</div>
+              <div class="box wire solid" style="border-color:var(--mark);border-width:2px">적응증 <span class="lbl" style="color:var(--mark)">적응증을 입력해 주세요</span></div>
+            </div>
+            <div class="row" style="align-items:center">
+              <div class="box filled" style="flex:0 0 130px;min-height:40px">진단 시작 (비활성)</div>
+              <div class="box" style="border:0;background:transparent">남은 필수 항목 1개</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>오류를 경고창으로 띄우지 않고 해당 칸 아래에 적습니다.</li>
+          <li>무엇이 몇 개 남았는지 버튼 옆에 적습니다.</li>
+          <li>자동완성에서 코드가 잡히지 않아도 진단은 가능합니다. 질환군으로 넓혀 찾습니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S4</span> 진행 중</h2>
+      <span class="when">진단 시작을 누른 뒤 결과가 나오기 전까지</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="stack">
+            <div class="box" style="min-height:30px">입력 화면 그대로 유지 (칸은 잠금)</div>
+            <div class="box filled" style="flex:0 0 130px;min-height:40px;max-width:130px">진행 중</div>
+            <div class="bar w60"></div>
+            <div class="box" style="border:0;background:transparent;min-height:20px">조건에 맞는 판단 기준 문장을 찾고 있습니다</div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>별도 화면으로 넘기지 않습니다. 입력 화면 위에서 진행 막대만 보여 줍니다.</li>
+          <li>3초를 넘겨도 중단하지 않고 계속 기다립니다.</li>
+          <li>진행 중에는 버튼을 다시 누를 수 없게 합니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S5</span> 결과 화면 — 기본</h2>
+      <span class="when">여섯 관점에 근거가 모두 있을 때</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="topbar">
+            <span><span class="chip">단일항체</span> <span class="chip">HER2 양성 유방암</span> <span class="chip">2상</span></span>
+            <span>기준일 · 다시 입력</span>
+          </div>
+          <div class="g3">
+            <div class="card-ghost"><div class="row"><b style="font-size:12.5px">임상</b><span style="text-align:right" class="chip">주의</span></div><div class="bar w80"></div><div class="bar w60"></div><div class="lbl">출처 · 근거 보기</div></div>
+            <div class="card-ghost"><div class="row"><b style="font-size:12.5px">시장</b><span style="text-align:right" class="chip">양호</span></div><div class="bar w80"></div><div class="bar w40"></div><div class="lbl">출처 · 근거 보기</div></div>
+            <div class="card-ghost"><div class="row"><b style="font-size:12.5px">규제</b><span style="text-align:right" class="chip">주의</span></div><div class="bar w80"></div><div class="bar w60"></div><div class="lbl">출처 · 근거 보기</div></div>
+            <div class="card-ghost">
+              <div class="row"><b style="font-size:12.5px">재무</b><span style="text-align:right" class="chip">주의</span></div>
+              <div class="g2"><div class="box" style="min-height:30px">버틸 기간</div><div class="box" style="min-height:30px">다음 목표</div>
+              <div class="box" style="min-height:30px">필요 자금</div><div class="box" style="min-height:30px">부족액</div></div>
+              <div class="lbl">값 출처 배지 · 환율 기준</div>
+            </div>
+            <div class="card-ghost"><div class="row"><b style="font-size:12.5px">특허</b><span style="text-align:right" class="chip">양호</span></div><div class="bar w80"></div><div class="lbl">출처 · 근거 보기</div></div>
+            <div class="card-ghost empty"><div class="row"><b style="font-size:12.5px">뉴스</b><span style="text-align:right" class="chip">근거 없음</span></div><div class="box" style="border:0;background:transparent">이 관점의 판단 기준이 아직 없습니다</div></div>
+          </div>
+          <div class="sect">유사 파이프라인 3건</div>
+          <div class="box" style="min-height:70px">표 — 약물 · 의뢰 회사 · 적응증 · 단계 · 상태 · 원천 링크</div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>카드 6개가 2행 3열로 한 화면에 들어가야 합니다. 스크롤 없이 보이는 것이 기준입니다.</li>
+          <li>관점 순서는 고정입니다. 임상 → 시장 → 규제 → 재무 → 특허 → 뉴스.</li>
+          <li>재무 카드만 구조가 다릅니다. 수치 4칸이 먼저 오고 근거가 뒤에 옵니다.</li>
+          <li>판정은 색 점과 글자를 함께 씁니다. 빔프로젝터에서 색이 흐려도 읽혀야 합니다.</li>
+          <li>유사 파이프라인 표는 카드 아래에 둡니다. 가로로 밀어 볼 수 있게 합니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S6</span> 결과 화면 — 근거 펼침</h2>
+      <span class="when">근거 보기를 눌렀을 때</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="card-ghost" style="max-width:430px">
+            <div class="row"><b style="font-size:12.5px">임상</b><span style="text-align:right" class="chip">주의</span></div>
+            <div class="bar w80"></div>
+            <div class="box" style="border-style:solid;min-height:30px">근거 접기</div>
+            <div class="box" style="min-height:120px">
+              문장 원문<br>출처 주소 (새 창)<br>신뢰 등급 1·2·3<br>유효기간<br>확률 구분 (누적/조건부)<br>관련 임상시험 번호<br>임시값 배지
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>카드 안에서 펼칩니다. 새 창이나 모달을 쓰지 않습니다.</li>
+          <li>펼쳐도 옆 카드의 위치가 흔들리지 않게 합니다.</li>
+          <li>출처 주소는 새 창으로 엽니다. 발표 중 화면을 잃지 않기 위해서입니다.</li>
+          <li>임시값에는 배지를 붙입니다. 1차 출처를 아직 확인하지 않은 값입니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S7</span> 결과 화면 — 근거가 여러 곳에 없을 때</h2>
+      <span class="when">판단 문장이 아직 적은 질환을 넣었을 때</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="g3">
+            <div class="card-ghost"><div class="row"><b style="font-size:12.5px">임상</b><span style="text-align:right" class="chip">주의</span></div><div class="bar w80"></div></div>
+            <div class="card-ghost empty"><div class="row"><b style="font-size:12.5px">시장</b><span style="text-align:right" class="chip">근거 없음</span></div><div class="box" style="border:0;background:transparent">판단 기준이 아직 없습니다</div></div>
+            <div class="card-ghost"><div class="row"><b style="font-size:12.5px">규제</b><span style="text-align:right" class="chip">양호</span></div><div class="bar w60"></div></div>
+            <div class="card-ghost">
+              <div class="row"><b style="font-size:12.5px">재무</b><span style="text-align:right" class="chip">주의</span></div>
+              <div class="g2"><div class="box" style="min-height:30px">버틸 기간 12개월</div><div class="box" style="min-height:30px">다음 목표</div>
+              <div class="box empty" style="min-height:30px;background:var(--ghost)">필요 자금 — 근거 없음</div>
+              <div class="box empty" style="min-height:30px;background:var(--ghost)">부족액 — 계산 안 함</div></div>
+            </div>
+            <div class="card-ghost empty"><div class="row"><b style="font-size:12.5px">특허</b><span style="text-align:right" class="chip">근거 없음</span></div><div class="box" style="border:0;background:transparent">판단 기준이 아직 없습니다</div></div>
+            <div class="card-ghost empty"><div class="row"><b style="font-size:12.5px">뉴스</b><span style="text-align:right" class="chip">근거 없음</span></div><div class="box" style="border:0;background:transparent">판단 기준이 아직 없습니다</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>빈칸으로 두지 않습니다. 회색 카드와 문장으로 채웁니다.</li>
+          <li>재무 카드는 부분만 빌 수 있습니다. 버틸 기간은 나오고 필요 자금만 비는 경우입니다.</li>
+          <li>비용 문장이 하나라도 없으면 부족액을 계산하지 않습니다. 짐작한 금액을 넣지 않습니다.</li>
+          <li>발표에서 이 화면이 나올 수 있으므로 설명할 말을 미리 정해 둡니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="frame">
+    <div class="frame-head">
+      <h2><span class="tag">S8</span> 조회 실패</h2>
+      <span class="when">검색 서버나 외부 API가 응답하지 않을 때</span>
+    </div>
+    <div class="frame-body">
+      <div class="canvas">
+        <div class="screen">
+          <div class="stack" style="max-width:430px">
+            <div class="box" style="min-height:66px">결과를 불러오지 못했습니다<br><span class="lbl">잠시 후 다시 시도해 주세요. 계속되면 자료 수집 상태를 확인해야 합니다.</span></div>
+            <div class="row">
+              <div class="box filled" style="min-height:38px;flex:0 0 110px">다시 시도</div>
+              <div class="box wire solid" style="min-height:38px;flex:0 0 110px">입력으로</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <b>확인할 것</b>
+        <ol>
+          <li>무엇이 잘못됐고 무엇을 하면 되는지 함께 적습니다.</li>
+          <li>다시 시도 버튼을 반드시 둡니다.</li>
+          <li>입력값은 지우지 않습니다. 돌아가면 그대로 남아 있어야 합니다.</li>
+          <li>발표에서는 미리 계산한 결과를 쓰므로 이 화면이 나올 일은 적지만, 없으면 안 됩니다.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <h2>이번 범위에 넣지 않는 화면</h2>
+    <table>
+      <thead><tr><th>화면</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>로그인·회원가입</td><td>계정 기능이 범위 밖입니다. 주소를 아는 사람만 들어옵니다.</td></tr>
+        <tr><td>가격·문의·팀 소개 페이지</td><td>랜딩은 한 화면으로 끝냅니다. 나머지는 범위 밖입니다.</td></tr>
+        <tr><td>파일 업로드·추출 확인</td><td>자동 채움이 이번 버전에서 빠졌습니다.</td></tr>
+        <tr><td>최근 조회 목록</td><td>있으면 좋은 항목입니다. 일정이 밀리면 가장 먼저 뺍니다.</td></tr>
+        <tr><td>결과 PDF 저장·공유</td><td>의뢰서에서 제외한 항목입니다.</td></tr>
+        <tr><td>모바일 화면</td><td>발표는 노트북 기준입니다. 좁아지면 카드가 세로로 쌓이는 정도만 처리합니다.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body></html>

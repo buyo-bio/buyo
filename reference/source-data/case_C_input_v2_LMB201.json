@@ -1,0 +1,119 @@
+{
+  "case_id": "C",
+  "label": "가상 사례(시연용) — (주)루미어스바이오 LMB-201, 예시 보고서 BUYO-DX-S01(2026.9.25) 기준",
+  "company": {
+    "name": "(주)루미어스바이오(가상)",
+    "listed": false,
+    "founded": 2022,
+    "employees": 14
+  },
+  "modality": "ADC",
+  "modality_tag": "ADC",
+  "modality_note": "특허 분류상 ADC·단클론항체 성격 혼재, 회사 확인으로 ADC",
+  "indication": {
+    "text": "CLDN18.2 양성 위암·위식도접합부 선암, 2차 이상",
+    "code": "MeSH:D013274",
+    "disease_group": "항암",
+    "subgroup_hint": "Oncology—Solid",
+    "rare": "N"
+  },
+  "phase": "preclinical",
+  "current_status": "GLP 독성시험 진행 중",
+  "ind_target": "2027-05",
+  "exit_route": "license_out",
+  "exit_target": "P1 완료 후 기술이전",
+  "design_A": {
+    "trial": "P1 용량증량+확장",
+    "planned_n": 36,
+    "sites": 4,
+    "regions": [
+      "KR"
+    ],
+    "planned_duration_months": 24,
+    "blinding": "open_label",
+    "comparator": "single_arm",
+    "primary_endpoint": "DLT·RP2D",
+    "secondary_endpoint": "ORR",
+    "population": "biomarker_selected",
+    "expansion_cohort_n": 12
+  },
+  "design_B": {
+    "trial": "설계안 A + 췌장암 확장 코호트",
+    "planned_n": 54,
+    "sites": 7,
+    "regions": [
+      "KR",
+      "US"
+    ],
+    "planned_duration_months": 30,
+    "second_indication": {
+      "text": "췌장암",
+      "code": "MeSH:D010190"
+    }
+  },
+  "finance": {
+    "cash_krw": 5800000000,
+    "restricted_cash_krw": 900000000,
+    "monthly_burn_krw": 310000000,
+    "burn_basis": "최근 6개월 영업현금유출 평균",
+    "committed_raise_krw": 0,
+    "planned_raise_krw": 15000000000,
+    "planned_raise_date": "2027-04",
+    "convertible_instruments": [
+      {
+        "type": "RCPS",
+        "amount_krw": 5800000000,
+        "issued": "2024-11"
+      }
+    ],
+    "as_of": "2026-08-31",
+    "provenance": "self_reported",
+    "badge": "가정값(시연)"
+  },
+  "patent": {
+    "substance_patent": {
+      "filed_pct": "2024-03",
+      "expiry_year_est": 2044,
+      "status": "심사 중"
+    },
+    "filings": [
+      {
+        "title": "항-CLDN18.2 항체 및 용도",
+        "ipc": "C07K16/28"
+      },
+      {
+        "title": "항체-약물 접합체 조성물",
+        "ipc": "A61K47/68"
+      },
+      {
+        "title": "캄토테신 유도체 링커-페이로드",
+        "ipc": "C07D491/22"
+      },
+      {
+        "title": "CLDN18.2 면역조직화학 검출 방법",
+        "ipc": "G01N33/574"
+      }
+    ],
+    "applicant_name": "(주)루미어스바이오(가상)",
+    "kipris_lookup": false
+  },
+  "backup_assets_n": 1,
+  "backup_assets_note": "LMB-305(탐색 단계)",
+  "expected_outputs": {
+    "FE-D01": "S2(RCPS 보유) — 희석·상환은 정식판",
+    "FE-D02": "1차 변곡점 IND_filing(8개월, 회사 계획), 2차 P2_PoC 아님 → P1 완료(기술이전 목표)",
+    "FE-A01": "(58−9)/3.1 = 15.8개월, 소진 2028-01",
+    "FE-A04": "조달 마감 2027-07 (F01-06 6개월)",
+    "FE-A05": "IND까지 15.8/8 = 1.98 양호; P1 완료까지 15.8/41.4 = 0.38 미달·조달 2회",
+    "FE-A02": "P1 25.3M$(DiMasi mean), 비임상 5.0M$(Paul)",
+    "FE-A03": "36 × 103,344$ = 3.72M$ 최소(F04-AS-1025)",
+    "CE-01": "ADC 누적 10.8%(C01-0103, n=184) / 고형암 4.6%(C01-0068, limited) / 항암 5.3%(C01-0012)",
+    "CE-02": "항암 P1→P2 2.7y(C02-0006), 승인까지 10.3y",
+    "CE-04": "C04-D08 바이오마커 선별 positive, C04-D10 항암 1상 neutral, C04-D02b 단일군 항암 neutral",
+    "FE-B10": "백업 1 → 단일자산 아님",
+    "RE-03": "US BPCIA 12y → 2049, KR 재심사 6y → 특허 2044가 실효",
+    "TE-03": "2044 − (2026+0.7+10.3) ≈ 7년",
+    "TE-02": "ADC 링커·페이로드 게이트키퍼(T02, SD3 M6) caution",
+    "TE-08": "IPC 4건 → T06 설명"
+  }
+}

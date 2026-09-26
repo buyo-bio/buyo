@@ -1,0 +1,434 @@
+version: 3.0
+chunk_id_pattern: ^[CMRFTN]\d{2}-\d{4}$
+layer_enum:
+- screening
+- valuation
+- scoring
+- parameter
+- variable
+- method
+- source
+- mapping
+- rule
+- manifest
+modality_enum:
+- small_molecule
+- antibody
+- antibody_mAb
+- antibody_bispecific
+- antibody_fragment
+- antibody_Fc_fusion
+- antibody_other
+- ADC
+- cell_therapy
+- cell_CART
+- cell_TCRT
+- cell_NK
+- cell_MSC
+- cell_iPSC
+- cell_somatic
+- cell_DC_CIK
+- cell_other
+- gene_therapy
+- peptide
+- vaccine
+- biosimilar
+- other
+phase_enum:
+- preclinical
+- P1
+- P2
+- P3
+- NDA
+- approved
+disease_group_enum:
+- 전체
+- 항암
+- 감염
+- 대사·내분비
+- 심혈관
+- 중추신경(신경)
+- 중추신경(정신)
+temporal_validity_rule:
+  benchmark_report: 데이터 종료연도 + 15년
+  statute: 개정 전까지 계속
+  industry_reference_cost: 규칙 제외, badge=industry_reference
+  unreported_data_period: 판정 보류, badge=data_period_unreported
+axes:
+  C:
+    name: 임상
+    domains:
+      C01:
+        name: 단계 전환 성공확률
+        question: 이 모달리티·질환군의 단계별 조건부/누적 성공확률은 얼마인가
+        source_kind: table
+        source_file: data/C/success_master.csv
+        mapping: mapping/C_table_to_chunk.yaml
+        layer: parameter
+        mvp: true
+        target_chunks: 180
+      C02:
+        name: 단계 소요 기간
+        question: 단계 전환에 몇 년이 걸리는가(프로그램 기준) / 시험 1건은 몇 년인가
+        source_kind: table
+        source_file: data/C/duration_master.csv
+        mapping: mapping/C_table_to_chunk.yaml
+        layer: parameter
+        mvp: true
+        target_chunks: 45
+      C03:
+        name: 단계 비용 벤치마크
+        question: 단계 진입 자산 1개의 산업 벤치마크 비용은 얼마인가(회사별 필요자금 아님)
+        source_kind: table
+        source_file: data/C/cost_master.csv
+        mapping: mapping/C_table_to_chunk.yaml
+        layer: parameter
+        mvp: true
+        target_chunks: 12
+      C04:
+        name: 해석·표시 규칙
+        question: 값을 어떻게 읽고 어떤 값을 기본으로 보여 주는가(누적 재곱 금지, 소표본 배지, 출처 우선순위, rare 둘째 줄)
+        source_kind: principle
+        source_file:
+        - data/C/cautions.csv
+        - data/C/decisions.csv
+        layer: rule
+        mvp: true
+        target_chunks: 45
+      C05:
+        name: 설계안 modifier
+        question: 평가변수·대조군·대상자 수가 성공확률을 어느 방향으로 움직이는가
+        source_kind: master_md
+        source_file: masters/C.md
+        layer: rule
+        mvp: false
+  M:
+    name: 시장·상업화
+    domains:
+      M01:
+        name: 약가·급여 채널
+        source_kind: master_md
+        source_file: masters/M.md
+        layer: rule
+        mvp: true
+        target_chunks: 15
+      M02:
+        name: 역학(유병·발생)
+        source_kind: table
+        source_file: data/M/epidemiology_master.csv
+        mapping: mapping/M_table_to_chunk.yaml
+        layer: parameter
+        mvp: true
+        target_chunks: 20
+        status: 표 미작성 — 이승현 신규 과제
+      M03:
+        name: 출구 경로(라이선싱 시점·업프론트 분포)
+        source_kind: table
+        source_file: data/M/deal_master.csv
+        mapping: mapping/M_table_to_chunk.yaml
+        layer: parameter
+        mvp: true
+        target_chunks: 20
+        note: T-SD5 20청크를 이 도메인으로 재태깅. 단일 대표값 금지
+      M04:
+        name: 경쟁구도
+        source_kind: master_md
+        source_file: masters/M.md
+        mvp: false
+      M05:
+        name: 피크매출
+        source_kind: master_md
+        source_file: masters/M.md
+        mvp: false
+  R:
+    name: 규제
+    domains:
+      R01:
+        name: 허가 경로(신약/자료제출/개량신약/바이오시밀러)
+        source_kind: master_md
+        source_file: masters/R.md
+        layer: rule
+        mvp: true
+        target_chunks: 25
+      R02:
+        name: 희귀·가속 지정과 독점권
+        source_kind: master_md
+        source_file: masters/R.md
+        layer: rule
+        mvp: true
+        target_chunks: 25
+      R03:
+        name: CMC·제조 위험 플래그
+        source_kind: master_md
+        source_file: masters/R.md
+        layer: rule
+        mvp: true
+        target_chunks: 5
+      R04:
+        name: 규제 위험 신호
+        source_kind: master_md
+        mvp: false
+      R05:
+        name: 지역 전략
+        source_kind: master_md
+        mvp: false
+  F:
+    name: 재무
+    domains:
+      F01:
+        name: 런웨이·조달 갭 표시 규칙
+        question: 현금·소진율로 런웨이를 계산하고 벤치마크(C03)와 나란히 보여 주는 규칙. MVP는 자동 gap 계산 없음
+        source_kind: principle
+        source_file: data/F/runway_rules.csv
+        layer: rule
+        mvp: true
+        target_chunks: 15
+      F02:
+        name: 딜텀·희석
+        source_kind: master_md
+        source_file: masters/F.md
+        mvp: false
+        note: 기존 F-D14 재태깅
+      F03:
+        name: 할인율·마진·침식·로열티·하방 파라미터
+        source_kind: principle
+        layer: parameter
+        mvp: true
+        target_chunks: 20
+        note: 기존 F-VAL-004/113/114/117/124/125·F-D12 재태깅
+      F04:
+        name: 비용 계수·환자당 비용·CMC·지연 계수
+        source_kind: table
+        source_file: data/F/cost_factors_master.csv
+        mapping: mapping/F_table_to_chunk.yaml
+        layer: parameter
+        mvp: true
+        target_chunks: 40
+        status: 신규 표 — 양식 대표 9/23, 출처 승현 9/30
+      F05:
+        name: 관리종목·기술특례 규칙
+        source_kind: principle
+        layer: rule
+        mvp: false
+        note: 기존 F-D10 재태깅
+      F06:
+        name: 비교군 선정·EV 브리지·공시 판정 규칙
+        source_kind: principle
+        source_file: data/F/comps_rules.csv
+        layer: rule
+        mvp: true
+        target_chunks: 10
+        status: 대표 작성 9/25
+      F07:
+        name: 산식 정의(method)
+        source_kind: registry
+        source_file: engines_registry.yaml
+        generator: expand_engines.py
+        layer: method
+        mvp: true
+        target_chunks: 35
+        note: 엔진과 1:1. 코드 엔진 목록과 집합 일치 검증
+  T:
+    name: 기술·특허
+    domains:
+      T01:
+        name: 모달리티 정의·하위 태그
+        source_kind: principle
+        source_file: data/T/modality_registry.csv
+        layer: mapping
+        mvp: true
+        target_chunks: 12
+      T02:
+        name: FTO 게이트키퍼
+        source_kind: master_md
+        source_file: masters/T.md
+        layer: rule
+        mvp: true
+        target_chunks: 8
+      T03:
+        name: 특허 강도·만료 정렬
+        source_kind: master_md
+        mvp: false
+      T04:
+        name: evidence_tier 부여 규칙
+        source_kind: principle
+        source_file: data/T/evidence_tier_rules.csv
+        layer: rule
+        mvp: true
+        target_chunks: 4
+  N:
+    name: 뉴스
+    domains:
+      N01:
+        name: 트리거 분류·유효기간 액션
+        source_kind: master_md
+        source_file: masters/N.md
+        mvp: false
+retag_existing:
+  F-D12:
+    to: F03
+    product_scope: both
+  F-VAL:
+    to: F03
+    product_scope: both
+  F-D05:
+    to: F02
+    product_scope: both
+  F-D10:
+    to: F05
+    product_scope: vc_listed
+  F-D14:
+    to: F02
+    product_scope: both
+  F-D11:
+    to: F01
+    product_scope: early_biotech
+  T-SD5:
+    to: M03
+    product_scope: both
+  T-SD1:
+    to: T01
+    product_scope: both
+  T-SD3:
+    to: T02
+    product_scope: both
+  default:
+    product_scope: vc_listed
+modality_subtags:
+  antibody:
+  - antibody_mAb
+  - antibody_bispecific
+  - antibody_fragment
+  - antibody_Fc_fusion
+  - antibody_other
+  cell_therapy:
+  - cell_CART
+  - cell_TCRT
+  - cell_NK
+  - cell_MSC
+  - cell_iPSC
+  - cell_somatic
+  - cell_DC_CIK
+  - cell_other
+modality_boundary_rules:
+- CAR-NK -> cell_NK
+- TIL -> cell_DC_CIK
+- 체외 유전자 교정 조혈모세포 -> cell_other (세포치료제). BIO Gene therapy 모집단과 범위가 겹칠 수 있음을 상세 근거에 표기
+- gene_therapy는 모달리티, 유전질환은 적응증 속성 (genetic 플래그 여부는 대표 보류)
+flags:
+  rare_flag:
+    values:
+    - Y
+    - N
+    definition: 미국 환자 20만 명 미만 또는 EU 유병률 1/2,000 (출처 기준). 국내 2만 명 기준은 판정에 쓰지 않음
+  oncology_scope:
+    values:
+    - incl_oncology
+    - non_oncology
+    - oncology_only
+display_rules:
+  probability_card:
+    대사·내분비:
+      default: Wong Metabolic/Endocrinology
+      detail:
+      - BIO Metabolic
+      - BIO Endocrine
+    심혈관:
+      default: BIO Cardiovascular
+      detail:
+      - Wong Cardiovascular
+    중추신경(신경):
+      default: BIO Neurology
+      detail:
+      - Wong CNS
+    중추신경(정신):
+      default: BIO Psychiatry
+      detail:
+      - Wong CNS
+    rare_Y:
+      first_line: 질환군 값
+      second_line_non_oncology:
+        default: BIO Rare diseases (non-oncology)
+        also: Wong Orphan—All except oncology
+      second_line_oncology: Wong Orphan—Overall
+      rule: 질환군 값과 희귀 값은 곱하거나 평균내지 않음
+  duration_card:
+    대사·내분비: 적응증이 내분비 질환이면 BIO Endocrine, 그 외 BIO Metabolic
+  source_priority: BIO 기본 / Wong 보조 — E#7 9/24 확정 전 임시 (C04 청크 임시 배지)
+  source_validity: 데이터 종료연도 + 15년. 경과 출처는 상세 근거만. 비용 출처 제외(산업 참고값)
+  cost:
+    default_statistic: mean
+    display_currency: BRDPI 환산 현재가 + '*' 표시, 상세에 2013년 원문값·지수·적용 연도·배수·갱신일
+    conversion_update: 매년 연초
+  finance_card_mvp: 자동 gap 없음 + 정식 버전 안내 문구
+table_schemas:
+  M02:
+  - record_id
+  - disease_text
+  - disease_code
+  - buyo_disease_group
+  - jurisdiction
+  - metric
+  - value
+  - unit
+  - reference_year
+  - population_note
+  - source
+  - source_page
+  - source_url
+  - source_verified
+  - evidence_tier
+  - rare_basis
+  - kr_patient_note
+  - note
+  M03:
+  - deal_id
+  - announce_date
+  - licensor
+  - licensor_country
+  - licensee
+  - asset
+  - modality
+  - disease_group
+  - phase_at_deal
+  - upfront_musd
+  - milestone_musd
+  - total_musd
+  - disclosure_status
+  - royalty_note
+  - territory
+  - deal_type
+  - source_url
+  - source_verified
+  - evidence_tier
+  - note
+  F01:
+  - rule_id
+  - condition
+  - display_rule
+  - rationale
+  - source
+  - flag_hint
+  - mvp
+  - evidence_tier
+  T01:
+  - tag
+  - parent_tag
+  - label_ko
+  - definition_ko
+  - definition_en
+  - examples
+  - input_label
+  - value_status
+  - note
+  T04:
+  - tier
+  - definition_ko
+  - examples
+  - promotion_rule
+domains_rules_sources:
+  C04_design: data/rules/C04_design_rules_v1.csv
+  F01: data/rules/F01_runway_rules_v1.csv
+  F06: data/rules/F06_comps_rules_v1.csv
+  T01: data/rules/T01_modality_registry_v1.csv
+  T04: data/rules/T04_evidence_tier_rules_v1.csv

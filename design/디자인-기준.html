@@ -1,0 +1,342 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUYO 디자인 기준</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --surface-2:#F7F9FC;
+  --line:#DCE2EC; --line-strong:#C3CCDA;
+  --ink:#16203A; --ink-2:#4C596F; --ink-3:#646F86;
+  --navy:#1F3C74; --navy-soft:#E8EEF9;
+  --ok:#1C7256; --ok-bg:#E4F1EB;
+  --warn:#8A5A10; --warn-bg:#F6EEDF;
+  --none:#5C687D; --none-bg:#ECEFF4;
+  --focus:#3D6BC4;
+  --radius:10px;
+  --sans:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1522; --surface:#171F30; --surface-2:#1C2435;
+    --line:#2A3448; --line-strong:#3A4761;
+    --ink:#E8ECF4; --ink-2:#B0BACB; --ink-3:#8492A8;
+    --navy:#8FB0E8; --navy-soft:#1E2A42;
+    --ok:#6BC3A1; --ok-bg:#16302A;
+    --warn:#D9A758; --warn-bg:#342A1A;
+    --none:#8492A8; --none-bg:#222B3D;
+    --focus:#7FA3E6;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1522; --surface:#171F30; --surface-2:#1C2435;
+  --line:#2A3448; --line-strong:#3A4761;
+  --ink:#E8ECF4; --ink-2:#B0BACB; --ink-3:#8492A8;
+  --navy:#8FB0E8; --navy-soft:#1E2A42;
+  --ok:#6BC3A1; --ok-bg:#16302A;
+  --warn:#D9A758; --warn-bg:#342A1A;
+  --none:#8492A8; --none-bg:#222B3D;
+  --focus:#7FA3E6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:28px 72px}
+h1{font-size:25px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600;margin:0 0 4px}
+h3{font-size:14px;font-weight:600;margin:0 0 8px}
+.lede{color:var(--ink-2);margin:0 0 30px;max-width:64ch}
+section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:20px}
+.shead{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.shead p{margin:0;font-size:12.5px;color:var(--ink-3)}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;word-break:keep-all}
+th{font-size:11.5px;letter-spacing:.04em;color:var(--ink-3);font-weight:500;text-transform:uppercase}
+code,.mono{font-family:var(--mono);font-size:12.5px}
+td code{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;white-space:nowrap}
+.sw{display:inline-block;width:26px;height:16px;border-radius:4px;border:1px solid var(--line-strong);vertical-align:-3px;margin-right:7px}
+ul,ol{margin:8px 0 0;padding-left:19px;color:var(--ink-2)}
+li{margin-bottom:5px}
+.pass{color:var(--ok);font-weight:600}
+.fail{color:var(--warn);font-weight:600}
+pre{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:14px;overflow-x:auto;
+  font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--ink-2);margin:10px 0 0}
+.demo{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:16px;margin-top:10px;
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:8px;padding:11px 20px;font:inherit;font-weight:500;cursor:pointer}
+:root[data-theme="dark"] .btn,:root:not([data-theme="light"]) .btn{color:#0F1522}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .btn{color:#fff}}
+.btn[disabled]{background:var(--none-bg);border-color:var(--line);color:var(--ink-3);cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--line-strong);color:var(--ink);border-radius:8px;padding:9px 15px;font:inherit;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:999px;
+  padding:4px 12px;font-size:12.5px;color:var(--ink-2);background:var(--surface)}
+.chip[aria-pressed="true"]{border-color:var(--navy);color:var(--navy);background:var(--navy-soft)}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px;font-size:12px;font-weight:500}
+.badge i{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.b-ok{color:var(--ok);background:var(--ok-bg)}
+.b-warn{color:var(--warn);background:var(--warn-bg)}
+.b-none{color:var(--none);background:var(--none-bg)}
+.scale{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.scale div{background:var(--navy-soft);border:1px solid var(--line);border-radius:4px;height:18px;
+  display:flex;align-items:center;padding-left:8px;font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card h4{margin:0 0 8px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.card .src{margin-top:10px;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.tile{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:8px 10px}
+.tile span{display:block;font-size:11px;color:var(--ink-3)}
+.tile b{font-family:var(--mono);font-size:15px;font-weight:500}
+.note{border-left:3px solid var(--navy);background:var(--navy-soft);border-radius:0 8px 8px 0;
+  padding:12px 14px;font-size:13px;color:var(--ink-2);margin-top:14px}
+.note b{color:var(--ink)}
+@media (max-width:620px){.tiles{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <h1>BUYO 디자인 기준</h1>
+  <p class="lede">색·글자·간격을 값으로 고정하고, 화면에 반복해서 나오는 요소 9종의 모양과 상태를 정합니다. 시안을 새로 그릴 때마다 판단하지 않기 위한 문서입니다. 기준 화면은 노트북 1366×768, 발표는 빔프로젝터입니다.</p>
+
+  <section>
+    <div class="shead"><h2>1. 세 가지 원칙</h2></div>
+    <ol>
+      <li><b>판정은 색만으로 알리지 않습니다.</b> 양호·주의·근거 없음은 색 점과 글자를 항상 함께 씁니다. 빔프로젝터에서 색이 흐려져도 읽혀야 합니다.</li>
+      <li><b>비어 있는 곳은 비워 두지 않습니다.</b> 근거가 없으면 회색 카드와 "판단 기준이 아직 없습니다" 문장을 넣습니다. 빈칸은 오류로 보입니다.</li>
+      <li><b>값은 토큰에서만 가져옵니다.</b> 색·간격·라운드를 코드에 직접 적지 않습니다. 아래 표에 없는 값이 필요하면 표를 먼저 고칩니다.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="shead"><h2>2. 색</h2><p>대비비는 WCAG 기준 · 본문 4.5 이상</p></div>
+
+    <h3>바탕과 글자</h3>
+    <table>
+      <thead><tr><th>토큰</th><th>밝은 화면</th><th>어두운 화면</th><th>쓰는 곳</th><th>대비</th></tr></thead>
+      <tbody>
+        <tr><td><code>--bg</code></td><td><i class="sw" style="background:#F2F4F8"></i>#F2F4F8</td><td>#0F1522</td><td>페이지 바탕</td><td>—</td></tr>
+        <tr><td><code>--surface</code></td><td><i class="sw" style="background:#FFFFFF"></i>#FFFFFF</td><td>#171F30</td><td>패널·카드</td><td>—</td></tr>
+        <tr><td><code>--surface-2</code></td><td><i class="sw" style="background:#F7F9FC"></i>#F7F9FC</td><td>#1C2435</td><td>입력칸·코드 블록</td><td>—</td></tr>
+        <tr><td><code>--ink</code></td><td><i class="sw" style="background:#16203A"></i>#16203A</td><td>#E8ECF4</td><td>본문·제목</td><td class="pass">16.1</td></tr>
+        <tr><td><code>--ink-2</code></td><td><i class="sw" style="background:#4C596F"></i>#4C596F</td><td>#B0BACB</td><td>보조 설명·라벨</td><td class="pass">7.1</td></tr>
+        <tr><td><code>--ink-3</code></td><td><i class="sw" style="background:#646F86"></i>#646F86</td><td>#8492A8</td><td>힌트·단위·기준일</td><td class="pass">5.1</td></tr>
+        <tr><td><code>--line</code></td><td><i class="sw" style="background:#DCE2EC"></i>#DCE2EC</td><td>#2A3448</td><td>구분선·카드 테두리</td><td>—</td></tr>
+        <tr><td><code>--line-strong</code></td><td><i class="sw" style="background:#C3CCDA"></i>#C3CCDA</td><td>#3A4761</td><td>입력칸 테두리</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:22px">주조색과 판정색</h3>
+    <table>
+      <thead><tr><th>토큰</th><th>밝은 화면</th><th>어두운 화면</th><th>쓰는 곳</th><th>대비</th></tr></thead>
+      <tbody>
+        <tr><td><code>--navy</code></td><td><i class="sw" style="background:#1F3C74"></i>#1F3C74</td><td>#8FB0E8</td><td>주요 버튼·링크·필수 표시</td><td class="pass">10.7</td></tr>
+        <tr><td><code>--navy-soft</code></td><td><i class="sw" style="background:#E8EEF9"></i>#E8EEF9</td><td>#1E2A42</td><td>안내 블록·선택된 칩</td><td>—</td></tr>
+        <tr><td><code>--ok / --ok-bg</code></td><td><i class="sw" style="background:#1C7256"></i>#1C7256</td><td>#6BC3A1</td><td>양호 배지</td><td class="pass">5.0</td></tr>
+        <tr><td><code>--warn / --warn-bg</code></td><td><i class="sw" style="background:#8A5A10"></i>#8A5A10</td><td>#D9A758</td><td>주의 배지</td><td class="pass">5.1</td></tr>
+        <tr><td><code>--none / --none-bg</code></td><td><i class="sw" style="background:#5C687D"></i>#5C687D</td><td>#8492A8</td><td>근거 없음 배지·비활성 버튼</td><td class="pass">4.9</td></tr>
+        <tr><td><code>--focus</code></td><td><i class="sw" style="background:#3D6BC4"></i>#3D6BC4</td><td>#7FA3E6</td><td>키보드 초점 테두리</td><td class="pass">5.1</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note"><b>목업에서 고친 값 3개.</b> 기존 <code>--ink-3 #77839A</code>는 3.8, <code>--warn #9A6516</code>은 4.3, <code>--none #6F7B90</code>은 3.7로 본문 기준 4.5에 못 미쳤습니다. 위 표의 값으로 바꿨고 목업에도 반영했습니다. 색감 차이는 눈으로 거의 구분되지 않습니다.</div>
+  </section>
+
+  <section>
+    <div class="shead"><h2>3. 글자</h2><p>본문 IBM Plex Sans KR · 숫자와 코드 IBM Plex Mono</p></div>
+    <table>
+      <thead><tr><th>이름</th><th>크기 / 굵기</th><th>쓰는 곳</th></tr></thead>
+      <tbody>
+        <tr><td>랜딩 제목</td><td>25px / 600</td><td>L1 한 줄 소개</td></tr>
+        <tr><td>화면 제목</td><td>19px / 600</td><td>서비스명, 결과 화면 머리</td></tr>
+        <tr><td>카드 제목</td><td>15px / 600</td><td>관점 카드 이름</td></tr>
+        <tr><td>본문</td><td>14px / 400</td><td>판단 기준 문장, 설명</td></tr>
+        <tr><td>라벨</td><td>12.5px / 400</td><td>입력칸 이름</td></tr>
+        <tr><td>힌트·단위</td><td>11.5px / 400 · mono</td><td>"12종 중 택 1", 기준일, 억 원</td></tr>
+        <tr><td>패널 머리</td><td>13px / 600 · 자간 .06em · 대문자</td><td>필수 / 설계안 / 재무</td></tr>
+        <tr><td>수치</td><td>15px / 500 · mono</td><td>재무 카드 4칸</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>줄 높이는 본문 1.6, 제목 1.3으로 둡니다.</li>
+      <li>숫자는 <code>--mono</code>로 쓰고 오른쪽 정렬합니다. 자릿수가 흔들리지 않습니다.</li>
+      <li>한글은 <code>word-break:keep-all</code>을 걸어 단어 중간에서 줄이 끊기지 않게 합니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="shead"><h2>4. 간격·모서리·움직임</h2></div>
+    <div class="scale">
+      <div style="width:4%">4 — 라벨과 입력칸 사이</div>
+      <div style="width:8%">8 — 칩 사이, 타일 사이</div>
+      <div style="width:12%">12 — 버튼 사이</div>
+      <div style="width:14%">14 — 입력칸 사이</div>
+      <div style="width:20%">20 — 패널 안쪽 여백</div>
+      <div style="width:24%">24 — 패널 사이, 좌우 단 사이</div>
+    </div>
+    <table style="margin-top:18px">
+      <thead><tr><th>항목</th><th>값</th></tr></thead>
+      <tbody>
+        <tr><td>패널·카드 모서리</td><td><code>--radius</code> 10px</td></tr>
+        <tr><td>버튼·입력칸 모서리</td><td>8px / 7px</td></tr>
+        <tr><td>배지·칩 모서리</td><td>999px (완전 둥글게)</td></tr>
+        <tr><td>그림자</td><td>쓰지 않습니다. 테두리 1px로만 구분합니다.</td></tr>
+        <tr><td>움직임</td><td>120ms 정도의 색 바뀜만 씁니다. 화면 밀기·튕김은 쓰지 않습니다.</td></tr>
+        <tr><td>좌우 여백</td><td>화면 가장자리 16px, 본문 최대 1180px</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="shead"><h2>5. 요소 9종</h2><p>와이어프레임 L1·S1~S8에 나오는 것 전부</p></div>
+
+    <h3>① 주요 버튼 · 보조 버튼</h3>
+    <div class="demo">
+      <button class="btn">진단 시작</button>
+      <button class="btn" disabled>진단 시작</button>
+      <button class="btn-ghost">다시 입력</button>
+    </div>
+    <table>
+      <thead><tr><th>상태</th><th>모양</th><th>동작</th></tr></thead>
+      <tbody>
+        <tr><td>기본</td><td>네이비 바탕 · 흰 글자 · 11/20 패딩</td><td>—</td></tr>
+        <tr><td>올림</td><td>바탕 5% 어둡게</td><td>커서 손가락</td></tr>
+        <tr><td>비활성</td><td><code>--none-bg</code> 바탕 · <code>--ink-3</code> 글자</td><td>누를 수 없음 · 아래에 이유 한 줄</td></tr>
+        <tr><td>진행 중</td><td>글자를 "진행 중"으로 바꾸고 진행 막대 표시</td><td>다시 누를 수 없음</td></tr>
+        <tr><td>초점</td><td><code>--focus</code> 2px 테두리 · 1px 띄움</td><td>Tab으로 이동</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:22px">② 입력칸 · 선택칸</h3>
+    <ul>
+      <li>바탕 <code>--surface-2</code>, 테두리 <code>--line-strong</code>, 패딩 9/10, 라운드 7px.</li>
+      <li>라벨은 위에, 힌트는 아래에 둡니다. 라벨 뒤 필수 표시는 <code>--navy</code> 별표입니다.</li>
+      <li>숫자 칸은 <code>inputmode="numeric"</code>과 mono 오른쪽 정렬입니다.</li>
+      <li>오류는 테두리를 <code>--warn</code>으로 바꾸고 칸 아래에 문장을 적습니다. 경고창을 띄우지 않습니다.</li>
+    </ul>
+
+    <h3 style="margin-top:22px">③ 판정 배지</h3>
+    <div class="demo">
+      <span class="badge b-ok"><i></i>양호</span>
+      <span class="badge b-warn"><i></i>주의</span>
+      <span class="badge b-none"><i></i>근거 없음</span>
+    </div>
+    <ul>
+      <li>점 하나와 글자를 항상 붙여서 씁니다. 점만 두지 않습니다.</li>
+      <li>세 가지 외의 값은 없습니다. 검색 결과가 0건이면 "근거 없음"입니다.</li>
+    </ul>
+
+    <h3 style="margin-top:22px">④ 관점 카드</h3>
+    <div class="cards">
+      <div class="card">
+        <h4>임상 <span class="badge b-warn"><i></i>주의</span></h4>
+        <p>2상에서 3상으로 넘어갈 확률은 항암 영역에서 낮은 편입니다.</p>
+        <div class="src">출처 · 근거 보기</div>
+      </div>
+      <div class="card" style="background:var(--none-bg)">
+        <h4>뉴스 <span class="badge b-none"><i></i>근거 없음</span></h4>
+        <p>이 관점의 판단 기준이 아직 없습니다.</p>
+      </div>
+    </div>
+    <ul>
+      <li>순서는 임상 → 시장 → 규제 → 재무 → 특허 → 뉴스로 고정합니다.</li>
+      <li>카드 높이는 서로 맞춥니다. 문장이 짧아도 카드가 줄어들지 않게 합니다.</li>
+      <li>근거 없음 카드는 바탕을 <code>--none-bg</code>로 깔아 한눈에 구분합니다.</li>
+    </ul>
+
+    <h3 style="margin-top:22px">⑤ 재무 카드</h3>
+    <div class="card" style="max-width:340px">
+      <h4>재무 <span class="badge b-warn"><i></i>주의</span></h4>
+      <div class="tiles">
+        <div class="tile"><span>버틸 기간</span><b>12개월</b></div>
+        <div class="tile"><span>다음 목표</span><b>2상 종료</b></div>
+        <div class="tile"><span>필요 자금</span><b>근거 없음</b></div>
+        <div class="tile"><span>부족액</span><b>계산 안 함</b></div>
+      </div>
+      <div class="src">값 출처 배지 · 환율 기준</div>
+    </div>
+    <ul>
+      <li>수치 4칸이 먼저 오고 근거가 뒤에 옵니다. 다른 카드와 구조가 다른 유일한 카드입니다.</li>
+      <li>값이 없는 칸은 숫자 자리에 "근거 없음"을 적습니다. 0이나 "-"를 쓰지 않습니다.</li>
+      <li>공시에서 가져온 값에는 작은 배지를 붙여 직접 입력한 값과 구분합니다.</li>
+    </ul>
+
+    <h3 style="margin-top:22px">⑥ 사례 칩</h3>
+    <div class="demo">
+      <button class="chip" aria-pressed="true">A. 공개 초기 자산</button>
+      <button class="chip" aria-pressed="false">B. 희귀질환 자산</button>
+      <button class="chip" aria-pressed="false">C. 익명 비상장</button>
+    </div>
+    <ul>
+      <li>누르면 입력값만 채웁니다. 진단은 실행하지 않습니다.</li>
+      <li>선택된 칩은 테두리와 글자를 <code>--navy</code>로 바꿉니다. <code>aria-pressed</code>를 같이 바꿉니다.</li>
+    </ul>
+
+    <h3 style="margin-top:22px">⑦ 근거 펼침</h3>
+    <ul>
+      <li>카드 안에서 펼칩니다. 모달이나 새 창을 쓰지 않습니다.</li>
+      <li>담는 항목: 문장 원문 · 출처 주소(새 창) · 신뢰 등급 1·2·3 · 유효기간 · 확률 구분 · 임상시험 번호 · 임시값 배지.</li>
+      <li>펼쳐도 옆 카드가 밀리지 않도록 카드 높이를 각자 늘립니다.</li>
+    </ul>
+
+    <h3 style="margin-top:22px">⑧ 진행 막대</h3>
+    <ul>
+      <li>입력 화면 위에 그대로 둡니다. 별도 화면으로 넘기지 않습니다.</li>
+      <li>아래에 "조건에 맞는 판단 기준 문장을 찾고 있습니다" 한 줄을 적습니다.</li>
+      <li>3초가 넘어도 끊지 않습니다. 진행 중에는 입력칸과 버튼을 잠급니다.</li>
+    </ul>
+
+    <h3 style="margin-top:22px">⑨ 안내·오류 블록</h3>
+    <div class="note"><b>안내.</b> 왼쪽에 네이비 3px 선, 바탕은 <code>--navy-soft</code>. 업로드 미지원 안내, 부족액 계산 기준 같은 고정 문구에 씁니다.</div>
+    <ul style="margin-top:12px">
+      <li>오류 블록은 같은 모양에 선만 <code>--warn</code>으로 바꿉니다.</li>
+      <li>무엇이 잘못됐는지와 무엇을 하면 되는지를 함께 적고, 다시 시도 버튼을 반드시 둡니다.</li>
+      <li>오류가 나도 입력값은 지우지 않습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="shead"><h2>6. 접근성 확인</h2><p>발표 환경 기준</p></div>
+    <table>
+      <thead><tr><th>항목</th><th>기준</th><th>상태</th></tr></thead>
+      <tbody>
+        <tr><td>본문 대비</td><td>4.5 이상</td><td class="pass">토큰 수정 후 통과</td></tr>
+        <tr><td>판정 구분</td><td>색 외에 글자도 함께</td><td class="pass">배지에 글자 포함</td></tr>
+        <tr><td>키보드</td><td>Tab으로 모든 조작 요소 도달 · 초점 테두리 보임</td><td class="pass"><code>:focus-visible</code> 적용</td></tr>
+        <tr><td>클릭 영역</td><td>높이 40px 이상</td><td class="pass">버튼 42px · 칩 32px <span class="mono">(칩은 예외)</span></td></tr>
+        <tr><td>어두운 화면</td><td>시스템 설정을 따라감</td><td class="pass">두 벌 토큰 모두 정의</td></tr>
+        <tr><td>화면 읽기</td><td>배지는 글자로 읽히고, 칩은 눌림 상태를 알림</td><td class="pass"><code>aria-pressed</code> 적용</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="shead"><h2>7. 그대로 붙여 쓰는 토큰</h2><p>globals.css 맨 위</p></div>
+<pre>:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --surface-2:#F7F9FC;
+  --line:#DCE2EC; --line-strong:#C3CCDA;
+  --ink:#16203A; --ink-2:#4C596F; --ink-3:#646F86;
+  --navy:#1F3C74; --navy-soft:#E8EEF9;
+  --ok:#1C7256; --ok-bg:#E4F1EB;
+  --warn:#8A5A10; --warn-bg:#F6EEDF;
+  --none:#5C687D; --none-bg:#ECEFF4;
+  --focus:#3D6BC4;
+  --radius:10px;
+  --sans:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1522; --surface:#171F30; --surface-2:#1C2435;
+    --line:#2A3448; --line-strong:#3A4761;
+    --ink:#E8ECF4; --ink-2:#B0BACB; --ink-3:#8492A8;
+    --navy:#8FB0E8; --navy-soft:#1E2A42;
+    --ok:#6BC3A1; --ok-bg:#16302A;
+    --warn:#D9A758; --warn-bg:#342A1A;
+    --none:#8492A8; --none-bg:#222B3D;
+    --focus:#7FA3E6;
+  }
+}
+:root[data-theme="dark"]{ /* 위 블록과 같은 값 */ }</pre>
+    <div class="note">Next.js로 옮길 때는 이 블록을 <code>app/globals.css</code>에 두고, 컴포넌트에서는 <code>var(--navy)</code>처럼만 씁니다. Tailwind를 쓴다면 <code>theme.extend.colors</code>에 같은 이름으로 연결해 두고 클래스에서 <code>text-ink-2</code>처럼 부릅니다.</div>
+  </section>
+</div>
+</body></html>

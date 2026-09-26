@@ -1,0 +1,23 @@
+﻿tag,parent_tag,label_ko,definition_ko,definition_en,examples,input_label,value_status,note
+small_molecule,,저분자 화합물,화학 합성으로 만드는 분자량 약 900 Da 이하의 의약품. 경구 투여가 많고 세포 내 표적에 접근 가능,"Small-molecule drug (synthetic, typically <900 Da)","키나제 억제제, 항생제, 대부분의 경구제",저분자 화합물,값 있음(C01·C02·C03),
+antibody,,항체(전체),면역글로불린 골격의 단백질 의약품. 하위 태그가 없으면 단클론항체 값을 배지와 함께 사용,Antibody-based therapeutic (parent tag),—,항체(종류 미정),값 없음 → 하위 태그 antibody_mAb 값 사용 + 배지,입력 화면에서는 하위 태그 선택을 권함
+antibody_mAb,antibody,단클론항체,단일 표적에 결합하는 단클론항체(IgG 등),Monoclonal antibody,"트라스투주맙, 펨브롤리주맙",단클론항체,값 있음(BIO 2021 Monoclonal antibody),
+antibody_bispecific,antibody,이중항체,두 표적(또는 두 에피토프)에 동시에 결합하는 항체,Bispecific antibody,"블리나투모맙, ABL503",이중항체,값 미확보 → antibody_mAb 값 + 배지,케이스 A 해당
+antibody_fragment,antibody,항체 절편,Fab·scFv·나노바디 등 절편 형태,"Antibody fragment (Fab, scFv, nanobody)",카플라시주맙,항체 절편,값 미확보 → antibody_mAb 값 + 배지,
+antibody_Fc_fusion,antibody,Fc 융합단백질,수용체·리간드를 Fc에 융합한 단백질,Fc-fusion protein,"에타너셉트, 아플리버셉트",Fc 융합단백질,값 미확보 → antibody_mAb 값 + 배지,
+antibody_other,antibody,기타 항체 형태,위에 없는 항체 유래 형태,Other antibody-derived format,—,기타 항체,값 미확보,
+ADC,,항체-약물 접합체,항체에 링커로 세포독성 약물을 결합한 의약품,Antibody-drug conjugate,"엔허투, 트로델비, LCB84",항체-약물 접합체(ADC),값 있음(BIO 2021 ADC),T02 링커·페이로드 게이트키퍼 규칙 적용
+cell_therapy,,세포치료제(전체),살아있는 세포를 체외 조작해 투여하는 의약품. 하위 태그가 없으면 값 미확보,Cell therapy (parent tag),—,세포치료제(종류 미정),값 없음 → 하위 태그 선택 요청,cell_CART만 값 있음
+cell_CART,cell_therapy,CAR-T,키메라 항원 수용체 T세포,CAR-T cell therapy,"킴리아, 예스카타",CAR-T,"값 있음(BIO 2021 CAR-T, 소표본 배지)",
+cell_TCRT,cell_therapy,TCR-T,T세포 수용체 조작 T세포,TCR-engineered T cell,테셀라(afami-cel),TCR-T,값 미확보,
+cell_NK,cell_therapy,NK 세포치료,자연살해세포 기반(CAR-NK 포함),NK cell therapy incl. CAR-NK,—,NK 세포치료(CAR-NK 포함),값 미확보,경계 규칙: CAR-NK → cell_NK
+cell_MSC,cell_therapy,중간엽 줄기세포,중간엽 줄기세포 기반,Mesenchymal stem cell therapy,카티스템,중간엽 줄기세포,값 미확보,
+cell_iPSC,cell_therapy,iPSC 유래,유도만능줄기세포 유래 세포,iPSC-derived cell therapy,—,iPSC 유래 세포,값 미확보,
+cell_somatic,cell_therapy,체세포 치료,연골·각질·섬유아세포 등 체세포,Somatic cell therapy,"콘드론, 케라힐",체세포 치료(연골·피부 등),값 미확보,
+cell_DC_CIK,cell_therapy,면역세포(DC·CIK·TIL),수지상세포·CIK·TIL 등 비유전자조작 면역세포,Dendritic cell / CIK / TIL,"이뮨셀엘씨, 리필류셀",면역세포(DC·CIK·TIL),값 미확보,경계 규칙: TIL → cell_DC_CIK
+cell_other,cell_therapy,기타 세포치료,체외 유전자 교정 조혈모세포 등,Other cell therapy incl. ex vivo gene-edited HSC,카스게비,기타 세포치료,값 미확보,BIO Gene therapy 모집단과 겹칠 수 있음을 상세에 표기
+gene_therapy,,유전자치료제,체내 유전물질 전달(AAV 등)·유전자 편집. 유전질환은 적응증 속성이며 모달리티가 아님,In vivo gene therapy / gene editing,"졸겐스마, 럭스터나",유전자치료제,값 있음(BIO 2021 Gene therapy),
+peptide,,펩타이드,아미노산 50개 이하 사슬의 의약품,Peptide therapeutic,"세마글루타이드, 리라글루타이드",펩타이드,값 있음(BIO 2021 Peptide),
+vaccine,,백신,감염병 예방·치료 백신(mRNA 포함),Vaccine (prophylactic/therapeutic),"코미나티, 가다실",백신,"값 있음(BIO 2021 Vaccine, Wong 참고)",
+biosimilar,,바이오시밀러,기허가 생물의약품과 비교동등성이 입증된 의약품. 성공확률 매트릭스 대신 전용 값,Biosimilar,"램시마, 유플라이마",바이오시밀러,값 있음(교안 기반 illustrative),FE-B01/B03-BIOSIM 변형 적용
+other,,기타(RNA·마이크로바이옴·방사성 등),위 분류에 없는 모달리티. 값 없음,"Other modality (RNA, microbiome, radiopharma, botanical)","온파트로(siRNA), 루타테라",기타,값 미확보,T07 힌트가 M9·M11·M12면 other

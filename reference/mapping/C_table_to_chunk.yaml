@@ -1,0 +1,152 @@
+# mapping/C_table_to_chunk.yaml — 과업 A·B 마스터 표 → parameter 청크 변환 규칙 · v0.1 (2026-09-21)
+# 원칙: 표의 값을 바꾸지 않는다. 계산·파생·평균 금지. 표에 없는 값은 청크에도 없다.
+# 변환기는 이 파일만 읽고 동작해야 하며, 같은 입력에 항상 같은 출력을 낸다(결정적).
+
+common:
+  trust_tier: 2                      # BIO 2021·Wong 2019·DiMasi 2016·Paul 2010 모두 표준 문헌
+  tenant_id: buyo_base
+  tenant_scope: base
+  do_not_train_flag: false
+  product_scope: both
+  jurisdiction: GLOBAL
+  override_capability: threshold_only
+  node_kind: parameter
+  flag_hint: null                    # parameter 청크는 플래그를 내지 않는다. 플래그는 C04 rule 청크가 낸다
+  evidence_tier: null
+  source_record_id: "<record_id>"    # 역추적 필수. 청크 ↔ 표 행 1:1
+
+eligibility:                         # 어느 행을 청크로 만드는가
+  success_master:
+    export_if: {mapping_status: [direct, limited]}
+    skip_if:   {mapping_status: [hold]}
+    illustrative_true_if: {mapping_status: [limited]}          # 화면에 "제한적 매핑" 배지
+    pending_if:                                                 # 질환군 목록 개정 전까지 MVP 인덱스 제외(pending 필드 기록)
+      buyo_disease_group: ["대사·심혈관", "희귀·유전", "중추신경"]
+  duration_master:
+    export_if: {mapping_status: [direct, limited], duration_value_type: [single, sum_of_phase_means]}
+    skip_if:   {mapping_status: [hold]}
+    skip_if_any: {duration_value_type: [assumption, difference, range, sum_of_phase_medians]}   # 가정값·차이값은 청크 아님
+    illustrative_true_if: {mapping_status: [limited]}
+  cost_master:
+    export_if: {benchmark_status: [primary_benchmark_candidate, limited_benchmark]}
+    skip_if:   {benchmark_status: [reference_only]}            # expected·capitalized·승인약당 비용은 청크로 만들지 않는다(F 시트 "비용 적용 금지")
+    badge_industry_reference: true
+
+value_maps:
+  modality:                          # buyo_modality → modality
+    "전체": null
+    "": null
+    "vaccine 후보": {value: vaccine, illustrative: true, note: "Wong Vaccines(Infectious Disease) → vaccine 후보 매핑"}
+    "antibody": {value: antibody, note: "E#1 결정 반영 전. BIO Monoclonal antibody 행은 antibody_mAb로 재지정 예정"}
+  disease_group:                     # buyo_disease_group → indication{text, code}
+    "전체": null
+    "": null
+    "항암":    {text: 항암, code: "MeSH:D009369"}
+    "감염":    {text: 감염, code: "MeSH:D003141"}
+    "중추신경": {text: 중추신경, code: "MeSH:D002493", pending: disease_group_revision}     # 신경/정신 분리 대기
+    "대사·심혈관": {text: 대사·심혈관, code: null, pending: disease_group_revision}          # 대사·내분비/심혈관 분리 대기
+    "희귀·유전": {text: 희귀·유전, code: null, pending: disease_group_revision, rare: Y}   # rare 플래그로 이관 대기
+  phase:
+    "P1": P1
+    "P2": P2
+    "P3": P3
+    "NDA/BLA": NDA
+    "Approval": approved
+    "APP": approved
+    "Preclinical": preclinical
+    "Submission to launch": NDA
+
+fields:
+  success_master:
+    domain_id: C01
+    layer: parameter
+    modality: {from: buyo_modality, map: modality}
+    indication: {from: buyo_disease_group, map: disease_group}
+    phase: {from: from_phase, map: phase}
+    phase_to: {from: to_phase, map: phase}
+    value: {from: probability, transform: "x*100, 소수 1자리"}
+    unit: "%"
+    probability_basis: {from: probability_basis}
+    reported_n: {from: reported_n}
+    badges:
+      - {if: "reported_n < 10", badge: small_sample}
+      - {if: "mapping_status == 'limited'", badge: limited_mapping}
+    as_of: {from: data_period, transform: "종료일 YYYY-MM"}
+    temporal_validity: {from: data_period, transform: "시작 YYYY-MM / 종료연도+15-12"}
+    source:
+      type: report
+      title: {from: source, map: {"BIO 2021": "Clinical Development Success Rates and Contributing Factors 2011–2020", "Wong 2019": "Estimation of clinical trial success rates and related parameters (Biostatistics 20(2), corrigendum 반영)"}}
+      publisher: {from: source, map: {"BIO 2021": "BIO·Informa Pharma Intelligence·QLS Advisors", "Wong 2019": "Biostatistics (Oxford)"}}
+      year: {from: source, map: {"BIO 2021": 2021, "Wong 2019": 2019}}
+      page: {from: source_page}
+      figure: {from: source_figure_table}
+      subgroup: {from: source_subgroup}
+      url: null                      # 이승현이 출처 목록에 URL 채우면 여기서 읽음
+    text_template: >
+      {source} {source_subgroup} 기준 {phase_from}→{phase_to} {basis_ko} 성공확률 {value}% (n={reported_n}, {n_type}, 데이터 기간 {data_period}, {source_page} {source_figure_table}).
+      산출 방식: {calculation_method}. 모집단: {source_scope_note} 해석: {interpretation_note}
+    note: {from: discrepancy_note}
+  duration_master:
+    domain_id: C02
+    layer: parameter
+    modality: null                   # 기간 표에는 모달리티 열이 없음
+    indication: {from: source_subgroup, map: disease_group_from_subgroup}   # 'All indications'→null, 'Oncology'→항암 등. 매핑 없으면 null + note
+    phase: {from: from_phase, map: phase}
+    phase_to: {from: to_phase, map: phase}
+    value: {from: duration_value}
+    value_min: {from: duration_min}
+    value_max: {from: duration_max}
+    unit: {from: unit, map: {"년": years, "개월": months}}
+    statistic: {from: statistic}
+    duration_kind: {from: source, map: {"BIO 2021": program_phase_transition, "Wong 2019": single_trial}}   # 두 종류는 같은 parameter로 합치지 않는다(F 시트)
+    as_of: {from: data_period, transform: "종료일 YYYY-MM"}
+    temporal_validity: {from: data_period, transform: "시작 YYYY-MM / 종료연도+15-12"}
+    source: {same_as: success_master.source}
+    text_template: >
+      {source} {source_subgroup} 기준 {phase_from}→{phase_to} 소요 기간 {value}{unit_ko} ({statistic}, n={reported_n}, 데이터 기간 {data_period}). 정의: {duration_definition} 모집단: {population}
+    note: {from: note}
+  cost_master:
+    domain_id: C03
+    layer: parameter
+    modality: null
+    indication: null
+    phase: {from: phase, map: phase}
+    value: {from: cost_value}
+    unit: "USD_million"
+    base_year: {from: base_year}                      # DiMasi 2013, Paul null(not_reported)
+    statistic: {from: statistic}
+    default_role: {from: default_candidate, map: {default: default, secondary: secondary, pending_policy: "E#8 결정: weighted_mean→default, weighted_median→secondary", no: none}}
+    temporal_validity: "2013-01/계속"
+    badges: [industry_reference, {if: "base_year_status == 'not_reported_in_original'", badge: base_year_unreported}]
+    conversion:                       # E#9 결정. 표에 필드 신설 전까지 null
+      cost_value_current: null
+      conversion_index: BRDPI
+      conversion_base_date: null
+      conversion_factor: null
+      conversion_updated: null
+    source:
+      type: report
+      title: {from: source, map: {"DiMasi 2016": "Innovation in the pharmaceutical industry: New estimates of R&D costs (J Health Econ 47)", "Paul 2010": "How to improve R&D productivity (Nat Rev Drug Discov 9)"}}
+      year: {from: source, map: {"DiMasi 2016": 2016, "Paul 2010": 2010}}
+      page: {from: source_page}
+      figure: {from: source_table_figure}
+    text_template: >
+      {source} 기준 {phase} 단계 비용 {value} 백만 달러 ({statistic}, 기준연도 {base_year_ko}, n={n}). 정의: {cost_definition} 범위: {cost_scope} 해석: {interpretation_note}
+    note: {from: discrepancy_note}
+
+principles:                           # C04 rule 청크 — F(주의목록)·E(결정) 행 → rule 청크
+  cautions:
+    domain_id: C04
+    layer: rule
+    trust_tier: 2
+    override_capability: immutable    # 처리 원칙은 임의로 바꾸지 않는다
+    flag_hint: neutral
+    text_template: "[{구분}] {출처} — {대상}: {처리 원칙} (채택값: {채택값}; 다른 위치·값: {다른 원문 위치·값})"
+  decisions:
+    domain_id: C04
+    layer: rule
+    trust_tier: 3                     # 대표 결정 = 운영 규칙(휴리스틱). 원문 사실이 아님
+    override_capability: fully_overridable
+    flag_hint: neutral
+    export_if: {상태: startswith decided}
+    text_template: "[대표 결정 {번호}] {결정 사항}: {결정}"

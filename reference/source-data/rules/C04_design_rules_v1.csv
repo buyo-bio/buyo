@@ -1,0 +1,12 @@
+﻿rule_id,condition,flag_hint,text,rationale,source,mvp,evidence_tier
+C04-D01,"primary_endpoint ∈ {ORR, biomarker, PFS, 대리 평가변수} ∧ disease_group ≠ 항암",caution,대리 평가변수를 1차 평가변수로 두었습니다. 비항암 질환에서는 규제기관의 수용 전례 확인이 필요합니다(규제 카드 참조).,항암 외 영역에서 대리 평가변수 기반 허가 전례는 제한적. FDA Table of Surrogate Endpoints,FDA Table of Surrogate Endpoints; ICH E9,True,
+C04-D02a,comparator = single_arm ∧ phase = P3,caution,단일군 3상 설계입니다. 확증 근거로는 대조군이 요구되는 경우가 일반적이라 규제기관 사전 협의가 필요합니다.,확증시험은 무작위 대조가 원칙(ICH E10),ICH E10; FDA Guidance Demonstrating Substantial Evidence,True,
+C04-D02b,comparator = single_arm ∧ phase = P2 ∧ disease_group = 항암,neutral,"단일군 2상은 항암에서는 통상적인 설계이나, 이 결과만으로 확증 근거가 되려면 반응률 크기와 지속성이 관건입니다.",항암 2상 단일군·ORR 기반 가속승인 전례 다수,FDA Accelerated Approval program; 교안 3장(항암제 2상 pivotal 가능),True,
+C04-D03,planned_n < CE-03 pool Q1,caution,계획 대상자 수가 같은 적응증·단계 시험의 하위 25% 미만입니다. 검정력 산출 근거를 함께 제시해야 합니다.,소규모 시험은 효과 추정 불확실성이 커짐,CT.gov 풀 통계(CE-03),True,
+C04-D04,"blinding = open_label ∧ primary_endpoint ∈ {환자 보고, 주관적 평가}",caution,공개 시험에서 주관적 평가변수를 1차로 두면 편향 우려가 있어 눈가림 또는 객관적 평가변수 보완이 필요합니다.,평가자 편향,ICH E9,False,
+C04-D05,planned_duration_m < 6 ∧ disease_group ∈ {만성질환군},caution,치료 기간이 만성질환 평가에 짧습니다. 장기 안전성·지속 효과 근거가 별도로 필요합니다.,만성 적응증의 안전성 DB 요구(ICH E1),ICH E1,False,
+C04-D06,comparator = active,neutral,활성 대조 설계는 비용이 위약 대조보다 높은 대신(승인 pivotal 평균 48.9M vs 28.8M 달러) 급여·시장 진입 근거가 됩니다.,Moore 2018 대조군 유형별 비용,F04-MO-0005·0006,False,
+C04-D07,design_type = non_inferiority ∧ margin 미기재,caution,비열등성 시험은 마진 설정 근거가 심사의 핵심입니다. 마진과 근거 문헌을 설계서에 명시해야 합니다.,비열등성 마진 정당화 요구,FDA Guidance Non-Inferiority Clinical Trials,False,
+C04-D08,population = biomarker_selected,positive,바이오마커로 선별한 집단은 반응률과 성공확률이 높게 보고됩니다. 선별 진단법의 동반 개발 계획을 확인합니다.,바이오마커 선별 시험 성공률 상향(Wong 2019),Wong 2019 Biostatistics; C05 modifier(정식),False,association
+C04-D09,primary_endpoints_n ≥ 2 ∧ multiplicity_plan 미기재,caution,복수 1차 평가변수는 다중성 조정 계획이 필요합니다.,제1종 오류 통제,ICH E9(R1),False,
+C04-D10,phase = P1 ∧ population = patients ∧ disease_group = 항암,neutral,항암 1상은 환자 대상이 일반적이며 용량 확장 코호트에서 초기 효능 신호를 함께 봅니다.,항암 1상 관행,교안 3장 표 11.1,False,

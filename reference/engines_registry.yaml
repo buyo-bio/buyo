@@ -1,0 +1,1593 @@
+version: 1.0
+dimensions:
+  modality:
+  - small_molecule
+  - antibody
+  - antibody_mAb
+  - ADC
+  - cell_therapy
+  - gene_therapy
+  - peptide
+  - vaccine
+  - biosimilar
+  - other
+  phase:
+  - preclinical
+  - P1
+  - P2
+  - P3
+  - NDA
+  disease_group:
+  - 항암
+  - 감염
+  - 중추신경(신경)
+  - 중추신경(정신)
+  - 대사·내분비
+  - 심혈관
+  - 기타
+  rare:
+  - Y
+  - N
+  financial_state:
+  - S1_pre_revenue_clean
+  - S2_convertible_or_pref
+  - S3_grant_dependent
+  - S4_has_license_income
+  - S5_listed
+  - S6_distressed
+  exit_route:
+  - license_out
+  - self_develop
+  regulatory_path:
+  - full_nda
+  - accelerated_oncology
+  - orphan
+  - 505b2_imd
+  - biosimilar
+groups:
+  A: 도달성 — 지금 자본으로 다음 변곡점까지 가는가
+  B: 자산 가치 — 도달했을 때 얼마의 가치가 생기는가
+  C: 비교군 — 같은 처지였던 상장사(DART)는 어땠는가
+  D: 상태 분류 — 어떤 산식을 적용할지 정하는 분류기
+engines:
+- id: FE-D01
+  group: D
+  name: 재무 상태 분류
+  question: 이 회사에 어떤 산식 묶음을 적용하는가
+  inputs:
+  - cash
+  - monthly_burn
+  - debt
+  - convertible_instruments_list
+  - grant_commitments_list
+  - license_income_ttm
+  - listed_flag
+  formula: "state = S6 if runway_m < 6\n      else S5 if listed_flag\n      else S2 if any(convertible_instruments)\n      else S3 if grant_committed / (grant_committed + cash) > 0.3\n      else S4 if license_income_ttm\
+    \ > 0\n      else S1\n# 복수 해당 시 우선순위 S6 > S5 > S2 > S3 > S4 > S1. 결과는 routing 태그이며 화면에 표시하지 않는다.\n"
+  outputs:
+  - financial_state
+  params: []
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-D02
+  group: D
+  name: 다음 변곡점 결정
+  question: 여기까지의 기준점(변곡점)을 무엇으로 잡는가
+  inputs:
+  - phase
+  - exit_route
+  - regulatory_path
+  formula: "next_inflection:\n  preclinical            → IND_filing (self_develop·license_out 공통)\n  P1, license_out        → P2_PoC_readout\n  P1, self_develop       → P3_start\n  P2, license_out     \
+    \   → P2_PoC_readout (진행 중이면 readout)\n  P2, self_develop       → P3_start  ; accelerated_oncology이면 NDA_filing\n  P3                     → NDA_filing\n  NDA                    → approval\nstages_to_inflection\
+    \ = 현재 단계부터 변곡점 직전 단계까지의 단계 목록\n"
+  outputs:
+  - next_inflection
+  - stages_to_inflection
+  params:
+  - R01:경로별 단계 구성(accelerated·505b2·biosimilar는 단계가 다름)
+  mvp: true
+  status: ready
+  pattern: MATCH
+- id: FE-A01
+  group: A
+  name: 런웨이
+  question: 지금 돈으로 몇 달 버티는가
+  inputs:
+  - cash
+  - restricted_cash
+  - monthly_burn
+  - committed_raise
+  formula: 'cash_available = cash - restricted_cash            # 정부과제 전용 현금은 제외(S3)
+
+    runway_m       = cash_available / monthly_burn
+
+    runway_m_committed = (cash_available + committed_raise) / monthly_burn
+
+    # monthly_burn = 최근 6개월 영업현금유출 평균. 자료가 1개월치뿐이면 badge=burn_single_month
+
+    '
+  outputs:
+  - runway_m
+  - runway_m_committed
+  - cash_out_date
+  params: []
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-A02
+  group: A
+  name: 변곡점까지 필요자금 — 벤치마크 경로
+  question: 다음 변곡점까지 산업 기준으로 얼마가 드는가
+  inputs:
+  - stages_to_inflection
+  - modality
+  - disease_group
+  - rare
+  formula: "need_bench = Σ_{s ∈ stages} cost_bench(s) × modality_factor(modality) × rare_factor(rare)\n           + fixed_opex_m × duration_bench(stages)\n           + cmc_cost(modality, stages)\n     \
+    \      + contingency\ncontingency = monthly_burn × duration_bench × delay_factor      # 지연 버퍼\n# cost_bench = C03 default(DiMasi mean, BRDPI 환산 현재가), duration_bench = C02 program_phase_transition\n\
+    # modality_factor·rare_factor·cmc_cost는 parameter 청크. 없으면 1.0·0으로 두지 않고 해당 항을 '미확보'로 표시하고 부분합만 낸다\n"
+  outputs:
+  - need_bench
+  - need_bench_breakdown
+  - duration_bench
+  params:
+  - C03:단계 비용
+  - C02:단계 기간
+  - F04:모달리티 비용 계수
+  - F04:희귀 비용 계수
+  - F04:CMC·제조 준비 비용(모달리티별)
+  - F04:지연 계수
+  - F01:고정비 처리 규칙
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: FE-A03
+  group: A
+  name: 변곡점까지 필요자금 — 설계안 경로(bottom-up)
+  question: 이 설계안(대상자 수·기간·지역)으로는 얼마가 드는가
+  inputs:
+  - planned_n
+  - planned_duration_m
+  - sites
+  - regions_list
+  - comparator
+  - primary_endpoint
+  - modality
+  formula: "trial_cost = planned_n × cost_per_patient(disease_group, phase, region)\n           + sites × site_startup_cost\n           + planned_duration_m × (cro_monthly + internal_monthly)\n        \
+    \   + comparator_drug_cost(comparator)                 # active comparator면 약제비 추가\n           + cmc_cost(modality)\nneed_design = trial_cost + fixed_opex_m × planned_duration_m + contingency\n# 벤치마크\
+    \ 경로(FE-A02)와 나란히 표시. 둘의 차이가 ±40% 이상이면 flag=design_cost_outlier\n"
+  outputs:
+  - need_design
+  - trial_cost_breakdown
+  - cost_vs_bench_ratio
+  params:
+  - F04:환자당 비용(질환군×단계×지역)
+  - F04:사이트 개설 비용
+  - F04:CRO 월 비용
+  - F04:대조약 비용 규칙
+  mvp: false
+  status: blocked
+  pattern: CALC
+- id: FE-A04
+  group: A
+  name: 자금 갭
+  question: 얼마가 모자라는가, 언제 모자라는가
+  inputs:
+  - need
+  - cash_available
+  - committed_raise
+  - planned_raise
+  - planned_raise_date
+  formula: 'gap_now      = need - (cash_available + committed_raise)          # 양수 = 부족
+
+    gap_planned  = gap_now - planned_raise                             # 예정 조달이 다 되면
+
+    shortfall_date = today + runway_m (from FE-A01)                   # 현금 소진 시점
+
+    raise_deadline = shortfall_date - fundraising_lead_m               # 이 날짜 전에 조달 착수해야 함
+
+    # need가 부분합(미확보 항 있음)이면 gap도 ''최소 갭''으로 표시
+
+    '
+  outputs:
+  - gap_now
+  - gap_planned
+  - shortfall_date
+  - raise_deadline
+  params:
+  - F01:조달 소요 기간(단계·규모별)
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-A05
+  group: A
+  name: 런웨이 커버리지 비율
+  question: 변곡점 도달 전에 돈이 떨어질 위험이 있는가
+  inputs:
+  - runway_m_committed
+  - duration_bench
+  - delay_factor
+  formula: 'RCR = runway_m_committed / (duration_bench × (1 + delay_factor))
+
+    band: RCR ≥ 1.5 → 양호 / 1.0 ≤ RCR < 1.5 → 주의 / RCR < 1.0 → 미달
+
+    # 확률로 바꾸지 않는다. 비율과 밴드만 표시(NONBLEND).
+
+    '
+  outputs:
+  - RCR
+  - band
+  params:
+  - C02:단계 기간
+  - F04:지연 계수
+  - F01:RCR 밴드 규칙
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-A06
+  group: A
+  name: 희석 추정
+  question: 갭을 메우려면 지분을 얼마나 내주는가
+  applies_when:
+    financial_state:
+    - S1_pre_revenue_clean
+    - S2_convertible_or_pref
+    - S3_grant_dependent
+    - S4_has_license_income
+  inputs:
+  - gap_now
+  - premoney_reference
+  - existing_pref_terms_list
+  formula: 'dilution_pct   = gap_now / (premoney_reference + gap_now)
+
+    premoney_reference = 비교군 시장가치(FE-C05) 또는 rNPV_stage(FE-B03) × stage_haircut — 둘 다 표시, 하나로 합치지 않음
+
+    S2: 기존 RCPS/CB의 전환·리픽싱 조건 반영 → fully diluted 기준 재계산(F02 워터폴 청크)
+
+    '
+  outputs:
+  - dilution_pct_range
+  - post_money_range
+  params:
+  - F02:단계별 프리머니 헤어컷
+  - F02:전환·리픽싱 처리 규칙
+  - C05:비교군 시장가치
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-A07
+  group: A
+  name: 비희석 자금 반영
+  question: 정부과제·보조금은 얼마나 쓸 수 있는가
+  applies_when:
+    financial_state:
+    - S3_grant_dependent
+  inputs:
+  - grant_commitments_list
+  - matching_ratio
+  - grant_restricted_use
+  formula: 'grant_usable  = Σ grant_committed × usable_ratio(grant_restricted_use)
+
+    matching_cash = Σ grant_committed × matching_ratio                # 회사가 따로 대야 하는 현금
+
+    cash_available_adj = cash_available - matching_cash
+
+    need_adj = need - grant_usable
+
+    '
+  outputs:
+  - grant_usable
+  - matching_cash
+  - need_adj
+  params:
+  - F01:과제 유형별 사용 가능 비율 규칙
+  - F01:매칭 비율 규칙
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-A08
+  group: A
+  name: 상환·풋 부담
+  question: 변곡점 전에 갚아야 하는 돈이 있는가
+  applies_when:
+    financial_state:
+    - S2_convertible_or_pref
+    - S5_listed
+  inputs:
+  - convertible_instruments_list
+  - debt_schedule_list
+  - horizon_m
+  formula: 'repay_risk = Σ_{i: put_date_i or maturity_i ≤ horizon} principal_i × P(put_exercised_i)
+
+    P(put_exercised) = 1 if conversion_price > premoney_reference/share_count_fd else 0   # 전환가가 현 가치보다 높으면 풋 행사 가정
+
+    need_adj = need + repay_risk
+
+    '
+  outputs:
+  - repay_risk
+  - instruments_at_risk_list
+  params:
+  - F02:풋 행사 가정 규칙
+  - F02:리픽싱 하한 규칙
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-A09
+  group: A
+  name: 관리종목 요건 점검
+  question: 상장사라면 법차손 요건에 걸리는가
+  applies_when:
+    financial_state:
+    - S5_listed
+  inputs:
+  - net_loss_before_tax_3y_list
+  - equity_3y_list
+  - listing_type
+  - exemption_end_year
+  formula: 'ratio_y = net_loss_before_tax_y / equity_y
+
+    flag = (count(ratio_y > 0.5 for last 3y) ≥ 2) and (today > exemption_end_year)
+
+    # 기술특례 상장은 유예 기간 동안 미적용(F-D10 규칙 청크 재태깅)
+
+    '
+  outputs:
+  - ratio_3y_list
+  - flag
+  - years_to_exemption_end
+  params:
+  - F05:관리종목 지정 요건(코스닥)
+  - F05:기술특례 유예 규칙
+  mvp: false
+  status: formal
+  pattern: MATCH
+- id: FE-B01
+  group: B
+  name: 피크매출 빌드업 — 기본(만성·반복 투여)
+  question: 승인되면 정점에서 얼마를 파는가
+  inputs:
+  - prevalence_or_incidence
+  - dx_rate
+  - treat_rate
+  - addressable_share
+  - price_net_annual
+  - persistence
+  - compliance
+  - geographies_list
+  formula: "per geography g, scenario k ∈ {low, base, high}:\n  treated_k = eligible_g × dx_rate × treat_rate × share_peak_k\n  peak_k    = Σ_g treated_k × price_net_g × persistence × compliance\n# 만성질환:\
+    \ 유병(prevalence) 기반. 급성·완치: 발생(incidence) 기반. 값은 M02 parameter, 약가는 M01.\n# 시나리오 확률(prob_low/base/high)은 표시만 하고 가중평균으로 합치지 않는다. rNPV(FE-B03)에서만 가중.\n"
+  outputs:
+  - peak_by_scenario
+  - peak_breakdown
+  params:
+  - M02:유병·발생
+  - M02:진단율·치료율
+  - M04:점유율 프리셋(경쟁 수·진입 순서)
+  - M01:순약가(급여·환급 반영)
+  - M04:지속·순응 프리셋
+  overrides:
+  - id: FE-B01-CGT
+    applies_when:
+      modality:
+      - cell_therapy
+      - gene_therapy
+    name: 일회성 치료 매출
+    formula: '# 1회 투여로 끝나므로 재투여 없음. 첫 수년은 유병 풀(backlog) 소진 + 이후 발생 환자만
+
+      treated_t = min(capacity_t, backlog_remaining_t × uptake + incidence × treat_rate × share)
+
+      revenue_t = treated_t × price_one_time × (1 - outcome_based_rebate)
+
+      # capacity_t = 연간 제조 가능 도즈. 없으면 ''미확보''로 두고 backlog 무제한 가정을 쓰지 않는다
+
+      '
+    params:
+    - M01:일회성 약가·성과연동 환급
+    - M02:유병 풀·발생
+    - F04:제조 용량(도즈/년)
+  - id: FE-B01-VAC
+    applies_when:
+      modality:
+      - vaccine
+    name: 접종 코호트 매출
+    formula: 'revenue_t = cohort_t × coverage_rate × doses_per_person × tender_price + private_market_t
+
+      # 국가 접종사업은 입찰 단가·물량, 민간은 소매가. 둘을 나눠 적는다
+
+      '
+    params:
+    - M02:접종 대상 코호트
+    - M01:입찰 단가·민간 가격
+    - M04:접종률
+  - id: FE-B01-BIOSIM
+    applies_when:
+      modality:
+      - biosimilar
+    name: 바이오시밀러 침식 매출
+    formula: 'revenue_t = originator_sales_at_LoE × market_erosion(t - LoE) × capture_share_t × (1 - price_discount)
+
+      # 성공확률 매트릭스 대신 원개발사 매출·출시 순서·할인율이 가치를 결정. 출시 시점이 LoE보다 늦으면 capture_share 급감
+
+      '
+    params:
+    - M04:오리지널 매출·LoE
+    - M04:바이오시밀러 침식·점유 곡선(출시 순서별)
+    - M01:할인율
+  mvp: false
+  status: blocked
+  pattern: CALC
+- id: FE-B02
+  group: B
+  name: 매출 곡선 — 램프·정체·침식
+  question: 출시부터 소멸까지 연도별 매출은 어떻게 흐르는가
+  inputs:
+  - peak
+  - launch_year
+  - effective_loe_year
+  - disease_group
+  - modality
+  - regulatory_path
+  formula: 'rev_t = peak × ramp(t - launch, disease_group) × erosion(t - effective_loe, modality)
+
+    effective_loe_year = max(patent_expiry_year, exclusivity_end_year(regulatory_path, jurisdiction))
+
+    # ramp: 질환군 프리셋(정점 도달 연수). erosion: 모달리티 프리셋(저분자 급락 / 바이오 완만). 모델링 꼬리 8년
+
+    # effective_loe 미입력 → 계산 보류(무한 매출 차단)
+
+    '
+  outputs:
+  - rev_series
+  - effective_loe_year
+  params:
+  - M04:램프 프리셋
+  - F03:침식 곡선(모달리티별·구 F-VAL-113)
+  - R02:독점권 기간(희귀 US7·EU10·JP10·신약 자료보호)
+  - T03:특허 만료
+  mvp: false
+  status: blocked
+  pattern: CALC
+- id: FE-B03
+  group: B
+  name: 자산 rNPV (현 단계 기준)
+  question: 이 자산은 지금 시점에 얼마의 가치인가
+  inputs:
+  - rev_series_by_scenario
+  - cum_LOA
+  - remaining_stages_list
+  - margin
+  - tax_eff
+  - r
+  - current_year
+  formula: "for k in {low, base, high}:\n  commercial_k = cum_LOA × Σ_t rev_{k,t} × margin × (1 - tax_eff) / (1+r)^{t - current}\n  cost_arm     = Σ_{s ∈ remaining} reach_prob_s × cost_s / (1+r)^{t_s -\
+    \ current}\n  rNPV_k       = commercial_k - cost_arm\nrNPV_weighted = Σ_k prob_k × rNPV_k          # 분포(low/base/high)를 함께 표시\n# cum_LOA = C01 누적 (모달리티×단계×질환군, rare면 둘째 줄), reach_prob_s = 조건부 전환확률 누적곱(C01\
+    \ conditional)\n# margin = F03 모달리티 총마진(구 F-VAL-114), r = F03 할인율 밴드(구 F-VAL-004) 기본 12%, 8~20 슬라이더\n# 할인율과 PoS로 위험을 이중 계상하지 않는다. cum_LOA 누적과 conditional을 곱해 다시 누적하지 않는다\n"
+  outputs:
+  - rNPV_by_scenario
+  - rNPV_weighted
+  - commercial_arm
+  - cost_arm
+  params:
+  - C01:누적·조건부 확률
+  - C03:단계 비용
+  - C02:단계 기간
+  - F03:모달리티 총마진
+  - F03:할인율 밴드
+  - F03:실효세율 규칙
+  overrides:
+  - id: FE-B03-BIOSIM
+    applies_when:
+      modality:
+      - biosimilar
+    formula: cum_LOA 대신 biosimilar 성공확률(C01 biosimilar 행, 약 80%)과 개발기간 1.5~4년·비용 690~1,380억 파라미터를 쓴다. 매출은 FE-B01-BIOSIM.
+  - id: FE-B03-ACC
+    applies_when:
+      regulatory_path:
+      - accelerated_oncology
+    formula: P3를 출시 전 비용에서 빼고, 출시 후 확증시험 비용을 cost_arm에 launch 이후 연도로 넣는다. cum_LOA는 P2→승인 조건부(가속승인) 값을 C01에서 따로 읽는다(없으면 '미확보').
+  - id: FE-B03-505B2
+    applies_when:
+      regulatory_path:
+      - 505b2_imd
+    formula: remaining_stages를 R01 경로 정의로 축소(생략 단계 반영), cum_LOA는 505(b)(2) 전용 값(없으면 '미확보'), 약가는 M01 개량신약 프리미엄 규칙.
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: FE-B04
+  group: B
+  name: 변곡점 가치와 가치창출 배수
+  question: 이 임상에 돈을 쓰면 가치가 얼마나 오르는가
+  inputs:
+  - rNPV_now
+  - rNPV_at_inflection
+  - need
+  - p_transition
+  formula: 'rNPV_at_inflection = FE-B03 with stage = next stage (성공 가정, cum_LOA 갱신, cost_arm에서 완료 단계 제거)
+
+    step_up   = rNPV_at_inflection / rNPV_now
+
+    VCR       = (rNPV_at_inflection - rNPV_now) / need          # 투입 1원당 가치 증가
+
+    EV_of_step = p_transition × rNPV_at_inflection - need         # 기대값(실패 시 0 가정)
+
+    # 단일자산이면 실패 시 잔존가치 0. 플랫폼이면 FE-B10
+
+    '
+  outputs:
+  - rNPV_at_inflection
+  - step_up
+  - VCR
+  - EV_of_step
+  params:
+  - C01:조건부 전환확률
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: FE-B05
+  group: B
+  name: 라이선스 딜 가치 (라이선서 관점)
+  question: 변곡점에서 기술이전하면 얼마를 받는가
+  applies_when:
+    exit_route:
+    - license_out
+  inputs:
+  - deal_terms_candidate
+  - rev_series
+  - cum_LOA_at_deal
+  - r
+  formula: "deal_PV = upfront\n        + Σ_i milestone_i × P(reach_i | deal_stage) / (1+r)^{t_i}\n        + Σ_t royalty_pct × rev_t × cum_LOA_at_deal / (1+r)^t\n# 후보 조건이 없으면 M03 컴프 분포(사분위)로 upfront·total을\
+    \ 놓고 PV 범위를 낸다. 대표값 하나로 내지 않는다\n"
+  outputs:
+  - deal_PV_range
+  - upfront_pct_of_total
+  params:
+  - M03:딜 컴프 분포(모달리티×단계×질환군)
+  - C01:조건부 확률
+  - F03:할인율
+  mvp: false
+  status: blocked
+  pattern: CALC
+- id: FE-B06
+  group: B
+  name: 딜 성립성 (라이선시 관점)
+  question: 대형 제약사가 그 값에 살 이유가 있는가
+  applies_when:
+    exit_route:
+    - license_out
+  inputs:
+  - rNPV_licensee
+  - deal_PV
+  formula: 'rNPV_licensee = FE-B03 with margin_licensee, r_licensee(대형사 8~10%), remaining cost 100% 부담
+
+    headroom = rNPV_licensee - deal_PV
+
+    flag: headroom < 0 → ''딜 조건이 라이선시에 불리(성립 어려움)''
+
+    '
+  outputs:
+  - rNPV_licensee
+  - headroom
+  params:
+  - F03:라이선시 할인율·마진 프리셋
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-B07
+  group: B
+  name: 딜 컴프 위치
+  question: 같은 조건의 딜에서 우리는 어디쯤인가
+  applies_when:
+    exit_route:
+    - license_out
+  inputs:
+  - modality
+  - phase
+  - disease_group
+  - deal_terms_candidate
+  formula: 'pool = M03 deals where modality≈ & phase= & disease_group≈ (N ≥ 5, 아니면 조건 완화하고 badge=pool_widened)
+
+    percentile(upfront), percentile(total), quartiles 표시. 포인트 추정·평균 금지
+
+    '
+  outputs:
+  - pool_n
+  - quartiles
+  - percentile_of_candidate
+  params:
+  - M03:딜 컴프 표
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: FE-B08
+  group: B
+  name: 손익분기 파라미터
+  question: 어디까지 나빠져도 가치가 0 이상인가
+  inputs:
+  - FE-B03 inputs
+  formula: 'breakeven_cum_LOA : cum_LOA* s.t. rNPV_base = 0   (이분법)
+
+    breakeven_peak    : peak*    s.t. rNPV_base = 0
+
+    max_trial_cost    : need*    s.t. EV_of_step = 0    (FE-B04)
+
+    margin_of_safety  = (cum_LOA_bench - cum_LOA*) / cum_LOA_bench
+
+    '
+  outputs:
+  - breakeven_cum_LOA
+  - breakeven_peak
+  - max_trial_cost
+  - margin_of_safety
+  params: []
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: FE-B09
+  group: B
+  name: 설계안 민감도
+  question: 설계를 바꾸면 가치가 어떻게 움직이는가
+  inputs:
+  - FE-B03 inputs
+  - design_modifiers
+  formula: 'tornado: r ∈ band, cum_LOA ± modifier(C05), peak ∈ {low,high}, duration ± delay → ΔrNPV
+
+    design_delta = rNPV(design B) - rNPV(design A)   (정식판, C05 modifier 청크 확보 후)
+
+    '
+  outputs:
+  - tornado_table
+  - design_delta
+  params:
+  - C05:설계 modifier(평가변수·대조군·n)
+  - F03:할인율 밴드
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-B10
+  group: B
+  name: 하방·단일자산 노출
+  question: 리드 자산이 실패하면 무엇이 남는가
+  inputs:
+  - cash_at_readout
+  - backup_assets_list
+  - platform_flag
+  - need
+  formula: 'value_if_fail  = cash_at_readout + Σ backup rNPV + platform_option
+
+    cash_at_readout = cash_available - need
+
+    expected_loss  = (1 - p_transition) × need
+
+    flag single_asset_exposure = (Σ backup rNPV + platform_option) == 0
+
+    '
+  outputs:
+  - value_if_fail
+  - expected_loss
+  - single_asset_flag
+  params:
+  - F03:플랫폼 옵션 산식(구 F-VAL-125·정식)
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-B11
+  group: B
+  name: 희귀의약품 조정
+  question: 희귀 지정이 가치에 무엇을 바꾸는가
+  applies_when:
+    rare:
+    - Y
+  inputs:
+  - jurisdictions_list
+  - patent_expiry_year
+  formula: 'effective_loe_year = max(patent_expiry_year, approval_year + exclusivity(jurisdiction))   # US 7, EU 10, JP 10, KR 허가 유효 10
+
+    trial_cost   ← C03 × rare_factor (소규모·단일군 허용)
+
+    cum_LOA      ← rare 둘째 줄 값(Wong orphan)과 질환군 값 둘 다 표시
+
+    price_net    ← M01 희귀 약가 프리미엄 규칙(정식)
+
+    fees         ← R02 수수료 감면·우선심사 기간 단축
+
+    '
+  outputs:
+  - adjusted_inputs_for_FE-B02_B03
+  params:
+  - R02:독점권 기간·특례
+  - F04:희귀 비용 계수
+  - C01:rare 행
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: FE-C08
+  group: C
+  name: 회사 조회·비교군 풀(기업 마스터)
+  question: 의뢰사가 상장사인가, 상장사라면 어떤 사업모델·동종 풀에 속하는가
+  inputs:
+  - company_name_or_code
+  formula: 'lookup companies_v2_0 (표준기업명 · 이전사명_별칭 · 종목코드 · DART고유번호) → 상장 여부, 시장, BM코드, Peer그룹, 신약개발_비교군, 거래상태_플래그, 앱화면_우선노출문구
+
+    상장이면 FE-A01 재무 4값을 DART고유번호로 자동 채움(provenance=disclosed), 거래상태_플래그 → FE-A09 입력
+
+    비교군 풀 = 신약개발_비교군 ∈ {Y, Y(주의 플래그)} ∧ Primary_BM ∈ {BM-01, BM-04} (91사) → FE-C01이 이 풀 안에서 모달리티·질환군·단계로 좁힌다
+
+    비상장이면 풀만 반환하고 자동 채움 없음
+
+    '
+  outputs:
+  - company_profile
+  - is_listed
+  - comps_pool_ids
+  params:
+  - F06:비교군 완화 규칙
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-C01
+  group: C
+  name: 비교군 선정
+  question: 우리 처지와 비슷했던 상장사는 누구인가
+  inputs:
+  - modality
+  - disease_group
+  - phase
+  - as_of
+  formula: 'pool = 485사 DB에서 (modality 일치 or 상위 태그) ∧ (disease_group 일치) ∧ (해당 시점에 같은 단계 자산 보유)
+
+    if N < 5: disease_group 완화 → modality만 → 단계만 (완화 단계마다 badge)
+
+    각 비교사에 대해 stage_date = 그 회사가 같은 단계에 있던 시점(DART 공시·CT.gov 기준)
+
+    '
+  outputs:
+  - comps_list
+  - pool_n
+  - widening_level
+  params:
+  - F06:비교군 완화 규칙
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-C02
+  group: C
+  name: 비교군 같은 단계 재무 스냅샷
+  question: 그들은 그 단계에서 현금·소진율·R&D가 얼마였나
+  inputs:
+  - comps_list
+  - stage_date
+  formula: 'for c in comps: DART(as_of = stage_date) → cash_c, burn_c(직전 4분기 영업현금흐름/12), rnd_c, rnd_per_program_c, runway_c
+
+    표시: 사분위(Q1·중앙·Q3) + 우리 값의 위치. N 표시. 평균 금지
+
+    '
+  outputs:
+  - snapshot_quartiles
+  - client_percentile
+  params:
+  - F06:소진율 산식 통일 규칙
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-C03
+  group: C
+  name: 국내 실측 단계 기간
+  question: 국내 회사들은 실제로 몇 년 걸렸나
+  inputs:
+  - comps_list
+  - stage_history_c
+  formula: 'duration_actual_c = (다음 단계 진입 공시일 - 해당 단계 진입 공시일)
+
+    비교: C02 벤치마크 대비 비율 → 국내 보정 계수 후보(표시만, 자동 적용 금지)
+
+    '
+  outputs:
+  - duration_actual_quartiles
+  - ratio_to_bench
+  params:
+  - F06:단계 진입 판정 규칙(공시 유형)
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-C04
+  group: C
+  name: 비교군 딜 추출
+  question: 그들은 어느 단계에서 얼마에 기술이전했나
+  inputs:
+  - comps_list
+  formula: 'DART 주요사항보고서(기술이전) 파싱 → upfront, total, counterpart, phase_at_deal → M03 표에 적재(source=dart)
+
+    '
+  outputs:
+  - deals_list
+  params:
+  - F06:기술이전 공시 파싱 규칙
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-C05
+  group: C
+  name: 시장이 지불한 단계 가치
+  question: 한국 시장은 P1·P2 자산 하나를 얼마로 봤나
+  inputs:
+  - comps_list
+  - market_cap_at_stage_date
+  - net_cash_c
+  - program_count_c
+  formula: 'EV_c = market_cap_c - net_cash_c            # 임상단계: EV/Sales 금지, EV/현금·EV/프로그램만(구 F-VAL-008 티어 게이트)
+
+    ev_per_program_c = EV_c / program_count_c
+
+    implied_cum_LOA_c = EV_c / undiscounted_commercial_value_c   # 가능한 경우만
+
+    표시: ev_per_program 사분위 → FE-A06 premoney_reference 후보
+
+    '
+  outputs:
+  - ev_per_program_quartiles
+  - implied_LOA_range
+  params:
+  - F06:EV 브리지 규칙(순현금·리스)
+  - F03:티어 게이트
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: FE-C06
+  group: C
+  name: 비교군 후속 결과
+  question: 그 뒤에 그들은 어떻게 됐나
+  inputs:
+  - comps_list
+  formula: 'outcome_c ∈ {승인, 기술이전, 실패·중단, 관리종목·상폐, 진행 중} + 발생일
+
+    표시: 목록. N이 작으므로 비율로 바꾸지 않는다
+
+    '
+  outputs:
+  - outcomes_list
+  params:
+  - F06:결과 판정 규칙(공시 유형)
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: FE-C07
+  group: C
+  name: 비교군 조달 이력
+  question: 같은 단계에서 얼마를, 어떤 증권으로 조달했나
+  inputs:
+  - comps_list
+  formula: 'DART 증권발행·주요사항 → round_size_c, instrument_c(RCPS/CB/유상증자), stage_at_raise
+
+    표시: 단계별 조달 규모 사분위 → planned_raise 현실성 점검(FE-A04)
+
+    '
+  outputs:
+  - raise_size_quartiles_by_stage
+  params:
+  - F06:조달 공시 파싱 규칙
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: CE-01
+  group: C_axis
+  name: 층화 성공확률 조회
+  question: 이 모달리티·질환군·단계의 조건부·누적 성공확률은 얼마인가
+  inputs:
+  - modality
+  - disease_group
+  - phase
+  - rare
+  formula: 'lookup C01 where modality ∈ {입력, 상위 태그, null} ∧ disease_group ∈ {입력, 전체} ∧ phase = 입력
+
+    우선순위: (모달리티 일치 ∧ 질환군 일치) > (모달리티 일치) > (질환군 일치) > 전체. 선택된 행의 출처·n·데이터 기간을 함께 반환
+
+    기본 출처 규칙: BIO 2021 기본, Wong 2019는 희귀·개별시험 기간·낙관 상한·BIO 미제공 분류에서 기본 화면(C04 규칙 청크)
+
+    rare=Y: 질환군 값 첫 줄 + 희귀 값(Wong orphan) 둘째 줄. 두 값을 곱하거나 평균하지 않는다
+
+    누적(cumulative)과 조건부(conditional)는 별도 필드로 반환. 재곱 금지
+
+    '
+  outputs:
+  - cum_LOA
+  - transition_p_list
+  - source_rows
+  - badges
+  params:
+  - C01:성공확률 표
+  - C04:출처 우선순위·표시 규칙
+  mvp: true
+  status: ready
+  pattern: LOOKUP
+- id: CE-02
+  group: C_axis
+  name: 단계 기간 조회
+  question: 다음 단계까지 몇 년 걸리는가
+  inputs:
+  - phase
+  - phase_to
+  - disease_group
+  formula: 'program_duration = C02 where duration_kind = program_phase_transition (BIO) — 프로그램 기준, 기본 표시
+
+    single_trial     = C02 where duration_kind = single_trial (Wong) — 시험 1건 기준, 상세에만. 둘을 합치지 않는다
+
+    '
+  outputs:
+  - duration_years
+  - duration_kind
+  - source_rows
+  params:
+  - C02:기간 표
+  mvp: true
+  status: ready
+  pattern: LOOKUP
+- id: CE-03
+  group: C_axis
+  name: 대상자 수 벤치마크
+  question: 같은 적응증·단계 시험은 보통 몇 명을 모집하는가
+  inputs:
+  - indication_code
+  - phase
+  formula: 'pool = CT.gov 레코드 where conditions ∋ indication_code ∧ phase = 입력 ∧ status ∈ {completed, active} (최근 10년)
+
+    quartiles(enrollment), N. planned_n의 백분위. N < 20이면 상위 질환군으로 완화(badge)
+
+    '
+  outputs:
+  - enrollment_quartiles
+  - client_percentile
+  - pool_n
+  params:
+  - F06:비교군 완화 규칙(CT.gov 적용)
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: CE-04
+  group: C_axis
+  name: 설계안 플래그 규칙
+  question: 이 설계에서 심사위원이 바로 지적할 항목이 있는가
+  inputs:
+  - primary_endpoint
+  - comparator
+  - planned_n
+  - planned_duration_m
+  - disease_group
+  - phase
+  formula: "rule chunks(C04·C05) 매칭. MVP 규칙 3개:\n  (1) 대리 평가변수(ORR·바이오마커) + 항암 아닌 질환군 → caution \"규제 수용 여부 확인(R06)\"\n  (2) single_arm + P3 → caution / single_arm + P2 + 항암 → neutral\n  (3) planned_n <\
+    \ CE-03 Q1 → caution \"검정력 근거 요구\"\n플래그는 rule 청크 flag_hint로만 결정한다\n"
+  outputs:
+  - flags_list
+  - matched_rules
+  params:
+  - C04:설계 플래그 규칙
+  - C05:설계 modifier(정식)
+  mvp: true
+  status: blocked
+  pattern: MATCH
+- id: CE-05
+  group: C_axis
+  name: 설계안 PoS modifier
+  question: 이 설계 선택이 성공확률을 얼마나 움직이는가
+  inputs:
+  - design_choices
+  - base_transition_p
+  formula: 'adjusted_p = base_transition_p × Π modifier_i   (C05 parameter, 출처 필수). 곱한 결과는 별도 값으로 표시, base를 덮어쓰지 않는다
+
+    '
+  outputs:
+  - adjusted_p
+  - modifiers_applied
+  params:
+  - C05:설계 modifier 표
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: CE-06
+  group: C_axis
+  name: 임상 데이터 신뢰 게이트
+  question: 이 확률·기간 값을 화면 첫 줄에 써도 되는가
+  inputs:
+  - source_rows
+  formula: 'badge small_sample if n < 10; badge limited_mapping if illustrative; badge expired if temporal_validity 지남
+
+    첫 줄 표시 조건: badge 없음 ∧ trust_tier ≤ 2. 아니면 둘째 줄 또는 상세
+
+    '
+  outputs:
+  - display_tier
+  - badges
+  params:
+  - C04:표시 규칙
+  mvp: true
+  status: ready
+  pattern: LOOKUP
+- id: CE-07
+  group: C_axis
+  name: 경쟁 임상 밀도
+  question: 같은 적응증에 진행 중인 임상이 몇 건인가
+  inputs:
+  - indication_code
+  formula: 'count CT.gov active trials by phase (P1/P2/P3) for indication_code, 최근 5년 등록. 상위 5 의뢰자 표시
+
+    M축 경쟁구도(ME-05)의 입력. 판정은 하지 않는다
+
+    '
+  outputs:
+  - active_counts_by_phase
+  - top_sponsors
+  params: []
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: CE-08
+  group: C_axis
+  name: 국내 실측 단계 기간
+  question: 국내 회사들은 실제로 얼마나 걸렸나
+  inputs:
+  - comps_list
+  formula: FE-C03과 동일. C축은 값을 소유하지 않고 표시만
+  outputs:
+  - duration_actual_quartiles
+  params:
+  - F06:단계 진입 판정 규칙
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: ME-01
+  group: M_axis
+  name: 유병·발생 조회
+  question: 이 적응증의 환자는 국내·글로벌에 몇 명인가
+  inputs:
+  - indication_code
+  - jurisdictions_list
+  formula: 'lookup M02 where disease_code = 입력 ∧ jurisdiction ∈ 입력. metric(prevalence/incidence)·reference_year·source 반환
+
+    값이 없으면 상위 코드(MeSH tree 부모)로 완화하고 badge=code_widened. 그래도 없으면 ''미확보''
+
+    '
+  outputs:
+  - prevalence
+  - incidence
+  - sources
+  params:
+  - M02:역학 표
+  mvp: true
+  status: blocked
+  pattern: LOOKUP
+- id: ME-02
+  group: M_axis
+  name: 희귀 지정 가능성(역학 기준)
+  question: 국내 2만 명·미국 20만 명 기준에 드는가
+  inputs:
+  - prevalence_KR
+  - prevalence_US
+  formula: 'KR: prevalence_KR ≤ 20000 → 가능성 Y ; US: prevalence_US < 200000 → Y ; EU: prevalence per 10000 ≤ 5 → Y
+
+    결과는 R축(RE-02)에 넘긴다. 유병 값이 없으면 판정하지 않는다
+
+    '
+  outputs:
+  - rare_eligibility_by_jurisdiction
+  params:
+  - R02:지정 기준(법령)
+  - M02:역학 표
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: ME-03
+  group: M_axis
+  name: 급여 채널 판정
+  question: 이 약은 어떤 급여·상환 경로로 팔리는가
+  inputs:
+  - jurisdiction
+  - modality
+  - disease_group
+  - rare
+  - administration_setting
+  formula: 'rule chunks(M01): KR 급여 등재 경로(신약 경제성평가 / 위험분담제 대상 / 경평 면제 요건), 비급여 자비 시장 여부
+
+    US: Part B(원내 주사) / Part D(경구) / 340B 영향. 출력은 경로명 + 근거 청크. 약가 수치는 ME-04
+
+    '
+  outputs:
+  - reimbursement_path
+  - flags
+  params:
+  - M01:급여 규칙(기존 M-D01 재태깅)
+  mvp: true
+  status: ready
+  pattern: MATCH
+- id: ME-04
+  group: M_axis
+  name: 순약가 추정
+  question: 환자당 연간 순매출 단가는 얼마인가
+  inputs:
+  - jurisdiction
+  - comparator_drugs_list
+  - modality
+  - rare
+  - dosing
+  formula: 'list_price_ref = 동일 적응증 기허가 약가(M01 참조약가 표) ; net = list × (1 − gross_to_net(jurisdiction, channel))
+
+    KR: 대체약제 가중평균가·경평 상한 규칙 ; 희귀: 프리미엄 규칙(정식)
+
+    annual_net = net × dosing_per_year (일회성 치료는 총액 1회)
+
+    '
+  outputs:
+  - annual_net_price_range
+  - basis
+  params:
+  - M01:참조약가·GTN 계수·KR 약가 규칙
+  mvp: false
+  status: blocked
+  pattern: CALC
+- id: ME-05
+  group: M_axis
+  name: 경쟁구도
+  question: 승인약과 후기 파이프라인이 몇 개 있고 우리는 몇 번째인가
+  inputs:
+  - indication_code
+  - mechanism_class
+  - active_counts_by_phase
+  formula: 'approved_n = 승인 DB(정식) ; pipeline_late_n = CE-07 P2+P3 건수
+
+    entry_order_estimate = 1 + count(경쟁 자산 중 우리보다 단계가 앞선 것)
+
+    표시: 숫자와 목록. "포화" 판정은 rule 청크(M04)로만
+
+    '
+  outputs:
+  - approved_n
+  - pipeline_late_n
+  - entry_order_estimate
+  params:
+  - M04:경쟁 밀도 판정 규칙
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: ME-06
+  group: M_axis
+  name: 점유율·램프 프리셋
+  question: 몇 번째 진입자로서 정점에 몇 %를 가져가고 몇 년 걸리는가
+  inputs:
+  - entry_order_estimate
+  - competitor_n
+  - disease_group
+  formula: 'share_peak(low/base/high) = M04 프리셋(진입 순서 × 경쟁 수) ; years_to_peak = M04 램프 프리셋(질환군)
+
+    FE-B01·B02의 입력. 프리셋 출처 없으면 ''미확보''
+
+    '
+  outputs:
+  - share_peak_scenarios
+  - ramp_curve
+  params:
+  - M04:점유·램프 프리셋 표
+  mvp: false
+  status: blocked
+  pattern: CALC
+- id: ME-07
+  group: M_axis
+  name: 시장 규모 등급(피크매출 대체)
+  question: 피크매출을 못 낼 때 시장 규모를 등급으로라도 말할 수 있는가
+  inputs:
+  - prevalence_KR
+  - prevalence_US
+  - annual_net_price_range
+  formula: 'addressable_value_ceiling = Σ_j prevalence_j × annual_net_price_j (치료율·점유율 곱하지 않은 상한)
+
+    등급: <500억 S / 500억~5천억 M / >5천억 L (원화 환산, 규칙 청크). 상한임을 명시. 유병·약가 중 하나라도 없으면 미확보
+
+    '
+  outputs:
+  - ceiling_value
+  - size_grade
+  params:
+  - M02:역학 표
+  - M01:참조약가
+  - M04:등급 규칙
+  mvp: true
+  status: blocked
+  pattern: CALC
+- id: ME-08
+  group: M_axis
+  name: 딜 컴프 분포
+  question: 같은 조건의 기술이전은 얼마에 이루어졌나
+  inputs:
+  - modality
+  - phase
+  - disease_group
+  formula: FE-B07과 동일 풀(M03). M축이 표를 소유하고 F축이 읽는다
+  outputs:
+  - quartiles
+  - pool_n
+  params:
+  - M03:딜 컴프 표
+  mvp: true
+  status: blocked
+  pattern: LOOKUP
+- id: ME-09
+  group: M_axis
+  name: 출구 시점 기본값
+  question: 언제 팔리는가
+  inputs:
+  - phase
+  - exit_route
+  formula: 'M-D05-004 규칙 청크: preclinical·P1이면 기본 출구 = P2 PoC 이후. 사용자가 자체 개발로 바꿀 수 있음'
+  outputs:
+  - default_exit_point
+  params:
+  - M03:출구 시점 규칙
+  mvp: true
+  status: ready
+  pattern: MATCH
+- id: RE-01
+  group: R_axis
+  name: 허가 경로 옵션
+  question: 이 자산이 탈 수 있는 경로는 무엇인가
+  inputs:
+  - modality
+  - novelty(new_entity/new_salt/new_route/new_formulation/biosimilar)
+  - jurisdiction
+  formula: 'rule chunks(R01): 신약 / 자료제출의약품(7유형, 505(b)(2)) / 개량신약(5유형) / 바이오시밀러 / 생물학적제제(첨단재생바이오)
+
+    출력: 가능한 경로 목록 + 각 경로가 요구하는 자료 범위(전체 자료 vs 일부 생략) + 근거 조문
+
+    '
+  outputs:
+  - pathway_options
+  - data_package_scope
+  params:
+  - R01:경로 규칙(마스터 md 생성)
+  mvp: true
+  status: blocked
+  pattern: MATCH
+- id: RE-02
+  group: R_axis
+  name: 희귀 지정 가능성(법령 기준)
+  question: 희귀의약품으로 지정될 수 있는가, 되면 무엇이 달라지는가
+  inputs:
+  - rare_eligibility_by_jurisdiction
+  - existing_therapy_flag
+  formula: 'KR: 유병 ≤ 2만 명 ∧ (대체약 없음 ∨ 현저한 개선) → 가능성 Y ; 특례: 우선 허가, 허가 유효기간 10년, 임상 지원, 수수료 감면
+
+    US: <20만 명 → ODD 가능성 ; 7년 독점 + 세액공제 + 사용자 수수료 면제. EU: ≤5/10,000 → 10년
+
+    출력은 ''가능성''과 특례 목록. 지정 여부를 단정하지 않는다
+
+    '
+  outputs:
+  - designation_likelihood
+  - benefits_list
+  - exclusivity_years
+  params:
+  - R02:지정 기준·특례·독점권
+  mvp: true
+  status: blocked
+  pattern: MATCH
+- id: RE-03
+  group: R_axis
+  name: 독점권·데이터 보호 기간
+  question: 특허와 별개로 몇 년의 배타권이 생기는가
+  inputs:
+  - jurisdiction
+  - modality
+  - regulatory_path
+  - rare
+  formula: 'exclusivity = max over applicable {NCE 5y(US), biologic 12y(US), orphan 7y(US)/10y(EU·JP), KR 재심사 4~6y·희귀 10y 허가유효, 소아 +6m(US)}
+
+    FE-B02 effective_loe = max(patent_expiry, approval_year + exclusivity)
+
+    '
+  outputs:
+  - exclusivity_years_by_type
+  - applicable_list
+  params:
+  - R02:독점권 표
+  mvp: true
+  status: blocked
+  pattern: LOOKUP
+- id: RE-04
+  group: R_axis
+  name: 신속 프로그램 적격
+  question: 가속승인·우선심사·GIFT 같은 제도에 들어갈 수 있는가
+  inputs:
+  - disease_group
+  - unmet_need_flag
+  - endpoint_type
+  - rare
+  - jurisdiction
+  formula: 'rule chunks(R02): US BTD(예비 임상 근거 + 중대 질환) / Accelerated Approval(대리 평가변수 + 중대·미충족) / Fast Track / Priority Review
+
+    KR: GIFT(신속심사), 조건부 허가(생명위협·대체 없음)
+
+    출력: 적격 가능성(Y/N/조건) + 기대 효과(심사기간 단축·확증시험 의무). 항암 + 대리 평가변수 → accelerated 후보 플래그
+
+    '
+  outputs:
+  - program_candidates
+  - obligations
+  params:
+  - R02:신속 프로그램 요건 규칙
+  mvp: true
+  status: blocked
+  pattern: MATCH
+- id: RE-05
+  group: R_axis
+  name: 심사 기간 벤치마크
+  question: 신청부터 승인까지 얼마나 걸리는가
+  inputs:
+  - jurisdiction
+  - review_type
+  formula: 'lookup R03 parameter: US standard 10개월 / priority 6개월(PDUFA 목표), KR 신약 심사 처리기간(식약처 고시), EU 210일+clock stop. FE-D02 NDA→approved 기간 대체값'
+  outputs:
+  - review_months
+  - source
+  params:
+  - R03:심사 기간 표(신규·소형)
+  mvp: false
+  status: blocked
+  pattern: LOOKUP
+- id: RE-06
+  group: R_axis
+  name: 대리 평가변수 수용성
+  question: 이 평가변수로 허가를 받은 전례가 있는가
+  inputs:
+  - primary_endpoint
+  - indication_code
+  - jurisdiction
+  formula: 'lookup R04 표: FDA Table of Surrogate Endpoints / 승인 전례. 전례 없음 → CE-04 caution 강화'
+  outputs:
+  - precedent_list
+  - acceptability_flag
+  params:
+  - R04:대리 평가변수 전례 표(정식)
+  mvp: false
+  status: formal
+  pattern: MATCH
+- id: RE-07
+  group: R_axis
+  name: CMC·제조 위험 플래그
+  question: 제조·품질 쪽에서 허가를 막을 위험이 큰 모달리티인가
+  inputs:
+  - modality
+  formula: 'rule: biologics·ADC·cell·gene → ''process is the product'' 플래그 + 필요한 준비(비교동등성, GMP 시설, 공정 특성화). small_molecule → 낮음. 출력은 플래그와 체크리스트'
+  outputs:
+  - cmc_risk_flag
+  - checklist
+  params:
+  - R01:CMC 규칙(마스터 md)
+  mvp: true
+  status: blocked
+  pattern: MATCH
+- id: RE-08
+  group: R_axis
+  name: 첫 허가 지역 선택
+  question: 어느 규제기관에 먼저 내는 것이 유리한가
+  inputs:
+  - jurisdictions_list
+  - exclusivity_years_by_type
+  - market_size_by_j
+  formula: 정식판. 지역별 독점권·시장·심사기간 조합 표시. 판정 없음
+  outputs:
+  - comparison_table
+  params:
+  - R05:지역 전략 규칙
+  mvp: false
+  status: formal
+  pattern: MATCH
+- id: TE-01
+  group: T_axis
+  name: 모달리티 정규화
+  question: 사용자가 적은 약물 종류를 어떤 태그로 매핑하는가
+  inputs:
+  - modality_free_text
+  - extracted_hints
+  formula: T01 등록부(태그·상위 태그·정의·예시)로 매핑. 하위 태그가 잡히면 상위 태그도 함께 채움. 매핑 실패 → other + 사용자 확인
+  outputs:
+  - modality_tag
+  - parent_tag
+  - confidence
+  params:
+  - T01:모달리티 등록부(대표 9/23)
+  mvp: true
+  status: blocked
+  pattern: LOOKUP
+- id: TE-02
+  group: T_axis
+  name: FTO 게이트키퍼 존재 플래그
+  question: 이 모달리티에 회피가 어려운 플랫폼 특허가 있는가
+  inputs:
+  - modality_tag
+  - sub_tag
+  formula: 'rule chunks(T02): 모달리티별 알려진 게이트키퍼(예: CAR-T 구조 특허군, LNP 전달 특허군, ADC 링커·페이로드 특허군). 존재 → caution + ''라이선스 필요 여부 확인''. 판정 아님'
+  outputs:
+  - gatekeeper_flag
+  - known_families
+  params:
+  - T02:게이트키퍼 규칙(마스터 md)
+  mvp: true
+  status: blocked
+  pattern: MATCH
+- id: TE-03
+  group: T_axis
+  name: 특허 만료 vs 출시 정렬
+  question: 출시 시점에 특허가 몇 년 남는가
+  inputs:
+  - patent_expiry_year
+  - current_year
+  - duration_to_approval
+  formula: 'launch_year_est = current_year + duration_to_approval (CE-02 합)
+
+    patent_life_at_launch = patent_expiry_year − launch_year_est
+
+    flag: < 5 → caution "독점 기간 짧음 — PTE·데이터 보호(RE-03) 확인" ; 미입력 → ''미확보''
+
+    '
+  outputs:
+  - launch_year_est
+  - patent_life_at_launch
+  - flag
+  params:
+  - C02:기간 표
+  - T03:플래그 밴드 규칙
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: TE-04
+  group: T_axis
+  name: 존속기간 연장·데이터 보호 반영
+  question: 연장제도까지 넣으면 실효 만료는 언제인가
+  inputs:
+  - patent_expiry_year
+  - approval_year
+  - jurisdiction
+  formula: effective_patent = patent_expiry + min(PTE(허가 지연 보상, US 최대 5년·총 14년 상한), 규정) ; effective_loe = max(effective_patent, RE-03 exclusivity). 정식판
+  outputs:
+  - effective_loe_year
+  params:
+  - T03:PTE 규칙
+  - R02:독점권 표
+  mvp: false
+  status: formal
+  pattern: CALC
+- id: TE-05
+  group: T_axis
+  name: evidence_tier 부여
+  question: 타깃 근거는 어느 층위인가
+  inputs:
+  - evidence_items_list
+  formula: 각 근거에 T04 규칙으로 correlation/association/dependency/causation 부여. 자산의 타깃 근거 등급 = 최고 층위(승격 금지). 합성 점수(Open Targets 등)는 분해해서만 표시
+  outputs:
+  - evidence_tier_max
+  - items_tagged
+  params:
+  - T04:evidence_tier 규칙(대표 9/23)
+  mvp: true
+  status: blocked
+  pattern: MATCH
+- id: TE-06
+  group: T_axis
+  name: 특허 강도
+  question: 물질·용도·제법 중 무엇을 가졌고 어디까지 커버하는가
+  inputs:
+  - patent_families_list
+  formula: 정식판. 청구항 유형·국가 커버리지·잔여기간 표. 점수화하지 않는다
+  outputs:
+  - strength_table
+  params:
+  - T03:특허 유형 규칙
+  mvp: false
+  status: formal
+  pattern: MATCH
+- id: TE-07
+  group: T_axis
+  name: 플랫폼 진위
+  question: 플랫폼 기술이라는 주장에 근거가 있는가
+  inputs:
+  - asset_count
+  - shared_mechanism_flag
+  - external_validation_list
+  formula: 정식판. 기존 T-SD6 규칙 재태깅. FE-B10 플랫폼 옵션의 게이트
+  outputs:
+  - platform_flag
+  - evidence
+  params:
+  - T05:플랫폼 규칙
+  mvp: false
+  status: formal
+  pattern: MATCH
+- id: TE-08
+  group: T_axis
+  name: 특허 포트폴리오 요약(IPC 기반)
+  question: 이 회사·발명자가 가진 특허는 어떤 기술 영역이고, 쉽게 말해 무엇인가
+  inputs:
+  - patent_records_list
+  formula: 'records = KIPRIS 조회(출원인명 또는 발명자명 또는 특허번호) 또는 사용자 입력 특허번호
+
+    group by IPC 서브그룹(T06 등록부 매칭, 없으면 상위 메인그룹·서브클래스로 완화 + badge)
+
+    각 그룹: 건수, 최근 출원연도, 등록 여부, 존속기간 만료(등록 특허만: 출원일+20년; 아니면 ''미확보''), T06 투자자용 설명 문장
+
+    물질특허 후보 = IPC ∈ {C07K16, C07D, C07C, C07K14, C12N15} ∧ 청구항 제목에 화합물·항체·서열 → badge=substance_candidate (추정, 확정 아님)
+
+    출력은 목록·요약이며 강도 점수는 내지 않는다
+
+    '
+  outputs:
+  - ipc_groups_list
+  - substance_candidates_list
+  - earliest_expiry_year
+  params:
+  - T06:IPC 설명 등록부
+  - T07:IPC→모달리티 힌트
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: TE-09
+  group: T_axis
+  name: 특허 기반 모달리티·적응증 힌트
+  question: 특허 분류만으로 이 회사의 약물 종류와 치료 영역을 미리 짐작할 수 있는가
+  inputs:
+  - ipc_groups_list
+  formula: 'modality_hint = T07 표에서 IPC 접두어 매칭 → 최다 건수 태그(동률이면 둘 다). A61P 코드는 적응증 힌트로만
+
+    화면: 입력 화면에서 "특허상 {태그}로 보입니다 — 맞으면 선택" 프리필. 사용자가 확정하기 전에는 저장하지 않는다
+
+    '
+  outputs:
+  - modality_hint
+  - indication_hint_ipc
+  params:
+  - T07:IPC→모달리티 힌트
+  mvp: true
+  status: ready
+  pattern: CALC
+- id: NE-01
+  group: N_axis
+  name: 트리거 분류
+  question: 들어온 뉴스가 어느 축의 어느 값을 흔드는가
+  inputs:
+  - news_item
+  formula: 정식판. 기존 N축 6분류(경쟁 승인·실패, 규제 변경, 딜, 안전성, 약가, 거시)로 분류 → 영향 축·도메인 태그. 값을 쓰지 않는다
+  outputs:
+  - trigger_class
+  - affected_domains
+  params:
+  - N01:분류 규칙
+  mvp: false
+  status: formal
+  pattern: MATCH
+- id: NE-02
+  group: N_axis
+  name: 유효기간 액션
+  question: 어떤 청크를 만료·재생성해야 하는가
+  inputs:
+  - trigger_class
+  - affected_domains
+  formula: 정식판. 액션 5종(재생성·강등·만료·검토 요청·무시)을 도메인별로 결정. 자동 실행 없음, 목록만
+  outputs:
+  - action_list
+  params:
+  - N01:액션 규칙
+  mvp: false
+  status: formal
+  pattern: MATCH
+- id: NE-03
+  group: N_axis
+  name: 경쟁 이벤트 감지
+  question: 같은 적응증에서 승인·실패·딜이 있었나
+  inputs:
+  - indication_code
+  - window_days
+  formula: 정식판. CT.gov 상태 변경 + 공시 + 뉴스 검색 → 이벤트 목록. ME-05·CE-07 갱신 트리거
+  outputs:
+  - events_list
+  params:
+  - N01:이벤트 규칙
+  mvp: false
+  status: formal
+  pattern: MATCH

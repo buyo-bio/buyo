@@ -1,0 +1,35 @@
+{
+  "name": "buyo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:load": "tsx scripts/load.ts",
+    "db:check": "tsx scripts/check-case-a.ts",
+    "chunks:check": "tsx scripts/check-chunks.ts",
+    "norm:check": "tsx scripts/check-normalize.ts",
+    "engines:check": "tsx scripts/check-engines.ts",
+    "cards:check": "tsx scripts/check-assemble.ts",
+    "gen:modality": "tsx scripts/gen-modality-options.ts",
+    "collect:kipris": "tsx scripts/collect-kipris.ts",
+    "patents:check": "tsx scripts/check-patents.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "dotenv": "^16.4.5",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "csv-parse": "^5.5.6",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "yaml": "^2.5.0"
+  }
+}

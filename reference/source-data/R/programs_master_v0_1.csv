@@ -1,0 +1,14 @@
+﻿program,jurisdiction,essence,lever,quant_direction,risk_note,tier_validity
+Fast Track,FDA,"중대질환+미충족, 소통·rolling review",t (소),단계 단축보다 enabler 성격,단독 효과 작음,T1 / 상시
+Breakthrough(BTD),FDA,초기 임상서 실질적 개선 근거,t(중)+PoS_reg↑,개발 단축 + 허가율 상향 시그널,지정≠승인보장,T1 / 상시
+Accelerated Approval(AA),FDA,대리지표 기반 조기 허가,t↓↓ + PoS tail risk,"수년 조기 매출 발생, 단 확증임상 실패시 철회",FDORA 이후 확증임상 착수 선결·철회 절차 간소화,T1 / 2023~
+Priority Review,FDA,심사 6개월(vs 표준 10개월),t ~4개월↓,심사단계 한정 단축,—,T1 / 상시
+Orphan(ODD),FDA,희귀질환 지정,exclusivity↑,7년 독점 + 세제·수수료 면제,시장 작으나 단가↑,T1 / 상시
+PRIME,EMA,BTD 대응,t(중)+PoS시그널,조기·강화 소통,—,T1 / 상시
+Accelerated Assessment,EMA,심사 150일(vs 210일),t↓,심사단계 단축,—,T1 / 상시
+Conditional MA(CMA),EMA,AA 대응 조건부 허가,t↓↓ + tail risk,사후 확증의무,갱신·철회 리스크,T1 / 상시
+Orphan(EU),EMA,희귀 지정,exclusivity↑,10년 독점(US보다 김),—,T1 / 상시
+우선심사,MFDS,우선순위 심사,t↓(소),신속심사보다 약한 단계,—,T1 / 상시
+조건부 허가,MFDS,대리지표·제한자료+시판후 확증,t↓↓ + tail risk,AA/CMA 대응,확증 미달시 허가 취소,T1 / 상시
+희귀의약품 지정,MFDS,국내 희귀 지정,exclusivity↑(재심사기간),자료요건 경감,—,T1 / 상시
+첨단바이오(세포·유전자),MFDS,첨단재생바이오법 별도 트랙,t·PoS_reg 별도체계,장기추적관찰 의무,일반 화학의약품과 경로 상이,T1 / 상시
