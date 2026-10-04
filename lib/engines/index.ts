@@ -10,7 +10,7 @@
 import type { Conditions } from "../types";
 import type { EngineResult } from "./base";
 import { CE_01, CE_02, CE_06, durationToApproval } from "./clinical";
-import { ME_08 } from "./market";
+import { ME_02, ME_08 } from "./market";
 import { TE_03, TE_08, TE_09 } from "./patent";
 import type { PatentRecord } from "../collect/kipris";
 import { FE_A01, FE_A02, FE_A03, FE_A04, FE_A05, FE_B10, type RunwayInput, type Target } from "./finance";
@@ -70,6 +70,8 @@ export type RunOutput = {
   gap: EngineResult;
   /** 기술이전 딜 컴프 */
   deals: EngineResult;
+  /** 국내 환자 수(M02) */
+  patients: EngineResult;
   /** 특허 포트폴리오 · 모달리티 힌트 · 만료 정렬 */
   portfolio: EngineResult;
   patentHint: EngineResult;
@@ -105,6 +107,7 @@ export async function runEngines(cond: Conditions, inp: RunInput): Promise<RunOu
 
   // ── M축: 같은 조건의 기술이전은 얼마였나
   const deals = await ME_08(cond);
+  const patients = await ME_02(cond);
 
   // ── T축: 특허
   const portfolio = await TE_08(inp.patent_records ?? []);
@@ -124,7 +127,7 @@ export async function runEngines(cond: Conditions, inp: RunInput): Promise<RunOu
   const gate = await CE_06([...success.basis_chunks, ...duration.basis_chunks]);
 
   return {
-    success, duration, runway, bench, need, gap, deals,
+    success, duration, runway, bench, need, gap, deals, patients,
     portfolio, patentHint, patentAlign,
     rcr, downside, gate, blocked: BLOCKED_ENGINES,
   };

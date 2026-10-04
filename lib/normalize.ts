@@ -13,6 +13,9 @@
  */
 import { chunkSource } from "./engines/base";
 import type { Chunk, Conditions, DiagnoseInput } from "./types";
+import indIndex from "../data/ref/indication_index.json";
+
+const IND_INDEX = indIndex as { source: string; map: Record<string, string> };
 
 // ─────────────────────────────────────────────
 // T01 모달리티 등록부
@@ -261,6 +264,21 @@ export const INFLECTION_KO: Record<string, string> = {
 };
 
 // ─────────────────────────────────────────────
+// 적응증 마스터 이름 되찾기
+//
+// M02 는 마스터의 name_ko 하나로 걸려 있다. 화면에서 온 것은
+// 고른 코드(MeSH:D013274)이거나 사용자가 적은 글자다.
+// 색인은 마스터 CSV 에서 뽑은 것이다(npm run gen:ind).
+// ─────────────────────────────────────────────
+function indicationName(text?: string, code?: string): string | null {
+  const m = IND_INDEX.map;
+  for (const k of [code, code?.replace(/^(MeSH|KCD):/, ""), text?.trim()]) {
+    if (k && m[k]) return m[k];
+  }
+  return text?.trim() || null;
+}
+
+// ─────────────────────────────────────────────
 // 전부 묶어서 — 입력 → 조건 5개
 // ─────────────────────────────────────────────
 export async function normalize(
@@ -278,8 +296,24 @@ export async function normalize(
   const mod = await resolveModality(inp.modality);
   if (mod.badge) badges.push(mod.badge);
 
-  const ind = resolveIndication(inp.indication);
+  // 적응증 — 화면에서 고른 값이 있으면 그걸 믿는다.
+  //
+  // 고른 값은 DB 의 적응증 마스터(1층 216행 / 2층 KCD 14,590행)에서 온 것이라
+  // 코드에 손으로 적어 둔 사전보다 정확하다. 사전은 고르지 않았을 때만 쓴다.
+  const picked = inp.indication_code || inp.disease_group || inp.therapeutic_area;
+  const ind = picked
+    ? {
+        code: inp.indication_code ?? null,
+        group: inp.disease_group ?? null,
+        rare: (inp.rare ?? "N") as "Y" | "N",
+        note: undefined as string | undefined,
+      }
+    : resolveIndication(inp.indication);
   if (ind.note) badges.push(ind.note);
+
+  // 목록에 없는 병을 손으로 적었을 때 — 막지 않고 질환군 없이 돈다(9/27 지시 4항)
+  if (!picked && !ind.group)
+    badges.push("목록에 없는 적응증입니다 — 질환군을 고르면 더 정확해집니다");
 
   const fin = financeState({
     cash: inp.cash,
@@ -303,6 +337,12 @@ export async function normalize(
     modality_badge: mod.badge,
     indication_code: ind.code,
     disease_group: ind.group,
+    therapeutic_area: inp.therapeutic_area ?? null,
+    query_en: inp.query_en ?? null,
+    // M02(국내 환자 수)는 적응증 마스터의 name_ko 로 걸려 있다.
+    // 적은 글자가 마스터 이름과 다를 수 있다("CLDN18.2 양성 위암…" → "위암").
+    // 고른 코드로 마스터 이름을 되찾아 쓴다. 못 찾으면 적은 글자 그대로 둔다.
+    indication_name: indicationName(inp.indication, inp.indication_code),
     phase: inp.phase,
     clinical_phase: cp.phase,
     rare: ind.rare,

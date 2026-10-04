@@ -9,6 +9,7 @@
  */
 import { DiagnoseInput } from "./types";
 import { normalize, nextInflection } from "./normalize";
+import { factsFromInput } from "./facts";
 import { runEngines, matchRules, resetReads, readStats } from "./engines";
 import { assemble, type Board } from "./assemble";
 import { loadPatents } from "./collect/patents-cache";
@@ -116,8 +117,19 @@ export async function runDiagnose(
     planned_raise_date: opts.planned_raise_date as string | undefined,
   });
 
-  const regulatory = await matchRules("RE-02", cond, { limit: 4 });
-  const patentRules = await matchRules("TE-02", cond, { limit: 2 });
+  // 규칙의 applies_when 이 묻는 칸들을 모은다.
+  // 화면에서 안 받은 칸은 넣지 않는다 — 추정해 채우면 거짓 판정이 된다.
+  const rcrWorst = (engines.rcr.values as {
+    targets?: { RCR: number }[];
+  }).targets?.slice(-1)[0]?.RCR;
+  const facts = factsFromInput(cond, { ...input, ...opts }, {
+    rcr: rcrWorst,
+    backup_n: ((opts.backup_assets as string[]) ?? []).length,
+  });
+
+  const design = await matchRules("CE-04", cond, { limit: 6, facts });
+  const regulatory = await matchRules("RE-02", cond, { limit: 4, facts });
+  const patentRules = await matchRules("TE-02", cond, { limit: 2, facts });
 
   const seen = readStats().unique;
   let total: number | null = null;
@@ -132,6 +144,7 @@ export async function runDiagnose(
 
   // ⑤ 조립 — 문장 틀에 위 결과만 끼운다. 여기서 DB를 다시 보지 않는다.
   const board = await assemble(cond, badges, engines, {
+    design: design.values,
     regulatory: regulatory.values,
     patentRules: patentRules.values,
   });

@@ -5,6 +5,13 @@
  * 이 파일 하나가 "타입 정의"이자 "검사기"다.
  */
 import { z } from "zod";
+import { isKnownDomain, MODALITY_TAGS, DISEASE_GROUPS as ENUM_DISEASE_GROUPS } from "./enums";
+import { JUDGE_KEYS } from "./judge-fields";
+
+/** 자기신고 칸은 등록부에서 그대로 받는다 — 빈 글자는 안 온다(폼이 빼고 보낸다) */
+const JUDGE_SHAPE = Object.fromEntries(
+  JUDGE_KEYS.map((k) => [k, z.string().min(1).optional()])
+) as Record<string, z.ZodOptional<z.ZodString>>;
 
 // ─────────────────────────────────────────────
 // 값 목록
@@ -19,24 +26,13 @@ export const PHASES = [
 ] as const;
 
 /**
- * 모달리티 — T01 등록부(22개) 기준.
- * 화면 선택지도 이 목록을 따른다.
+ * 모달리티 — enums_v1.json 이 정본이다(T01 등록부와 같은 목록).
+ * 손으로 적어 두면 새 태그가 생길 때 어긋난다. 실제로 22개에 멈춰 있었다.
  */
-export const MODALITIES = [
-  "small_molecule",
-  "antibody", "antibody_mAb", "antibody_bispecific",
-  "antibody_fragment", "antibody_Fc_fusion", "antibody_other",
-  "ADC",
-  "cell_therapy", "cell_CART", "cell_TCRT", "cell_NK", "cell_MSC",
-  "cell_iPSC", "cell_somatic", "cell_DC_CIK", "cell_other",
-  "gene_therapy", "peptide", "vaccine", "biosimilar", "other",
-] as const;
+export const MODALITIES = MODALITY_TAGS as [string, ...string[]];
 
-/** 질환군 7개 (axes_v3) */
-export const DISEASE_GROUPS = [
-  "전체", "항암", "감염", "대사·내분비", "심혈관",
-  "중추신경(신경)", "중추신경(정신)",
-] as const;
+/** 질환군 — enums_v1.json 의 disease_group (전체·항암·감염·대사·심혈관·신경·정신·기타) */
+export const DISEASE_GROUPS = ENUM_DISEASE_GROUPS;
 
 // ─────────────────────────────────────────────
 // 청크
@@ -98,7 +94,9 @@ export type Chunk = z.infer<typeof ChunkSchema>;
 // V-00 ~ V-10 검사
 // 설계서 5장 그대로. 통과 못 하면 이유를 문자열로 돌려준다.
 // ─────────────────────────────────────────────
-const ID_RE = /^[A-Z]{1,3}[-]?\d{2}-\d{4}$/;
+// 청크 ID 는 "<도메인>-<네 자리>" 다. 도메인 목록은 enums_v1.json 이 정본이다.
+//   예전 정규식 /^[A-Z]{1,3}-?\d{2}-\d{4}$/ 는 글자가 뒤에 오는 R02X 를 막았다.
+const ID_RE = /^([A-Z][A-Z0-9]{1,4})-(\d{4})$/;
 
 export function validateChunk(c: Chunk): string[] {
   const e: string[] = [];
@@ -109,9 +107,13 @@ export function validateChunk(c: Chunk): string[] {
   if (!c.text?.trim()) e.push("V-00 text 비어 있음");
   if (!c.trust_tier) e.push("V-00 trust_tier 없음");
 
-  // V-02 ID 형식
-  if (c.chunk_id && !ID_RE.test(c.chunk_id))
-    e.push(`V-02 ID 형식 위반: ${c.chunk_id}`);
+  // V-02 ID 형식 + 등록된 도메인인가
+  if (c.chunk_id) {
+    const m = ID_RE.exec(c.chunk_id);
+    if (!m) e.push(`V-02 ID 형식 위반: ${c.chunk_id}`);
+    else if (!isKnownDomain(m[1]))
+      e.push(`V-02 등록되지 않은 도메인: ${m[1]} (enums_v1.json 의 domain_id 에 없음)`);
+  }
 
   // V-03 parameter 완전성 — value·unit·출처가 다 있어야 한다
   //
@@ -153,11 +155,17 @@ export function validateChunk(c: Chunk): string[] {
     e.push("V-06 trust_tier 1 인데 immutable 아님");
 
   // V-09 유효기간 지남
+  //
+  // 예외: no_successor_reference 배지.
+  //   "대체할 후속 공개 자료가 존재하지 않는 업계 표준값"이라는 뜻이다.
+  //   비임상→1상 전환(Paul 2010)이 그렇다 — Citeline·BIO·IQVIA 가 1상부터
+  //   집계해서 더 새 자료가 아예 없다. 기간이 지났다고 내리면 그 자리가 영영 빈다.
   if (c.temporal_validity && c.temporal_validity !== "계속") {
     const end = c.temporal_validity.split("/")[1]?.trim();
     if (end && end !== "계속" && /^\d{4}-\d{2}$/.test(end)) {
       const now = new Date().toISOString().slice(0, 7);
-      if (end < now && !(c.badges ?? []).includes("expired"))
+      const bs = c.badges ?? [];
+      if (end < now && !bs.includes("expired") && !bs.includes("no_successor_reference"))
         e.push(`V-09 유효기간 지남(${end}) — expired 배지 없음`);
     }
   }
@@ -171,6 +179,19 @@ export function validateChunk(c: Chunk): string[] {
 export const DiagnoseInput = z.object({
   modality: z.enum(MODALITIES),
   indication: z.string().min(1),
+
+  // ── 자동완성에서 고른 값 (목록에서 골랐을 때만 온다)
+  //
+  // 손으로 적은 글자만으로는 질환군을 알 수 없다. 골랐으면 화면이 같이 보내 준다.
+  // 안 보내면 ②정규화가 예전처럼 글자로 찾아보고, 못 찾으면 질환군 없이 돈다.
+  /** 1층 "MeSH:D003924" / 2층 "KCD:E11" */
+  indication_code: z.string().optional(),
+  disease_group: z.string().optional(),
+  /** 세부 치료영역 — 질환군 아래 한 겹 (endocrine, oncology_solid …) */
+  therapeutic_area: z.string().optional(),
+  /** CT.gov 조회어. 한글로는 안 잡힌다 */
+  query_en: z.string().optional(),
+  rare: z.enum(["Y", "N"]).optional(),
   phase: z.enum(PHASES),
   exit_route: z.enum(["license_out", "self_develop"]).default("license_out"),
   /** 회사가 밝힌 출구 시점 — "P1_complete" 처럼. 없으면 등록부 기본값 */
@@ -181,6 +202,14 @@ export const DiagnoseInput = z.object({
   comparator: z.string().optional(),
   n: z.number().optional(),
   duration_m: z.number().optional(),
+  primary_endpoints_n: z.number().optional(),
+
+  // 판정 자기신고 — 칸 이름과 고를 수 있는 값은 lib/judge-fields.ts 등록부가 정본이다.
+  //
+  // 여기서 값 목록을 z.enum 으로 묶지 않는다. 등록부에 칸을 하나 더할 때마다
+  // 이 파일도 고쳐야 하고, 빠뜨리면 값이 조용히 버려진다. 글자로 받고
+  // 걸러내는 일은 applies_when 평가기가 한다 — 모르는 값은 그냥 안 맞는 값이다.
+  ...JUDGE_SHAPE,
 
   // 재무 (억 원)
   cash: z.number().optional(),
@@ -200,6 +229,12 @@ export type Conditions = {
   modality_badge?: string;     // "이중항체 값 미확보 → 단클론항체 값 사용"
   indication_code: string | null;
   disease_group: string | null;
+  /** 세부 치료영역. 질환군 아래 한 겹 — 조회 우선순위에서 질환군보다 먼저 본다 */
+  therapeutic_area?: string | null;
+  /** CT.gov 조회어(영문). 한글 적응증명으로는 안 잡힌다 */
+  query_en?: string | null;
+  /** 적응증 마스터의 name_ko — M02 국내 환자 수가 이 이름으로 걸려 있다 */
+  indication_name?: string | null;
   phase: string;
   /** 임상 값이 붙는 단계 — 비임상이면 P1. 확률·기간·비용 조회는 이걸 쓴다 */
   clinical_phase?: string;

@@ -21,13 +21,10 @@ const usdM = (v: number | null) => (v === null ? "근거 없음" : `$${(v / 1e6)
 
 async function runCase(k: DemoKey) {
   const req = toRequest(DEMO_CASES[k].form);
-  const { cond, badges } = await normalize({
-    modality: req.modality as never, indication: req.indication,
-    phase: req.phase as never, exit_route: req.exit_route, exit_point: req.exit_point,
-    cash: req.cash, monthly_burn: req.monthly_burn,
-    listed: req.listed, convertible: req.convertible,
-    license_income_ttm: req.license_income_ttm,
-  });
+  // 필드를 골라 넘기면 새로 생긴 값(치료영역 등)이 조용히 빠진다.
+  // 실제로 그래서 설계안 최소 비용이 '전체' 값으로 내려갔다.
+  // API(app/api/diagnose)와 같은 모양으로 통째로 넘긴다.
+  const { cond, badges } = await normalize(req as never);
   const stages = nextInflection(req.phase, req.exit_route, { exit_point: req.exit_point }).stages;
   const engines = await runEngines(cond, {
     cash: req.cash, restricted_cash: req.restricted_cash,

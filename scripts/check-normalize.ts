@@ -11,7 +11,13 @@ import { financeState, nextInflection, resolveIndication, INFLECTION_KO } from "
 // ── T01 등록부를 파일에서 읽어 대체 규칙을 재현한다
 type Entry = { tag: string; parent: string | null; label: string; status: string; hasValue: boolean };
 const reg = new Map<string, Entry>();
-for (const l of fs.readFileSync(path.join("data", "chunks", "T01_chunks_v0.jsonl"), "utf8")
+// 파일 이름이 묶음마다 바뀐다(T01_chunks_v0 → v2 → T01_modality_registry).
+// 이름이 아니라 "T01 줄이 들어 있는 파일"을 찾는다.
+const CH = path.join("data", "chunks");
+const T01 = path.join(CH, fs.readdirSync(CH).filter((f) => f.endsWith(".jsonl"))
+  .find((f) => fs.readFileSync(path.join(CH, f), "utf8").includes('"domain_id": "T01"'))!);
+
+for (const l of fs.readFileSync(T01, "utf8")
   .split("\n").filter(Boolean)) {
   const d = JSON.parse(l);
   if (!d.tag) continue;

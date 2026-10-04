@@ -5,19 +5,14 @@
  *   CE-02  단계 기간 조회
  *   CE-06  임상 데이터 신뢰 게이트
  */
-import type { Chunk, Conditions } from "../types";
+import type { Conditions } from "../types";
 import {
-  Ctx, chunkSource, field, indicationCode, num, rankByFit,
+  Ctx, chunkSource, field, num,
   type EngineResult,
 } from "./base";
 import { MONTHS_PER_YEAR, nextPhase } from "./axes";
-
-/** 청크가 말하는 질환군 이름(=BUYO 질환군 7개 중 하나) */
-function indicationText(c: Chunk): string | null {
-  const ind = field(c, "indication");
-  if (ind && typeof ind === "object") return ((ind as Record<string, unknown>).text as string) ?? null;
-  return null;
-}
+import { resolveSlotFrom, type ResolveInput, type SlotSpec } from "../resolve";
+import { slot, levelNote } from "../slots";
 
 // ─────────────────────────────────────────────
 // CE-01 층화 성공확률 조회
@@ -26,81 +21,110 @@ function indicationText(c: Chunk): string | null {
 //   · 누적(cumulative)과 조건부(conditional)는 따로 돌려준다. 다시 곱하지 않는다.
 //   · rare=Y 면 질환군 값 한 줄 + 희귀 값 한 줄. 두 값을 곱하거나 평균내지 않는다.
 // ─────────────────────────────────────────────
+/** 값 하나 + 그 값을 어느 칸에서 찾았는지 */
+export type Picked = {
+  value: number;
+  chunk_id: string;
+  /** 1 정확 · 2 질환군 · 3 비항암 대표 · 4 전체 평균 · 5 설계상 전체값 */
+  level: number;
+  phase_to?: string | null;
+};
+
 export type SuccessValues = {
-  conditional: { value: number; chunk_id: string; phase_to: string | null } | null;
-  cumulative: { value: number; chunk_id: string; phase_to: string | null } | null;
-  /** 같은 누적값을 다른 기준(질환군)으로 잡은 행 — 두 값 사이에서 읽게 한다 */
-  cumulative_alt: { value: number; chunk_id: string; basis_label: string } | null;
-  rare_row: { value: number; chunk_id: string } | null;
+  conditional: Picked | null;
+  /** CLIN-1a — 모달리티 기준 누적 승인확률 */
+  cumulative: (Picked & { basis_label?: string }) | null;
+  /** CLIN-1b — 적응증(치료영역) 기준. 두 값을 곱하거나 평균내지 않는다 */
+  cumulative_alt: (Picked & { basis_label: string }) | null;
+  /** CLIN-1c — 희귀 둘째 줄 */
+  rare_row: Picked | null;
+  /**
+   * CLIN-1p — 비임상→1상 진입 확률. 비임상 단계에서만 나온다.
+   *
+   * 위 누적·조건부 값과 곱하지 않는다(대표님 20261003_1501).
+   * 누적 값은 '1상 진입 이후' 를 세는 값이고 이건 '1상에 들어가는가' 를 세는 값이다.
+   * 둘을 곱하면 출처가 다른 두 집계를 하나로 만드는 셈이 된다.
+   */
+  entry: Picked | null;
+  /** 비임상이라 위 값들이 '1상 진입 이후' 기준인가 */
+  from_p1: boolean;
 };
 
 export async function CE_01(cond: Conditions): Promise<EngineResult<SuccessValues>> {
   const ctx = new Ctx("CE-01");
   const src = await chunkSource();
 
-  // 비임상 회사는 P1 기준 값을 본다(clinical_phase). 배지는 정규화가 붙였다.
-  const lookupPhase = cond.clinical_phase ?? cond.phase;
-  const rows = await src.find(
-    { modality: cond.modality, phase: lookupPhase },
-    { domain: "C01", kind: "parameter" }
-  );
-
-  // 질환군은 코드가 아니라 이름으로 맞춘다(청크가 '항암'처럼 적어 둔다)
-  const fits = rows.filter((c) => {
-    const t = indicationText(c);
-    return t === null || t === cond.disease_group;
-  });
-  const ranked = rankByFit(fits, {
+  // 자리 정의와 찾는 순서는 golden_cases.json 이 정본이다. 여기서 또 정하지 않는다.
+  //   CLIN-1a  모달리티 기준   → modality → 전체 모달리티
+  //   CLIN-1b  치료영역 기준   → ta → 질환군 → 비항암 대표 → 전체
+  //   CLIN-1c  희귀 둘째 줄    → rare
+  const inp: ResolveInput = {
     modality: cond.modality,
-    indication_code: cond.indication_code,
+    phase: cond.phase,
+    therapeutic_area: cond.therapeutic_area ?? null,
+    disease_group: cond.disease_group,
+    rare: cond.rare,
+  };
+
+  /** 사다리로 찾은 것 중 숫자가 있는 첫 장 */
+  const take = async (
+    spec: ReturnType<typeof slot>,
+    over?: Partial<SlotSpec>
+  ): Promise<Picked | null> => {
+    const r = await resolveSlotFrom(src, { ...spec, ...over }, inp);
+    const hit = r.chunks.find((c) => num(c) !== null);
+    if (!hit) return null;
+    ctx.use(hit);
+    const note = levelNote(r.level);
+    if (note) ctx.badge(`${spec.label} — ${note}`);
+    return {
+      value: num(hit)!,
+      chunk_id: hit.chunk_id,
+      level: r.level,
+      phase_to: (field(hit, "phase_to") as string) ?? null,
+    };
+  };
+
+  const a = slot("CLIN-1a");
+  const b = slot("CLIN-1b");
+
+  // 누적(cumulative) 두 줄 — 모달리티 기준과 치료영역 기준
+  const cumulative = await take(a);
+  const alt = await take(b);
+
+  // 조건부(conditional)는 같은 사다리에 기준만 바꿔 쓴다.
+  // 누적과 조건부를 다시 곱하지 않는다(설계서 CE-01).
+  const conditional = await take(a, {
+    filter: { ...(a.filter ?? {}), basis: "conditional", to: undefined },
   });
 
-  const pick = (basis: "conditional" | "cumulative") =>
-    ranked.find((c) => field(c, "probability_basis") === basis && num(c) !== null) ?? null;
-
-  const condRow = ctx.use(pick("conditional"));
-  const cumRow = ctx.use(pick("cumulative"));
-
-  if (!condRow) ctx.lack("이 조건의 조건부 성공확률");
-  if (!cumRow) ctx.lack("이 조건의 누적 성공확률");
+  if (!conditional) ctx.lack("이 조건의 조건부 성공확률");
+  if (!cumulative) ctx.lack("이 조건의 누적 성공확률");
 
   // 희귀는 곱하지 않고 한 줄 더 붙인다
-  let rareRow: Chunk | null = null;
+  let rare_row: Picked | null = null;
   if (cond.rare === "Y") {
-    rareRow = ctx.use(ranked.find((c) => field(c, "rare") === "Y" && num(c) !== null) ?? null);
-    if (rareRow) ctx.badge("희귀 값은 별도 줄로 표시합니다 — 질환군 값과 곱하지 않습니다");
+    rare_row = await take(slot("CLIN-1c"));
+    if (rare_row) ctx.badge("희귀 값은 별도 줄로 표시합니다 — 질환군 값과 곱하지 않습니다");
     else ctx.note("희귀 전용 성공확률 행이 없어 질환군 값만 표시합니다");
   }
 
-  const wrap = (c: Chunk | null) =>
-    c && num(c) !== null
-      ? { value: num(c)!, chunk_id: c.chunk_id, phase_to: (field(c, "phase_to") as string) ?? null }
-      : null;
-
-  // 모달리티로 고른 누적값이 있으면, 질환군으로 고른 누적값도 한 줄 더 보여준다.
-  // 두 값을 곱하거나 평균내지 않는다 — 나란히 놓고 "사이에서 읽으라"고 쓴다.
-  let altRow: Chunk | null = null;
-  if (cumRow && cond.disease_group) {
-    altRow = ranked.find(
-      (c) =>
-        c.chunk_id !== cumRow.chunk_id &&
-        field(c, "probability_basis") === "cumulative" &&
-        indicationText(c) === cond.disease_group &&
-        field(c, "modality") == null &&
-        num(c) !== null
-    ) ?? null;
-    if (altRow) ctx.use(altRow);
-  }
+  // 비임상 칸 — 1상에 들어갈 확률을 한 줄 더 붙인다
+  const entry = cond.phase === "preclinical" ? await take(slot("CLIN-1p")) : null;
+  if (cond.phase === "preclinical" && !entry)
+    ctx.lack("비임상→1상 진입 확률");
 
   const values: SuccessValues = {
-    conditional: wrap(condRow),
-    cumulative: wrap(cumRow),
-    cumulative_alt: altRow && num(altRow) !== null
-      ? { value: num(altRow)!, chunk_id: altRow.chunk_id, basis_label: cond.disease_group! }
-      : null,
-    rare_row: rareRow && num(rareRow) !== null
-      ? { value: num(rareRow)!, chunk_id: rareRow.chunk_id }
-      : null,
+    conditional,
+    cumulative,
+    // 두 줄이 같은 청크면 한 줄만 보여 준다
+    cumulative_alt:
+      alt && cumulative && alt.chunk_id !== cumulative.chunk_id
+        ? { ...alt, basis_label: cond.disease_group ?? "적응증" }
+        : null,
+    rare_row,
+    entry,
+    from_p1: cond.phase === "preclinical",
   };
 
   if (!values.conditional && !values.cumulative)
@@ -128,12 +152,19 @@ export type DurationValues = {
   legs: DurationRow[];
   years_total: number | null;
   months_total: number | null;
-  duration_kind: "program_phase_transition";
+  /** 보통 program_phase_transition. 그 값이 없어 단일시험 값을 쓴 단계도 있다 */
+  duration_kind: string;
 };
 
 /**
  * stages 는 FE-D02 가 준 '변곡점까지 거치는 단계 목록'이다.
  * 각 단계의 '그 단계를 통과하는 데 걸린 기간'을 더한다.
+ *
+ * 찾는 순서는 golden_cases.json 의 CLIN-2 자리가 정한다
+ *   치료영역 → 질환군 → 비항암 대표 → 전체
+ *
+ * 같은 칸에 두 종류가 섞여 있으면 프로그램 기준(BIO)을 먼저 쓴다.
+ * 단일시험(Wong) 값만 있으면 그걸 쓰되 배지를 붙인다 — 둘을 합치지는 않는다(CE-02).
  */
 export async function CE_02(
   cond: Conditions,
@@ -141,33 +172,51 @@ export async function CE_02(
 ): Promise<EngineResult<DurationValues>> {
   const ctx = new Ctx("CE-02");
   const src = await chunkSource();
+  const spec = slot("CLIN-2");
 
   const legs: DurationRow[] = [];
+  let borrowedKind = false;
 
   for (const ph of stages) {
     const to = nextPhase(ph);
-    const rows = await src.find({ phase: ph }, { domain: "C02", kind: "parameter" });
-
-    const fits = rows.filter(
-      (c) =>
-        field(c, "duration_kind") === "program_phase_transition" &&
-        (field(c, "phase_to") ?? null) === to &&
-        num(c) !== null
+    const inp: ResolveInput = {
+      modality: cond.modality,
+      phase: ph,
+      therapeutic_area: cond.therapeutic_area ?? null,
+      disease_group: cond.disease_group,
+      rare: cond.rare,
+    };
+    const r = await resolveSlotFrom(
+      src,
+      { ...spec, filter: { ...(spec.filter ?? {}), to } },
+      inp
     );
 
-    // 질환군이 맞는 행 먼저, 없으면 전체(All indications) 행
-    const exact = fits.find((c) => indicationText(c) === cond.disease_group);
-    const all = fits.find((c) => indicationText(c) === null);
-    const hit = exact ?? all ?? null;
+    const withValue = r.chunks.filter((c) => num(c) !== null);
+    const prog = withValue.find(
+      (c) => field(c, "duration_kind") === "program_phase_transition"
+    );
+    const hit = prog ?? withValue[0] ?? null;
 
     if (!hit) {
       ctx.lack(`${ph} 단계 기간`);
       continue;
     }
-    if (!exact && all) ctx.badge(`${ph} 단계 기간은 질환군 값이 없어 전체 기준으로 표시합니다`);
-
     ctx.use(hit);
-    legs.push({ phase: ph, phase_to: to, years: num(hit)!, chunk_id: hit.chunk_id });
+
+    const note = levelNote(r.level);
+    if (note) ctx.badge(`${ph} 단계 기간 — ${note}`);
+    if (!prog) {
+      borrowedKind = true;
+      ctx.badge(`${ph} 단계 기간은 프로그램 기준 값이 없어 단일시험 기준으로 표시합니다`);
+    }
+
+    legs.push({
+      phase: ph,
+      phase_to: to,
+      years: num(hit)!,
+      chunk_id: hit.chunk_id,
+    });
   }
 
   const complete = legs.length === stages.length && stages.length > 0;
@@ -177,7 +226,7 @@ export async function CE_02(
     legs,
     years_total: years,
     months_total: years === null ? null : years * MONTHS_PER_YEAR,
-    duration_kind: "program_phase_transition",
+    duration_kind: borrowedKind ? "mixed" : "program_phase_transition",
   };
 
   if (legs.length === 0) return ctx.none(values, "이 단계의 기간 행이 없습니다");
@@ -195,15 +244,23 @@ export async function durationToApproval(cond: Conditions): Promise<{
   years: number | null; chunk_id: string | null;
 }> {
   const src = await chunkSource();
-  const phase = cond.clinical_phase ?? cond.phase;
-  const rows = await src.find({ phase }, { domain: "C02", kind: "parameter" });
-
-  const fits = rows.filter(
-    (c) => (field(c, "phase_to") ?? null) === "approved" && num(c) !== null
+  const spec = slot("CLIN-2");
+  const inp: ResolveInput = {
+    modality: cond.modality,
+    phase: cond.clinical_phase ?? cond.phase,
+    therapeutic_area: cond.therapeutic_area ?? null,
+    disease_group: cond.disease_group,
+    rare: cond.rare,
+  };
+  const r = await resolveSlotFrom(
+    src,
+    { ...spec, filter: { ...(spec.filter ?? {}), to: "approved" } },
+    inp
   );
-  const exact = fits.find((c) => indicationText(c) === cond.disease_group);
-  const all = fits.find((c) => indicationText(c) === null);
-  const hit = exact ?? all ?? null;
+  const withValue = r.chunks.filter((c) => num(c) !== null);
+  const hit =
+    withValue.find((c) => field(c, "duration_kind") === "program_phase_transition") ??
+    withValue[0] ?? null;
 
   return hit ? { years: num(hit)!, chunk_id: hit.chunk_id } : { years: null, chunk_id: null };
 }
@@ -243,8 +300,14 @@ export async function CE_06(chunkIds: string[]): Promise<EngineResult<GateValues
     if (typeof n === "number" && n < 10) badges.push("small_sample");
     if (field(c, "illustrative") === true) badges.push("limited_mapping");
 
+    // 유효기간이 지났으면 expired — 다만 대체할 자료가 없는 값은 빼 준다.
+    //
+    // no_successor_reference 는 "더 새 공개 자료가 존재하지 않는다"는 뜻이다.
+    // 이걸 expired 로 내리면 비임상 칸 첫 줄이 영영 빈다(대표 결정 2026-10-03).
+    // 대신 왜 옛 값인지는 화면에 적는다.
     const tv = field(c, "temporal_validity");
-    if (typeof tv === "string") {
+    const noSucc = badges.includes("no_successor_reference");
+    if (typeof tv === "string" && !noSucc) {
       const end = tv.split("/")[1]?.trim();
       if (end && /^\d{4}-\d{2}$/.test(end) && end < now) badges.push("expired");
     }

@@ -15,6 +15,64 @@ import { mergeFlags, type Flag } from "./engines/rules";
 import type { RunOutput } from "./engines";
 import { INFLECTION_KO } from "./normalize";
 
+/** 단계 한글 이름 — 화면 문장에 "preclinical" 이 그대로 나가면 안 된다 */
+const PHASE_KO: Record<string, string> = {
+  preclinical: "비임상", P1: "임상 1상", P2: "임상 2상",
+  P3: "임상 3상", NDA: "허가 신청", approved: "승인",
+};
+import { slot } from "./slots";
+import { factLabels, allEngineSide, userSide } from "./fact-labels";
+
+/** 판정 못 한 규칙 한 줄 — 왜 못 했는지에 따라 문구가 다르다 */
+function needLine(x: { text: string; missing: string[] }): CardLine {
+  const title = ruleTitle(x.text);
+  // 우리 자료와 사용자 입력이 섞여 있으면 사용자가 적을 수 있는 쪽만 묻는다 —
+  // 적을 수 없는 숫자를 적으라고 하면 안내가 아니라 핀잔이 된다.
+  const mine = userSide(x.missing);
+  return {
+    text: allEngineSide(x.missing)
+      ? T.rule_pending(title, factLabels(x.missing))
+      : T.rule_need(title, factLabels(mine)),
+    basis: [],
+  };
+}
+
+/**
+ * 규칙 문장에서 제도 이름만 — "[MFDS 희귀의약품 지정] 국내 희귀…" → "MFDS 희귀의약품 지정"
+ * 판정하지 못한 제도는 본문을 길게 늘어놓지 않고 이름만 적는다.
+ */
+/**
+ * 규칙 카드에서 화면에 낼 부분만 고른다.
+ *
+ * 규칙 청크 text 는 사람이 읽을 문장 하나가 아니라 여러 토막이 붙어 있다.
+ *   C04  "[설계 플래그 C04-D01] 조건: … 문장: … 근거: …"
+ *   R02  "MFDS 우선심사: … 작용 레버 … 단서: …. 규칙: …"
+ * 조건식은 화면이 이미 판정했으니 또 보여 줄 필요가 없고,
+ * R02 의 "규칙:" 꼬리는 13장이 글자까지 똑같아서 카드 넷이 같은 말을 반복한다
+ * (규제 카드 점검 7번). 둘을 잘라 낸다.
+ *
+ * 글자를 새로 짓지 않는다 — 청크가 붙여 둔 토막 중 하나를 고르는 것뿐이고,
+ * 자른 부분은 '근거 보기' 에서 원문 그대로 볼 수 있다.
+ */
+export function ruleSentence(text: string): string {
+  let t = text.trim();
+
+  // R02·R01 의 산정 메모 꼬리 — 모든 카드가 같은 문장을 달고 있다
+  t = t.replace(/\s*규칙:\s*[^]*$/, "").trim();
+
+  // C04 설계 플래그 — 조건식은 빼고 사람이 읽을 문장만
+  const m = /^(\[[^\]]+\])?\s*조건:\s*[^]*?문장:\s*([^]*?)(?:\s*근거:\s*[^]*)?$/.exec(t);
+  // 대괄호 머리([설계 플래그 C04-D01])는 떼고 문장만 — 규칙 번호는 '근거' 의 카드 번호로 본다
+  if (m) return m[2].trim();
+
+  return t;
+}
+
+function ruleTitle(text: string): string {
+  const m = /^\s*\[([^\]]+)\]/.exec(text) ?? /^([^:：]{2,40})[:：]/.exec(text);
+  return (m?.[1] ?? text.slice(0, 30)).trim();
+}
+
 export type CardFlag = Flag | "no_evidence";
 
 export type CardLine = {
@@ -24,7 +82,7 @@ export type CardLine = {
 };
 
 export type BoardCard = {
-  key: "clinical" | "market" | "regulatory" | "finance" | "patent" | "news";
+  key: "clinical" | "design" | "market" | "regulatory" | "finance" | "patent" | "news";
   title: string;
   flag: CardFlag;
   lines: CardLine[];
@@ -77,6 +135,11 @@ export type Board = {
 // 문장을 고치려면 여기만 고치면 된다. 엔진 코드는 건드리지 않는다.
 // ─────────────────────────────────────────────
 const T = {
+  // 비임상 칸 — 1상에 들어갈 확률과 그 다음 확률은 다른 집계다. 곱하지 않는다.
+  prob_entry: (p: string) =>
+    `비임상 후보물질이 1상에 진입하는 비율은 ${p} 입니다.`,
+  prob_from_p1: () =>
+    `아래 승인 확률은 1상 진입 이후부터 적용되는 값입니다 — 위 진입 비율과 곱하지 않습니다.`,
   prob_two: (cum: string, modLabel: string, alt: string, altLabel: string) =>
     `누적 승인 확률 ${cum}(${modLabel} 기준), ${altLabel} 기준 ${alt} — 두 값 사이에서 읽어야 합니다.`,
   prob_one: (cum: string, label: string) =>
@@ -93,6 +156,10 @@ const T = {
     `${label}까지 자금 충족 비율 ${rcr} — ${band} (필요 기간 ${months}개월)`,
   cover_raises: (n: string) => `변곡점 전에 추가 조달이 ${n}회 필요합니다.`,
   need: (usd: string) => `설계안 기준 임상 직접비는 최소 ${usd}입니다.`,
+  // 비임상·허가 단계에는 환자가 없다. 자료가 빠진 것이 아니라 해당이 없는 것이다.
+  // 빈 칸으로 두면 '못 찾았다' 로 읽히므로 그렇지 않다고 적어 둔다.
+  need_na: (phase: string) =>
+    `${phase} 단계에는 환자당 단가·대상자 수가 없어 설계안 기준 임상 직접비는 해당 없음입니다 — 1상부터 계산합니다.`,
   need_missing: (items: string) =>
     `여기에는 ${items}${josa(items, "이", "가")} 빠져 있어 '최소'입니다.`,
   bench: (usd: string, legs: string) =>
@@ -105,7 +172,9 @@ const T = {
     `${licensor} → ${cp} (${signed}) 계약금 ${upfront}`,
   deal_quart: (q1: string, med: string, q3: string) =>
     `계약금 사분위 ${q1}억 · 중앙 ${med}억 · ${q3}억`,
-  market_rest: () => `국내 환자 수와 급여 경로는 M01·M02 카드가 들어오면 채워집니다.`,
+  market_rest: () => `급여 경로는 M01 카드가 들어오면 채워집니다.`,
+  deal_excluded: (n: string, list: string) =>
+    `비교군 제외 ${n}건 — ${list}`,
   pat_head: (n: string, reg: string) => `특허 ${n}건이 조회됩니다(등록 ${reg}건).`,
   pat_group: (ipc: string, n: string, desc: string) => `${ipc} ${n}건 — ${desc}`,
   pat_substance: (list: string) => `물질특허 후보: ${list} (IPC 기준 추정이며 확정이 아닙니다)`,
@@ -113,6 +182,12 @@ const T = {
     `출시 추정 ${launch}년 시점에 물질특허가 ${life}년 남습니다(만료 ${expiry}년).`,
   patent_none: () => `만료일 미입력`,
   news_pending: () => `정식판에서 수집`,
+  // applies_when 이 "확인 필요" 로 나온 규칙 — 묻지 않은 조건을 충족한 것처럼 적지 않는다
+  rule_need: (title: string, fields: string) =>
+    `${title} — ${fields}${josa(fields, "을", "를")} 적으면 판정할 수 있습니다.`,
+  // 사용자가 적을 수 없는 칸이면 "적으면" 이라고 하지 않는다 — 우리 자료가 없는 것이다
+  rule_pending: (title: string, fields: string) =>
+    `${title} — ${fields} 자료를 아직 수집하지 않아 판정하지 않았습니다.`,
   no_card: (why: string) => why,
 } as const;
 
@@ -165,7 +240,15 @@ export async function assemble(
   r: RunOutput,
   extra: {
     /** 규제 칸 — matchRules("RE-02") 결과 */
-    regulatory?: { rules: { chunk_id: string; text: string; jurisdiction: string | null }[] } | null;
+    regulatory?: {
+      rules: { chunk_id: string; text: string; jurisdiction: string | null }[];
+      need_input?: { chunk_id: string; text: string; missing: string[] }[];
+    } | null;
+    /** 설계안 칸 — matchRules("CE-04") 결과 */
+    design?: {
+      rules: { chunk_id: string; text: string }[];
+      need_input?: { chunk_id: string; text: string; missing: string[] }[];
+    } | null;
     /** 특허 칸 — matchRules("TE-02") 결과 */
     patentRules?: { rules: { chunk_id: string; text: string }[] } | null;
     patent_expiry_year?: number;
@@ -180,10 +263,19 @@ export async function assemble(
       cumulative: { value: number; chunk_id: string } | null;
       cumulative_alt: { value: number; chunk_id: string; basis_label: string } | null;
       rare_row: { value: number; chunk_id: string } | null;
+      entry: { value: number; chunk_id: string } | null;
+      from_p1: boolean;
     };
     const d = r.duration.values as { years_total: number | null };
     const lines: CardLine[] = [];
     const modLabel = cond.modality_badge ? "단클론항체" : cond.modality || "전체";
+
+    // 비임상 칸은 '1상에 들어가는가' 를 먼저 말하고,
+    // 그 다음 값들이 '1상 진입 이후' 기준이라는 것을 밝힌다.
+    if (s.entry)
+      lines.push({ text: T.prob_entry(pct(s.entry.value)), basis: [s.entry.chunk_id] });
+    if (s.from_p1 && (s.cumulative || s.conditional))
+      lines.push({ text: T.prob_from_p1(), basis: [] });
 
     if (s.cumulative && s.cumulative_alt)
       lines.push({
@@ -227,6 +319,31 @@ export async function assemble(
     });
   }
 
+  // ── 설계안
+  //
+  // C04 설계 플래그다. 숫자를 내지 않고 "이 설계에 이런 점이 걸린다" 만 말한다.
+  // 문장은 청크 text 그대로다 — 여기서 설계를 평가하지 않는다.
+  {
+    const rules = extra.design?.rules ?? [];
+    const need = extra.design?.need_input ?? [];
+    const basis = rules.map((x) => x.chunk_id);
+
+    const lines: CardLine[] = rules.map((x) => ({
+      text: ruleSentence(x.text), basis: [x.chunk_id],
+    }));
+    for (const x of need.slice(0, 4)) lines.push(needLine(x));
+
+    cards.push({
+      key: "design", title: "설계안",
+      flag: rules.length ? await flagOf(basis) : "no_evidence",
+      lines: lines.length
+        ? lines
+        : [{ text: T.no_card("이 설계안에 걸리는 플래그가 없습니다"), basis: [] }],
+      pending: rules.length || need.length ? undefined : "설계안 칸을 채우면 플래그를 판정합니다",
+      basis_chunks: basis,
+    });
+  }
+
   // ── 시장
   {
     const d = r.deals.values as {
@@ -234,8 +351,26 @@ export async function assemble(
                upfront_text: string; chunk_id: string }[];
       n_total: number; n_disclosed: number;
       quartiles_krw_억: { q1: number; med: number; q3: number } | null;
+      excluded: { chunk_id: string; licensor: string; reason: string }[];
+    };
+    const pt = r.patients.values as {
+      rows: { chunk_id: string; code: string; value: number; text: string;
+              role: "default" | "detail"; notes: string[] }[];
+      first_line: boolean;
+      held_sentence: string | null;
     };
     const lines: CardLine[] = [];
+
+    // ── 국내 환자 수 — 숫자를 쓸 수 있는 값이 있을 때만 첫 줄에 올린다.
+    // 코드가 적응증보다 넓은 값(display_role=detail)은 첫 줄에 쓰지 않는다.
+    // 그 숫자로 "2만 명 미만/초과" 를 읽으면 적응증 단위 판정이 아니기 때문이다.
+    if (pt.held_sentence)
+      lines.push({ text: pt.held_sentence, basis: r.patients.basis_chunks });
+    for (const x of pt.rows) {
+      if (!pt.first_line && x.role === "default") continue;
+      if (pt.first_line && x.role === "detail") continue;
+      lines.push({ text: x.text, basis: [x.chunk_id], badges: x.notes });
+    }
 
     if (d.n_total > 0) {
       lines.push({ text: T.deal_head(String(d.n_total)), basis: r.deals.basis_chunks });
@@ -256,27 +391,51 @@ export async function assemble(
         });
     }
 
+    // 기술도입·제네릭·계열사 딜은 셈에서 뺐다. 왜 뺐는지는 적는다.
+    if (d.excluded?.length)
+      lines.push({
+        text: T.deal_excluded(
+          String(d.excluded.length),
+          [...new Set(d.excluded.map((x) => x.reason))].join(" · ")
+        ),
+        basis: d.excluded.slice(0, 5).map((x) => x.chunk_id),
+      });
+
     lines.push({ text: T.market_rest(), basis: [] });
 
     cards.push({
       key: "market", title: "시장",
-      flag: d.n_total > 0 ? await flagOf(r.deals.basis_chunks) : "no_evidence",
+      flag: d.n_total > 0 || pt.rows.length > 0
+        ? await flagOf([...r.deals.basis_chunks, ...r.patients.basis_chunks])
+        : "no_evidence",
       lines,
       pending: d.n_total > 0 ? undefined : r.deals.notes[0],
-      basis_chunks: r.deals.basis_chunks,
+      basis_chunks: [...r.deals.basis_chunks, ...r.patients.basis_chunks],
     });
   }
 
   // ── 규제
   {
     const rules = extra.regulatory?.rules ?? [];
+    const need = extra.regulatory?.need_input ?? [];
     const basis = rules.map((x) => x.chunk_id);
+
+    // 걸린 규칙은 문장을 그대로 낸다
+    const lines: CardLine[] = rules.map((x) => ({
+      text: ruleSentence(x.text),
+      basis: [x.chunk_id],
+      badges: x.jurisdiction ? [x.jurisdiction] : [],
+    }));
+
+    // 아직 묻지 않은 칸이 있어 판정하지 못한 제도 — 걸린 것으로 세지 않는다.
+    // 신호등도 켜지 않는다(basis 에 넣지 않는다). "적으면 판정합니다" 로만 적는다.
+    for (const x of need.slice(0, 4)) lines.push(needLine(x));
+
     cards.push({
       key: "regulatory", title: "규제",
       flag: rules.length ? await flagOf(basis) : "no_evidence",
-      // 규칙 카드는 문장을 그대로 낸다
-      lines: rules.length
-        ? rules.map((x) => ({ text: x.text, basis: [x.chunk_id], badges: x.jurisdiction ? [x.jurisdiction] : [] }))
+      lines: lines.length
+        ? lines
         : [{ text: T.no_card("이 조건에 걸리는 규제 규칙 카드가 없습니다"), basis: [] }],
       basis_chunks: basis,
     });
@@ -316,6 +475,11 @@ export async function assemble(
       if (t.raises_needed !== null && t.raises_needed > 0)
         lines.push({ text: T.cover_raises(String(t.raises_needed)), basis: [] });
     }
+
+    // 비임상·NDA 는 FIN-2a·CLIN-3a 자리가 '해당 없음' 이다(자리 정의의 na_phases)
+    const needNa = (slot("FIN-2a").na_phases ?? []).includes(cond.phase);
+    if (need.need_current_phase_usd === null && needNa)
+      lines.push({ text: T.need_na(PHASE_KO[cond.phase] ?? cond.phase), basis: [] });
 
     if (need.need_current_phase_usd !== null) {
       lines.push({

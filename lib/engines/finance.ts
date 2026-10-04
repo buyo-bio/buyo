@@ -14,7 +14,8 @@ import {
   Ctx, byTag, chunkSource, field, num, ruleText,
   type EngineResult,
 } from "./base";
-import { TA_FALLBACK, taLabel } from "./axes";
+import { resolveSlotFrom, type ResolveInput } from "../resolve";
+import { slot, levelNote } from "../slots";
 
 /** F01 규칙 카드 전부 (한 번 읽어 여러 엔진이 나눠 쓴다) */
 async function f01Rules(): Promise<Chunk[]> {
@@ -117,7 +118,7 @@ export type BenchValues = {
 };
 
 export async function FE_A02(
-  _cond: Conditions,
+  cond: Conditions,
   stages: string[]
 ): Promise<EngineResult<BenchValues>> {
   const ctx = new Ctx("FE-A02");
@@ -126,11 +127,19 @@ export async function FE_A02(
   ctx.use(byTag(rules, "F01-11")); // 두 값을 합치지 않는다
   ctx.use(byTag(rules, "F01-12")); // 총개발비로 부르지 않는다
 
+  const spec = slot("FIN-2b");
   const legs: BenchLeg[] = [];
 
   for (const ph of stages) {
-    const rows = await src.find({ phase: ph }, { domain: "C03", kind: "parameter" });
-    const withValue = rows.filter((c) => num(c) !== null);
+    const inp: ResolveInput = {
+      modality: cond.modality,
+      phase: ph,
+      therapeutic_area: cond.therapeutic_area ?? null,
+      disease_group: cond.disease_group,
+      rare: cond.rare,
+    };
+    const r = await resolveSlotFrom(src, spec, inp);
+    const withValue = r.chunks.filter((c) => num(c) !== null);
 
     // 가중평균(DiMasi) 이 있으면 그것, 없으면 모델 입력값(Paul)
     const hit =
@@ -140,6 +149,11 @@ export async function FE_A02(
 
     if (!hit) { ctx.lack(`${ph} 단계 비용`); continue; }
     ctx.use(hit);
+
+    // C03 은 산업 평균 표라 치료영역 구분이 없다. 그 경우는 '빌려 온 값'이
+    // 아니므로(설계상 전체값, L5) 배지를 붙이지 않는다 — levelNote 가 가려 준다.
+    const note = levelNote(r.level);
+    if (note) ctx.badge(`${ph} 단계 비용 — ${note}`);
 
     const src_title = (field(hit, "source") as { title?: string } | null)?.title ?? "";
     legs.push({
@@ -203,49 +217,60 @@ export async function FE_A03(
   const src = await chunkSource();
   const rules = await f01Rules();
 
-  const ta = taLabel(cond.disease_group);
-  const wanted = ta ? [ta, ...TA_FALLBACK] : TA_FALLBACK;
+  // 찾는 순서는 golden_cases.json 이 정한다
+  //   FIN-2a  환자당 단가   → 치료영역 → 질환군 → 전체
+  //   CLIN-3a 대상자 수     → 같은 순서. 비임상·NDA 는 '해당 없음'
+  const cost = slot("FIN-2a");
+  const pts = slot("CLIN-3a");
 
   const legs: NeedLeg[] = [];
 
   for (const ph of stages) {
-    const rows = await src.find({ phase: ph }, { domain: "F04", kind: "parameter" });
-
-    const pickBy = (kind: string) => {
-      for (const label of wanted) {
-        const hit = rows.find(
-          (c) => field(c, "cost_kind") === kind && field(c, "source_ta_label") === label && num(c) !== null
-        );
-        if (hit) return { hit, label };
-      }
-      return null;
+    const inp: ResolveInput = {
+      modality: cond.modality,
+      phase: ph,
+      therapeutic_area: cond.therapeutic_area ?? null,
+      disease_group: cond.disease_group,
+      rare: cond.rare,
     };
 
-    const cpp = pickBy("cost_per_patient");
+    const take = async (spec: typeof cost) => {
+      const r = await resolveSlotFrom(src, spec, inp);
+      const hit = r.chunks.find((c) => num(c) !== null);
+      return hit ? { hit, level: r.level } : null;
+    };
+
+    const cpp = await take(cost);
     if (!cpp) {
-      // 비임상은 환자가 없으니 임상 직접비도 없다. 빠진 게 아니라 해당이 없는 것이다.
-      if (ph === "preclinical") ctx.note("비임상 단계에는 임상 직접비가 없습니다 — 1상부터 계산합니다");
+      // 비임상·NDA 는 환자가 없으니 임상 직접비도 없다.
+      // 빠진 게 아니라 해당이 없는 것이다(자리 정의의 na_phases).
+      if (cost.na_phases?.includes(ph))
+        ctx.note(`${ph} 단계에는 임상 직접비가 없습니다 — 1상부터 계산합니다`);
       else ctx.lack(`${ph} 단계 환자당 단가`);
       continue;
     }
-    if (ta && cpp.label !== ta)
-      ctx.badge(`${ph} 단계 단가는 치료영역 값이 없어 전체 기준으로 표시합니다`);
     ctx.use(cpp.hit);
+    const cnote = levelNote(cpp.level);
+    if (cnote) ctx.badge(`${ph} 단계 단가 — ${cnote}`);
 
     // 대상자 수 — 처음 잡히는 임상 구간에 사용자가 적은 계획 인원을 쓴다
     let patients: number | null = legs.length === 0 && plannedN ? plannedN : null;
     const chunkIds = [cpp.hit.chunk_id];
 
     if (patients === null) {
-      const pts = pickBy("patients_per_trial");
-      if (!pts) {
+      const bench = await take(pts);
+      if (!bench) {
         ctx.lack(`${ph} 단계 대상자 수`);
         continue;
       }
-      ctx.use(pts.hit);
-      chunkIds.push(pts.hit.chunk_id);
-      patients = num(pts.hit)!;
-      ctx.badge(`${ph} 대상자 수를 적지 않아 업계 벤치마크 ${patients}명으로 계산했습니다`);
+      ctx.use(bench.hit);
+      chunkIds.push(bench.hit.chunk_id);
+      patients = num(bench.hit)!;
+      const pnote = levelNote(bench.level);
+      ctx.badge(
+        `${ph} 대상자 수를 적지 않아 업계 벤치마크 ${patients}명으로 계산했습니다` +
+        (pnote ? ` (${pnote})` : "")
+      );
     }
 
     legs.push({

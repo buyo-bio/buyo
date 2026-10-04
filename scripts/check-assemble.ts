@@ -12,6 +12,7 @@ import { useFileChunks } from "./_file-source";
 import { runEngines, matchRules } from "../lib/engines";
 import { assemble, type BoardCard } from "../lib/assemble";
 import { normalize, nextInflection } from "../lib/normalize";
+import { factsFromInput } from "../lib/facts";
 import { DEMO_CASES, toRequest, type DemoKey } from "../lib/demo-cases";
 import type { Chunk, Conditions } from "../lib/types";
 
@@ -38,13 +39,10 @@ function show(c: BoardCard) {
 
 async function runCase(k: DemoKey) {
   const req = toRequest(DEMO_CASES[k].form);
-  const { cond, badges } = await normalize({
-    modality: req.modality as never, indication: req.indication,
-    phase: req.phase as never, exit_route: req.exit_route, exit_point: req.exit_point,
-    cash: req.cash, monthly_burn: req.monthly_burn,
-    listed: req.listed, convertible: req.convertible,
-    license_income_ttm: req.license_income_ttm,
-  });
+  // 필드를 골라 넘기면 새로 생긴 값(치료영역 등)이 조용히 빠진다.
+  // 실제로 그래서 시연 A 의 항암 기준 값이 TA 없는 쪽으로 내려갔다.
+  // API(app/api/diagnose)와 같은 모양으로 통째로 넘긴다.
+  const { cond, badges } = await normalize(req as never);
   const stages = nextInflection(req.phase, req.exit_route, { exit_point: req.exit_point }).stages;
   const engines = await runEngines(cond, {
     cash: req.cash, restricted_cash: req.restricted_cash,
@@ -52,10 +50,17 @@ async function runCase(k: DemoKey) {
     stages, planned_n: req.planned_n,
     backup_assets: req.backup_assets, targets: req.targets,
   });
-  const reg = await matchRules("RE-02", cond, { limit: 4 });
-  const pat = await matchRules("TE-02", cond, { limit: 2 });
+  // 사실 묶음은 파이프라인과 같은 함수로 만든다 — 따로 적으면 칸이 조용히 빠진다
+  const rcrWorst = (engines.rcr.values as { targets?: { RCR: number }[] }).targets?.slice(-1)[0]?.RCR;
+  const facts = factsFromInput(cond, req as unknown as Record<string, unknown>, {
+    rcr: rcrWorst,
+    backup_n: (req.backup_assets ?? []).length,
+  });
+  const des = await matchRules("CE-04", cond, { limit: 6, facts });
+  const reg = await matchRules("RE-02", cond, { limit: 4, facts });
+  const pat = await matchRules("TE-02", cond, { limit: 2, facts });
   const board = await assemble(cond, badges, engines, {
-    regulatory: reg.values as never, patentRules: pat.values as never,
+    design: des.values as never, regulatory: reg.values as never, patentRules: pat.values as never,
   });
   return { cond, board };
 }
