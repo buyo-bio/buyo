@@ -1,0 +1,153 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "BUYO chunk v2 (load-time check)",
+ "type": "object",
+ "required": [
+  "chunk_id",
+  "domain_id",
+  "layer",
+  "trust_tier",
+  "temporal_validity",
+  "text"
+ ],
+ "properties": {
+  "chunk_id": {
+   "type": "string",
+   "pattern": "^[A-Z][0-9A-Z]{2,3}-[0-9]{4}$"
+  },
+  "domain_id": {
+   "enum": [
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C06",
+    "F01",
+    "F04",
+    "F06",
+    "F07",
+    "M01",
+    "M02",
+    "M03",
+    "M05",
+    "M06",
+    "N02",
+    "R01",
+    "R02",
+    "R02X",
+    "R03",
+    "R06",
+    "T01",
+    "T02",
+    "T04",
+    "T05",
+    "T06",
+    "T07"
+   ]
+  },
+  "layer": {
+   "enum": [
+    "parameter",
+    "rule",
+    "method",
+    "mapping"
+   ]
+  },
+  "trust_tier": {
+   "enum": [
+    1,
+    2,
+    3
+   ]
+  },
+  "temporal_validity": {
+   "type": "string"
+  },
+  "modality": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "phase": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "flag_hint": {
+   "enum": [
+    "positive",
+    "caution",
+    "neutral",
+    null
+   ]
+  },
+  "indication": {
+   "type": [
+    "object",
+    "null"
+   ],
+   "properties": {
+    "text": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "code": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "ta": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  },
+  "illustrative": {
+   "type": "boolean"
+  },
+  "applies_to_all_modalities": {
+   "type": "boolean"
+  },
+  "text": {
+   "type": "string",
+   "minLength": 1
+  }
+ },
+ "allOf": [
+  {
+   "if": {
+    "properties": {
+     "layer": {
+      "const": "parameter"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "source_record_id"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "layer": {
+      "const": "rule"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "flag_hint"
+    ]
+   }
+  }
+ ]
+}

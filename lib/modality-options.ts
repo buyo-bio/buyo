@@ -2,7 +2,7 @@
  * 화면 모달리티 선택지 — T01 등록부에서 자동 생성
  *
  * 손으로 고치지 마세요. `npm run gen:modality` 로 다시 만듭니다.
- * 원본: data/chunks/T01_chunks_v0.jsonl (22개)
+ * 원본: data/chunks/T01_modality_registry.jsonl (27개)
  */
 export type ModalityOption = {
   tag: string;
@@ -165,7 +165,42 @@ export const MODALITY_OPTIONS: ModalityOption[] = [
     "tag": "other",
     "parent": null,
     "label": "기타",
+    "hasValue": true,
+    "status": "값 있음(BIO Others, 제한적)"
+  },
+  {
+    "tag": "protein",
+    "parent": null,
+    "label": "재조합 단백질·효소",
+    "hasValue": true,
+    "status": "값 있음(BIO 2021 Protein, 제한적 매핑)"
+  },
+  {
+    "tag": "oligonucleotide",
+    "parent": null,
+    "label": "올리고뉴클레오타이드(RNA 치료제)",
     "hasValue": false,
-    "status": "값 미확보"
+    "status": "하위 태그 값 사용"
+  },
+  {
+    "tag": "oligo_siRNA",
+    "parent": "oligonucleotide",
+    "label": "siRNA",
+    "hasValue": true,
+    "status": "값 있음(BIO 2021 siRNA/RNAi, 제한적 매핑)"
+  },
+  {
+    "tag": "oligo_ASO",
+    "parent": "oligonucleotide",
+    "label": "안티센스(ASO)",
+    "hasValue": true,
+    "status": "값 있음(BIO 2021 Antisense, 제한적 매핑)"
+  },
+  {
+    "tag": "generic",
+    "parent": null,
+    "label": "제네릭(복제약)",
+    "hasValue": false,
+    "status": "값 없음 — 성공확률·기간 표 적용 대상 아님"
   }
 ];

@@ -121,7 +121,8 @@ export async function countByKind(): Promise<Record<string, number>> {
 /**
  * 축별 개수.
  *
- * domain 은 "C01" "F04" 처럼 축 글자 + 번호다. 앞 글자로 센다.
+ * 열 이름은 domain_id 다(domain 이 아니다 — 여기서 틀려서 500이 났다).
+ * 값은 "C01" "F04" 처럼 축 글자 + 번호이므로 앞 글자로 센다.
  * 여기서도 행을 받아 세면 안 된다 — 1,000행 제한에 걸린다. head count 만 쓴다.
  */
 export async function countByAxis(): Promise<Record<string, number>> {
@@ -130,7 +131,7 @@ export async function countByAxis(): Promise<Record<string, number>> {
     const { count, error } = await getDb()
       .from("chunks")
       .select("*", { count: "exact", head: true })
-      .like("domain", `${axis}%`);
+      .like("domain_id", `${axis}%`);
     if (error) throw new Error(`countByAxis(${axis}) 실패: ${error.message}`);
     out[axis] = count ?? 0;
   }

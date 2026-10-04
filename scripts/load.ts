@@ -121,7 +121,13 @@ async function main() {
   // 확인
   const { count } = await db.from("chunks").select("*", { count: "exact", head: true });
   console.log(`\n✅ 적재 완료 — chunks ${count}건`);
-  if (count !== 1746) console.log(`⚠️  기대값 1746과 다릅니다`);
+
+  // 기대 개수는 묶음과 함께 오는 manifest.json 에서 읽는다(손으로 적지 않는다)
+  const mf = path.join(process.cwd(), "data", "ref", "manifest.json");
+  if (fs.existsSync(mf)) {
+    const want = (JSON.parse(fs.readFileSync(mf, "utf8")) as { total_chunks?: number }).total_chunks;
+    if (want && count !== want) console.log(`⚠️  manifest 기대값 ${want}건과 다릅니다`);
+  }
 }
 
 main().catch(e => { console.error("\n❌ " + e.message); process.exit(1); });

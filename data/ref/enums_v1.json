@@ -1,0 +1,333 @@
+{
+ "version": "enums_v1_20261003",
+ "modality": [
+  {
+   "tag": "small_molecule",
+   "parent": null,
+   "label_ko": "저분자 화합물"
+  },
+  {
+   "tag": "antibody",
+   "parent": null,
+   "label_ko": "항체(종류 미정)"
+  },
+  {
+   "tag": "antibody_mAb",
+   "parent": "antibody",
+   "label_ko": "단클론항체"
+  },
+  {
+   "tag": "antibody_bispecific",
+   "parent": "antibody",
+   "label_ko": "이중항체"
+  },
+  {
+   "tag": "antibody_fragment",
+   "parent": "antibody",
+   "label_ko": "항체 절편"
+  },
+  {
+   "tag": "antibody_Fc_fusion",
+   "parent": "antibody",
+   "label_ko": "Fc 융합단백질"
+  },
+  {
+   "tag": "antibody_other",
+   "parent": "antibody",
+   "label_ko": "기타 항체"
+  },
+  {
+   "tag": "ADC",
+   "parent": null,
+   "label_ko": "항체-약물 접합체(ADC)"
+  },
+  {
+   "tag": "cell_therapy",
+   "parent": null,
+   "label_ko": "세포치료제(종류 미정)"
+  },
+  {
+   "tag": "cell_CART",
+   "parent": "cell_therapy",
+   "label_ko": "CAR-T"
+  },
+  {
+   "tag": "cell_TCRT",
+   "parent": "cell_therapy",
+   "label_ko": "TCR-T"
+  },
+  {
+   "tag": "cell_NK",
+   "parent": "cell_therapy",
+   "label_ko": "NK 세포치료(CAR-NK 포함)"
+  },
+  {
+   "tag": "cell_MSC",
+   "parent": "cell_therapy",
+   "label_ko": "중간엽 줄기세포"
+  },
+  {
+   "tag": "cell_iPSC",
+   "parent": "cell_therapy",
+   "label_ko": "iPSC 유래 세포"
+  },
+  {
+   "tag": "cell_somatic",
+   "parent": "cell_therapy",
+   "label_ko": "체세포 치료(연골·피부 등)"
+  },
+  {
+   "tag": "cell_DC_CIK",
+   "parent": "cell_therapy",
+   "label_ko": "면역세포(DC·CIK·TIL)"
+  },
+  {
+   "tag": "cell_other",
+   "parent": "cell_therapy",
+   "label_ko": "기타 세포치료"
+  },
+  {
+   "tag": "gene_therapy",
+   "parent": null,
+   "label_ko": "유전자치료제"
+  },
+  {
+   "tag": "peptide",
+   "parent": null,
+   "label_ko": "펩타이드"
+  },
+  {
+   "tag": "vaccine",
+   "parent": null,
+   "label_ko": "백신"
+  },
+  {
+   "tag": "biosimilar",
+   "parent": null,
+   "label_ko": "바이오시밀러"
+  },
+  {
+   "tag": "other",
+   "parent": null,
+   "label_ko": "기타"
+  },
+  {
+   "tag": "protein",
+   "parent": null,
+   "label_ko": "재조합 단백질·효소"
+  },
+  {
+   "tag": "oligonucleotide",
+   "parent": null,
+   "label_ko": "올리고뉴클레오타이드(RNA 치료제)"
+  },
+  {
+   "tag": "oligo_siRNA",
+   "parent": "oligonucleotide",
+   "label_ko": "siRNA"
+  },
+  {
+   "tag": "oligo_ASO",
+   "parent": "oligonucleotide",
+   "label_ko": "안티센스(ASO)"
+  }
+ ],
+ "modality_parent": {
+  "antibody_mAb": "antibody",
+  "antibody_bispecific": "antibody",
+  "antibody_fragment": "antibody",
+  "antibody_Fc_fusion": "antibody",
+  "antibody_other": "antibody",
+  "cell_CART": "cell_therapy",
+  "cell_TCRT": "cell_therapy",
+  "cell_NK": "cell_therapy",
+  "cell_MSC": "cell_therapy",
+  "cell_iPSC": "cell_therapy",
+  "cell_somatic": "cell_therapy",
+  "cell_DC_CIK": "cell_therapy",
+  "cell_other": "cell_therapy",
+  "oligo_siRNA": "oligonucleotide",
+  "oligo_ASO": "oligonucleotide"
+ },
+ "modality_sibling_fallback": {
+  "antibody_bispecific": "antibody_mAb",
+  "antibody_fragment": "antibody_mAb",
+  "antibody_Fc_fusion": "antibody_mAb",
+  "antibody_other": "antibody_mAb",
+  "antibody": "antibody_mAb"
+ },
+ "disease_group": [
+  "전체",
+  "항암",
+  "감염",
+  "대사·내분비",
+  "심혈관",
+  "중추신경(신경)",
+  "중추신경(정신)",
+  "기타"
+ ],
+ "therapeutic_area": [
+  {
+   "ta_id": "oncology_solid",
+   "ta_ko": "고형암",
+   "default_group": "항암"
+  },
+  {
+   "ta_id": "oncology_heme",
+   "ta_ko": "혈액암",
+   "default_group": "항암"
+  },
+  {
+   "ta_id": "infectious",
+   "ta_ko": "감염",
+   "default_group": "감염"
+  },
+  {
+   "ta_id": "endocrine",
+   "ta_ko": "내분비",
+   "default_group": "대사·내분비"
+  },
+  {
+   "ta_id": "metabolic",
+   "ta_ko": "대사",
+   "default_group": "대사·내분비"
+  },
+  {
+   "ta_id": "cardiovascular",
+   "ta_ko": "심혈관",
+   "default_group": "심혈관"
+  },
+  {
+   "ta_id": "neurology",
+   "ta_ko": "신경",
+   "default_group": "중추신경(신경)"
+  },
+  {
+   "ta_id": "psychiatry",
+   "ta_ko": "정신",
+   "default_group": "중추신경(정신)"
+  },
+  {
+   "ta_id": "immunology_inflammation",
+   "ta_ko": "자가면역·염증",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "respiratory",
+   "ta_ko": "호흡기",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "gastro_hepatology",
+   "ta_ko": "소화기·간",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "dermatology",
+   "ta_ko": "피부",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "ophthalmology",
+   "ta_ko": "안과",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "ent",
+   "ta_ko": "이비인후",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "hematology",
+   "ta_ko": "혈액(비암)",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "urology_nephrology",
+   "ta_ko": "비뇨·신장",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "womens_health",
+   "ta_ko": "여성건강·산과",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "musculoskeletal_pain",
+   "ta_ko": "근골격·통증",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "neonatal",
+   "ta_ko": "신생아",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "congenital_genetic",
+   "ta_ko": "선천·유전",
+   "default_group": "기타"
+  },
+  {
+   "ta_id": "other",
+   "ta_ko": "기타(미분류)",
+   "default_group": "기타"
+  }
+ ],
+ "phase": [
+  "preclinical",
+  "P1",
+  "P2",
+  "P3",
+  "NDA",
+  "approved"
+ ],
+ "domain_id": [
+  "C01",
+  "C02",
+  "C03",
+  "C04",
+  "C06",
+  "F01",
+  "F04",
+  "F06",
+  "F07",
+  "M01",
+  "M02",
+  "M03",
+  "M05",
+  "M06",
+  "N02",
+  "R01",
+  "R02",
+  "R02X",
+  "R03",
+  "R06",
+  "T01",
+  "T02",
+  "T04",
+  "T05",
+  "T06",
+  "T07"
+ ],
+ "layer": [
+  "parameter",
+  "rule",
+  "method",
+  "mapping"
+ ],
+ "flag_hint": [
+  "positive",
+  "caution",
+  "neutral"
+ ],
+ "badges": [
+  "base_year_unreported",
+  "currency_year_mixed",
+  "industry_reference",
+  "limited_mapping",
+  "secondary_summary",
+  "small_sample",
+  "sum_of_phase_means",
+  "ta_merged"
+ ]
+}

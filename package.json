@@ -13,8 +13,13 @@
     "engines:check": "tsx scripts/check-engines.ts",
     "cards:check": "tsx scripts/check-assemble.ts",
     "gen:modality": "tsx scripts/gen-modality-options.ts",
+    "gen:ind": "tsx scripts/gen-indication-index.ts",
     "collect:kipris": "tsx scripts/collect-kipris.ts",
-    "patents:check": "tsx scripts/check-patents.ts"
+    "patents:check": "tsx scripts/check-patents.ts",
+    "ref:load": "tsx scripts/load-ref.ts",
+    "aw:check": "tsx scripts/check-applies-when.ts",
+    "cache:demos": "tsx scripts/cache-demos.ts",
+    "golden": "tsx scripts/check-golden.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

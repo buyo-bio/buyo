@@ -1,0 +1,130 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "BUYO chunk v2 (load-time check)",
+ "type": "object",
+ "required": [
+  "chunk_id",
+  "domain_id",
+  "layer",
+  "trust_tier",
+  "temporal_validity",
+  "text"
+ ],
+ "properties": {
+  "chunk_id": {
+   "type": "string",
+   "pattern": "^[A-Z][0-9A-Z]{1,6}-[0-9]{4}$"
+  },
+  "layer": {
+   "enum": [
+    "parameter",
+    "rule",
+    "method",
+    "mapping"
+   ]
+  },
+  "trust_tier": {
+   "enum": [
+    1,
+    2,
+    3
+   ]
+  },
+  "temporal_validity": {
+   "type": "string"
+  },
+  "modality": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "phase": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "flag_hint": {
+   "enum": [
+    "positive",
+    "caution",
+    "neutral",
+    null
+   ]
+  },
+  "indication": {
+   "type": [
+    "object",
+    "null"
+   ],
+   "properties": {
+    "text": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "code": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "ta": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  },
+  "illustrative": {
+   "type": "boolean"
+  },
+  "applies_to_all_modalities": {
+   "type": "boolean"
+  },
+  "text": {
+   "type": "string",
+   "minLength": 1
+  },
+  "applies_when": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "description": "규칙 적용 조건(build/conditions.py 문법)"
+  }
+ },
+ "allOf": [
+  {
+   "if": {
+    "properties": {
+     "layer": {
+      "const": "parameter"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "source_record_id"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "layer": {
+      "const": "rule"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "flag_hint"
+    ]
+   }
+  }
+ ]
+}

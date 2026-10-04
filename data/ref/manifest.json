@@ -1,0 +1,58 @@
+{
+ "built_at": "2026-10-03T14:59:40",
+ "total_chunks": 2475,
+ "by_domain": {
+  "C01": 291,
+  "C02": 84,
+  "C03": 11,
+  "C04": 57,
+  "C06": 8,
+  "F01": 17,
+  "F04": 241,
+  "F06": 11,
+  "F07": 36,
+  "M01": 18,
+  "M02": 279,
+  "M03": 244,
+  "M05": 7,
+  "M06": 9,
+  "N02": 3,
+  "R01": 12,
+  "R02": 13,
+  "R02X": 16,
+  "R03": 11,
+  "R06": 8,
+  "T01": 27,
+  "T02": 31,
+  "T04": 4,
+  "T05": 9,
+  "T06": 514,
+  "T07": 514
+ },
+ "files": [
+  "C_clinical.jsonl",
+  "F04_finance.jsonl",
+  "M02_patients_kr.jsonl",
+  "M03_deals.jsonl",
+  "METHOD_engines.jsonl",
+  "RULES_master.jsonl",
+  "T01_modality_registry.jsonl",
+  "T02_gatekeepers.jsonl",
+  "T06_ipc_explain.jsonl",
+  "T07_ipc_modality.jsonl"
+ ],
+ "validate": {
+  "errors": 0,
+  "warnings": 0
+ },
+ "vs_previous_build": {
+  "added": {
+   "M03": 234,
+   "T01": 1
+  },
+  "removed": {},
+  "changed": {
+   "M03": 10
+  }
+ }
+}

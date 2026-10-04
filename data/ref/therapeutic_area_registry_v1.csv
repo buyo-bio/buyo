@@ -1,0 +1,22 @@
+﻿ta_id,ta_ko,default_buyo_disease_group,subgroup_aliases,bio2021_subgroup,wong2019_subgroup,f04_source_ta_label,note
+oncology_solid,고형암,항암,solid,Oncology—Solid|Oncology,Oncology,oncology,BIO Oncology(전체)는 solid·heme 공통 상위값
+oncology_heme,혈액암,항암,heme,Oncology—Hematologic|Oncology,Oncology,oncology,
+infectious,감염,감염,,Infectious disease,Infectious disease|Vaccines (Infectious Disease),anti-infective|infectious_diseases,J09–J18·J20–J22·N39.0 감염 코드 포함
+endocrine,내분비,대사·내분비,,Endocrine,Metabolic/Endocrinology,endocrine|endocrine_or_metabolic,"E00–E35, O24"
+metabolic,대사,대사·내분비,,Metabolic,Metabolic/Endocrinology,endocrine|endocrine_or_metabolic,E40–E90(영양·대사·선천대사이상)
+cardiovascular,심혈관,심혈관,,Cardiovascular,Cardiovascular,cardiovascular,I00–I99
+neurology,신경,중추신경(신경),,Neurology,CNS,central_nervous_system|CNS|central_nervous_system_disorders,G00–G99
+psychiatry,정신,중추신경(정신),,Psychiatry,CNS,psychiatry,F00–F99
+immunology_inflammation,자가면역·염증,기타,immunology,Autoimmune|Allergy,Autoimmune/Inflammation,immunomodulation,BIO Autoimmune·Allergy + Wong Autoimmune/Inflammation (v0.5에서 hold 해제)
+respiratory,호흡기,기타,respiratory,Respiratory,,respiratory,BIO Respiratory (v0.5에서 hold 해제)
+gastro_hepatology,소화기·간,기타,gastro,Gastroenterology (non-IBD),,gastrointestinal|digestive_system,BIO Gastroenterology (non-IBD) (v0.5에서 hold 해제). IBD(K50–K51)는 immunology_inflammation
+dermatology,피부,기타,dermatology,,,dermatology,BIO에 별도 TA 없음 → 질환군(기타)·전체로 폴백
+ophthalmology,안과,기타,ophthalmology,Ophthalmology,Ophthalmology,ophthalmology,BIO·Wong Ophthalmology (v0.5에서 hold 해제)
+ent,이비인후,기타,ent,,,,벤치마크 없음 → 폴백
+hematology,혈액(비암),기타,hematology,Hematology,,hematology,BIO Hematology (v0.5에서 hold 해제)
+urology_nephrology,비뇨·신장,기타,urology,Urology,Genitourinary,genitourinary,BIO Urology·Wong Genitourinary (v0.5에서 hold 해제). F04 genitourinary·Wong Genitourinary는 womens_health와 공유
+womens_health,여성건강·산과,기타,gynecology|obstetrics,,Genitourinary,genitourinary,"N60–N98, O00–O99"
+musculoskeletal_pain,근골격·통증,기타,musculoskeletal,,,pain_anesthesia,F04 pain_anesthesia는 부분 대응(마취 포함) — 참고값
+neonatal,신생아,기타,neonatal,,,,벤치마크 없음 → 폴백
+congenital_genetic,선천·유전,기타,,,,,Q장. 희귀 여부는 rare 플래그로 별도 처리(Wong orphan)
+other,기타(미분류),기타,,,,other,R·S·T·U(잔여)·V–Z 등 자동완성 제외 장이 대부분

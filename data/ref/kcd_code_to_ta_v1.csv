@@ -1,0 +1,32 @@
+﻿rule_id,match_type,codes,ta_id,note
+TA-01,list,"M05,M06,M07,M08,M30,M31,M32,M33,M34,M35,M36,M45,L40,L41,L10,L11,L12,L13,L14,L20,L50,L63,L73.2,L80,K50,K51,K20.0,D80,D81,D82,D83,D84,D86,D89",immunology_inflammation,자가면역·염증 코드 목록(1층 immunology 행 + 계통성 결합조직·수포성·면역결핍)
+TA-02,range,C81-C96,oncology_heme,림프·조혈 악성
+TA-03,range,D45-D47,oncology_heme,골수증식·MDS(1층 항암과 일치)
+TA-04,range,C00-C80,oncology_solid,
+TA-05,range,C97-C97,oncology_solid,
+TA-06,range,D00-D09,oncology_solid,제자리암종
+TA-06b,range,D10-D36,other,양성 신생물 — 장기별 TA를 코드 범위로 정할 수 없음(needs_user_confirm 유지)
+TA-06c,range,D37-D48,oncology_solid,행동양식 불명·미상 신생물(needs_user_confirm 유지)
+TA-07,range,A00-B99,infectious,
+TA-08,list,"U04,U07.1,U07.2,U08,U09,U10,J09,J10,J11,J12,J13,J14,J15,J16,J17,J18,J20,J21,J22,N39.0",infectious,호흡기·요로 감염 코드(1층 감염 행과 일치)
+TA-09,list,O24,endocrine,임신성 당뇨
+TA-10,range,E00-E35,endocrine,
+TA-11,range,E40-E90,metabolic,
+TA-12,range,I00-I99,cardiovascular,
+TA-13,range,G00-G99,neurology,
+TA-14,range,F00-F99,psychiatry,
+TA-15,list,R05,respiratory,만성 기침(1층)
+TA-16,range,J00-J99,respiratory,
+TA-17,range,K00-K93,gastro_hepatology,
+TA-18,range,L00-L99,dermatology,
+TA-19,range,H00-H59,ophthalmology,
+TA-20,range,H60-H95,ent,
+TA-21,range,D50-D77,hematology,
+TA-22,range,N00-N53,urology_nephrology,
+TA-23,range,N99-N99,urology_nephrology,
+TA-24,range,N60-N98,womens_health,유방·여성생식기
+TA-25,range,O00-O99,womens_health,
+TA-26,range,M00-M99,musculoskeletal_pain,
+TA-27,range,P00-P96,neonatal,
+TA-28,range,Q00-Q99,congenital_genetic,
+TA-29,default,*,other,잔여(R·S·T·U·V–Z)
