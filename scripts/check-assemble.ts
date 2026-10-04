@@ -13,6 +13,7 @@ import { runEngines, matchRules } from "../lib/engines";
 import { assemble, type BoardCard } from "../lib/assemble";
 import { normalize, nextInflection } from "../lib/normalize";
 import { factsFromInput } from "../lib/facts";
+import { loadPatents } from "../lib/collect/patents-cache";
 import { DEMO_CASES, toRequest, type DemoKey } from "../lib/demo-cases";
 import type { Chunk, Conditions } from "../lib/types";
 
@@ -44,7 +45,11 @@ async function runCase(k: DemoKey) {
   // API(app/api/diagnose)와 같은 모양으로 통째로 넘긴다.
   const { cond, badges } = await normalize(req as never);
   const stages = nextInflection(req.phase, req.exit_route, { exit_point: req.exit_point }).stages;
+  // 파이프라인과 같이 특허 파일을 읽는다.
+  // 안 읽으면 특허 카드가 "만료일 미입력" 으로 보이고, 실제 화면과 어긋난다.
+  const patents = loadPatents(req.corp_name);
   const engines = await runEngines(cond, {
+    patent_records: patents.records,
     cash: req.cash, restricted_cash: req.restricted_cash,
     monthly_burn: req.monthly_burn, committed_raise: req.committed_raise,
     stages, planned_n: req.planned_n,

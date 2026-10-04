@@ -52,7 +52,10 @@ export function listPatentCaches(): {
           applicant: (j.applicant_query as string) ?? f.replace(/\.json$/, ""),
           total: (j.total as number) ?? 0,
           fetched: (j.fetched as number) ?? (j.records?.length ?? 0),
-          saved_at: fs.statSync(full).mtime.toISOString().slice(0, 10),
+          // 파일 수정시각(mtime)을 쓰면 안 된다 — 배포 번들에서는 그 값이
+          // 날아가서 "2018-10-20" 같은 엉뚱한 날짜가 나온다(실제로 그랬다).
+          // 수집할 때 적어 둔 as_of 가 정본이다.
+          saved_at: (j.as_of as string) ?? null,
         };
       } catch {
         return { applicant: f.replace(/\.json$/, ""), total: 0, fetched: 0, saved_at: null };

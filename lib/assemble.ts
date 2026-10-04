@@ -54,6 +54,16 @@ function needLine(x: { text: string; missing: string[] }): CardLine {
  * 글자를 새로 짓지 않는다 — 청크가 붙여 둔 토막 중 하나를 고르는 것뿐이고,
  * 자른 부분은 '근거 보기' 에서 원문 그대로 볼 수 있다.
  */
+/**
+ * 1~5 점수 눈금표 카드인가.
+ *
+ * T02 의 F1~F4 앵커는 본문이 {'5': '...', '4': '...'} 사전 모양이다.
+ * 사람이 읽을 문장이 아니라 채점 기준이므로 화면에 펼치지 않는다.
+ */
+function isAnchorCard(text: string): boolean {
+  return /\{\s*['"]5['"]\s*:/.test(text);
+}
+
 export function ruleSentence(text: string): string {
   let t = text.trim();
 
@@ -180,6 +190,14 @@ const T = {
   pat_substance: (list: string) => `물질특허 후보: ${list} (IPC 기준 추정이며 확정이 아닙니다)`,
   pat_align: (life: string, launch: string, expiry: string) =>
     `출시 추정 ${launch}년 시점에 물질특허가 ${life}년 남습니다(만료 ${expiry}년).`,
+  // 만료가 출시보다 빠르면 "남는" 것이 아니다. "-2년 남습니다" 는 틀린 문장이다.
+  pat_align_gone: (gap: string, launch: string, expiry: string) =>
+    `물질특허가 출시 추정 시점(${launch}년)보다 ${gap}년 먼저 만료됩니다(만료 ${expiry}년).`,
+  // 1~5 점수 앵커 카드 — 눈금표를 화면에 펼치지 않는다. 근거 보기에서 원문을 본다.
+  pat_anchor: (title: string) =>
+    // 제목에 이미 "1~5 앵커" 가 붙어 있으면 떼고 쓴다 — 같은 말을 두 번 하지 않는다
+    `${title.replace(/\s*[—-]\s*1~5\s*앵커\s*$/, "").trim()} — ` +
+    `1~5 점수 기준표입니다. 근거 보기에서 각 점수의 조건을 확인하세요.`,
   patent_none: () => `만료일 미입력`,
   news_pending: () => `정식판에서 수집`,
   // applies_when 이 "확인 필요" 로 나온 규칙 — 묻지 않은 조건을 충족한 것처럼 적지 않는다
@@ -551,20 +569,25 @@ export async function assemble(
         });
     }
 
-    if (al.patent_life_at_launch !== null)
+    if (al.patent_life_at_launch !== null) {
+      const life = al.patent_life_at_launch;
       lines.push({
-        text: T.pat_align(
-          String(al.patent_life_at_launch),
-          String(al.launch_year_est),
-          String(al.patent_expiry_year)
-        ),
+        text: life >= 0
+          ? T.pat_align(String(life), String(al.launch_year_est), String(al.patent_expiry_year))
+          : T.pat_align_gone(String(-life), String(al.launch_year_est), String(al.patent_expiry_year)),
         basis: r.patentAlign.basis_chunks,
-        badges: al.flag === "caution" ? ["주의"] : [],
       });
+    }
     if (al.note) lines.push({ text: al.note, basis: [] });
 
-    // FTO 게이트키퍼 규칙은 청크 문장 그대로
-    for (const x of rules) lines.push({ text: x.text, basis: [x.chunk_id] });
+    // FTO 게이트키퍼 규칙은 청크 문장 그대로.
+    // 다만 1~5 점수 앵커 카드는 눈금표가 사전 모양으로 들어 있어
+    // 그대로 펼치면 화면이 {'5': '...', '4': '...'} 로 덮인다. 제목만 낸다.
+    for (const x of rules)
+      lines.push({
+        text: isAnchorCard(x.text) ? T.pat_anchor(ruleTitle(x.text)) : ruleSentence(x.text),
+        basis: [x.chunk_id],
+      });
 
     if (lines.length === 0) lines.push({ text: T.patent_none(), basis: [] });
 
