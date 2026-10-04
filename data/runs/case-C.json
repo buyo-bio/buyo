@@ -1,0 +1,920 @@
+{
+ "run_id": "case-C",
+ "input": {
+  "modality": "ADC",
+  "indication": "CLDN18.2 양성 위암·위식도접합부 선암",
+  "indication_code": "MeSH:D013274",
+  "disease_group": "항암",
+  "therapeutic_area": "oncology_solid",
+  "query_en": "Stomach Neoplasms",
+  "rare": "N",
+  "phase": "preclinical",
+  "exit_route": "license_out",
+  "exit_point": "P1_complete",
+  "endpoint": "DLT·RP2D",
+  "comparator": "single_arm",
+  "n": 36,
+  "duration_m": 24,
+  "primary_endpoints_n": 2,
+  "serious_unmet": "Y",
+  "life_threatening": "Y",
+  "no_alternative": "N",
+  "novelty": "new_entity",
+  "companion_dx": "Y",
+  "has_target_evidence": "Y",
+  "endpoint_type": "hard",
+  "blinding": "open_label",
+  "design_type": "single_arm_descriptive",
+  "population": "biomarker_selected",
+  "population_type": "patients",
+  "chronic": "N",
+  "cash": 58,
+  "monthly_burn": 3.1,
+  "committed_raise": 0,
+  "planned_raise": 150,
+  "corp_name": "(주)루미어스바이오(가상)"
+ },
+ "normalized": {
+  "cond": {
+   "modality": "ADC",
+   "indication_code": "MeSH:D013274",
+   "disease_group": "항암",
+   "therapeutic_area": "oncology_solid",
+   "query_en": "Stomach Neoplasms",
+   "indication_name": "위암",
+   "phase": "preclinical",
+   "clinical_phase": "P1",
+   "rare": "N",
+   "jurisdiction": "KR",
+   "fin_state": "S2",
+   "next_inflection": "P1_complete"
+  },
+  "badges": [
+   "비임상 단계라 확률·기간·비용은 임상 1상 진입 이후 기준으로 표시합니다"
+  ],
+  "stages": [
+   "preclinical",
+   "P1"
+  ]
+ },
+ "cards": {
+  "as_of": "2026-10-04",
+  "conditions": {
+   "modality": "ADC",
+   "indication_code": "MeSH:D013274",
+   "disease_group": "항암",
+   "therapeutic_area": "oncology_solid",
+   "query_en": "Stomach Neoplasms",
+   "indication_name": "위암",
+   "phase": "preclinical",
+   "clinical_phase": "P1",
+   "rare": "N",
+   "jurisdiction": "KR",
+   "fin_state": "S2",
+   "next_inflection": "P1_complete"
+  },
+  "badges": [
+   "비임상 단계라 확률·기간·비용은 임상 1상 진입 이후 기준으로 표시합니다"
+  ],
+  "summary": {
+   "counts": {
+    "positive": 1,
+    "caution": 2,
+    "neutral": 3,
+    "no_evidence": 0
+   },
+   "attention": [
+    {
+     "key": "finance",
+     "title": "재무",
+     "line": "가용 현금으로 15.8개월 버팁니다."
+    },
+    {
+     "key": "patent",
+     "title": "특허",
+     "line": "[M6 ADC 게이트키퍼 로스터 (링커·컨주·페이로드 원천IP)] 신규 항체·신규 타깃이어도 링커/컨주 화학은 타사 특허(말레이미드·디설파이드·절단형 에스테이트 중첩) → 항체 클린이어도 F1·F3 잔존. 3성분(항체+링커+페이로드) 각 로열티 → stacking이 마진 직격. 게이트키퍼: Lonza/Synaffix: GlycoConnect+HydraSpace+toxSYN (site-specific 글리칸 컨주); Pfizer (舊 Seagen): vc-MMAE, 말레이미드 링커; AbbVie (舊 ImmunoGen): 메이탄시노이드 DM1/DM4; Gilead (舊 Immunomedics): SN-38 (사시투주맙); Daiichi Sankyo: 데룩스테칸/DXd; Araris/Taiho: AraLinQ 펩타이드 링커; Tubulis/Gilead: Tubutecan 링커-페이로드; 🇰🇷 LigaChem(리가켐): ConjuAll (site-specific 컨주+암선택 절단링커+페이로드, 150+ 특허)."
+    }
+   ],
+   "rest": [
+    {
+     "key": "clinical",
+     "title": "임상",
+     "flag": "neutral"
+    },
+    {
+     "key": "design",
+     "title": "설계안",
+     "flag": "positive"
+    },
+    {
+     "key": "market",
+     "title": "시장",
+     "flag": "neutral"
+    },
+    {
+     "key": "regulatory",
+     "title": "규제",
+     "flag": "neutral"
+    }
+   ]
+  },
+  "cards": [
+   {
+    "key": "clinical",
+    "title": "임상",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "비임상 후보물질이 1상에 진입하는 비율은 69% 입니다.",
+      "basis": [
+       "C01-0290"
+      ]
+     },
+     {
+      "text": "아래 승인 확률은 1상 진입 이후부터 적용되는 값입니다 — 위 진입 비율과 곱하지 않습니다.",
+      "basis": []
+     },
+     {
+      "text": "누적 승인 확률 10.8%(ADC 기준), 항암 기준 5.3% — 두 값 사이에서 읽어야 합니다.",
+      "basis": [
+       "C01-0166",
+       "C01-0012"
+      ],
+      "badges": []
+     },
+     {
+      "text": "다음 단계 전환 확률 41.7% (P1→P2, 조건부).",
+      "basis": [
+       "C01-0162"
+      ]
+     },
+     {
+      "text": "임상 1상 완료까지 3.7년으로 잡힙니다(프로그램 기준).",
+      "basis": [
+       "C02-0084",
+       "C02-0006"
+      ]
+     }
+    ],
+    "basis_chunks": [
+     "C01-0166",
+     "C01-0012",
+     "C01-0162",
+     "C01-0290",
+     "C02-0084",
+     "C02-0006"
+    ]
+   },
+   {
+    "key": "design",
+    "title": "설계안",
+    "flag": "positive",
+    "lines": [
+     {
+      "text": "바이오마커로 선별한 집단은 반응률과 성공확률이 높게 보고됩니다. 선별 진단법의 동반 개발 계획을 확인합니다.",
+      "basis": [
+       "C04-0055"
+      ]
+     },
+     {
+      "text": "설계 플래그 C04-D09 — 다중성 보정 계획을 적으면 판정할 수 있습니다.",
+      "basis": []
+     },
+     {
+      "text": "설계 플래그 C04-D03 — 같은 시험 1사분위 인원 자료를 아직 수집하지 않아 판정하지 않았습니다.",
+      "basis": []
+     }
+    ],
+    "basis_chunks": [
+     "C04-0055"
+    ]
+   },
+   {
+    "key": "market",
+    "title": "시장",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "2025년 심사년도 기준 건강보험심사평가원 통계에서 C16(위의 악성 신생물) 환자 수는 160,504명입니다. 국내 희귀의약품 규모 기준(2만 명)을 넘습니다. 청구 기반이라 미진단 환자는 포함되지 않습니다.",
+      "basis": [
+       "M02-0004"
+      ],
+      "badges": []
+     },
+     {
+      "text": "같은 약 종류·단계의 기술이전 사례가 20건 있습니다.",
+      "basis": [
+       "F06-0009",
+       "M03-0001",
+       "M03-0002",
+       "M03-0023",
+       "M03-0047",
+       "M03-0071",
+       "M03-0079",
+       "M03-0082",
+       "M03-0092",
+       "M03-0095",
+       "M03-0102",
+       "M03-0110",
+       "M03-0115",
+       "M03-0139",
+       "M03-0168",
+       "M03-0182",
+       "M03-0192",
+       "M03-0195",
+       "M03-0241",
+       "M03-0244",
+       "M03-0003"
+      ]
+     },
+     {
+      "text": "리가켐바이오 → — (—) 계약금 100000000",
+      "basis": [
+       "M03-0001"
+      ]
+     },
+     {
+      "text": "리가켐바이오 → — (—) 계약금 비공개",
+      "basis": [
+       "M03-0002"
+      ]
+     },
+     {
+      "text": "리가켐바이오 → — (—) 계약금 비공개",
+      "basis": [
+       "M03-0023"
+      ]
+     },
+     {
+      "text": "리가켐바이오 → — (—) 계약금 비공개",
+      "basis": [
+       "M03-0047"
+      ]
+     },
+     {
+      "text": "리가켐바이오 → — (—) 계약금 비공개",
+      "basis": [
+       "M03-0071"
+      ]
+     },
+     {
+      "text": "비교군 제외 8건 — 기술도입(해외→국내); 표에 비교군 제외 표시",
+      "basis": [
+       "M03-0128",
+       "M03-0145",
+       "M03-0158",
+       "M03-0196",
+       "M03-0200"
+      ]
+     },
+     {
+      "text": "급여 경로는 M01 카드가 들어오면 채워집니다.",
+      "basis": []
+     }
+    ],
+    "basis_chunks": [
+     "F06-0009",
+     "M03-0001",
+     "M03-0002",
+     "M03-0023",
+     "M03-0047",
+     "M03-0071",
+     "M03-0079",
+     "M03-0082",
+     "M03-0092",
+     "M03-0095",
+     "M03-0102",
+     "M03-0110",
+     "M03-0115",
+     "M03-0139",
+     "M03-0168",
+     "M03-0182",
+     "M03-0192",
+     "M03-0195",
+     "M03-0241",
+     "M03-0244",
+     "M03-0003",
+     "M02-0004"
+    ]
+   },
+   {
+    "key": "regulatory",
+    "title": "규제",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "MFDS 우선심사: 우선순위 심사. 작용 레버 t↓(소) — 신속심사보다 약한 단계. 단서: —.",
+      "basis": [
+       "R02-0010"
+      ],
+      "badges": [
+       "KR"
+      ]
+     }
+    ],
+    "basis_chunks": [
+     "R02-0010"
+    ]
+   },
+   {
+    "key": "finance",
+    "title": "재무",
+    "flag": "caution",
+    "lines": [
+     {
+      "text": "가용 현금으로 15.8개월 버팁니다.",
+      "basis": [
+       "F01-0001",
+       "F01-0013",
+       "F01-0016"
+      ]
+     },
+     {
+      "text": "IND 제출까지 자금 충족 비율 1.98 — 양호 (필요 기간 8.0개월)",
+      "basis": [
+       "F01-0003",
+       "F01-0005",
+       "F04-0097"
+      ],
+      "badges": [
+       "양호"
+      ]
+     },
+     {
+      "text": "P1 완료까지 자금 충족 비율 0.38 — 미달 (필요 기간 41.4개월)",
+      "basis": [
+       "F01-0003",
+       "F01-0005",
+       "F04-0097"
+      ],
+      "badges": [
+       "미달"
+      ]
+     },
+     {
+      "text": "변곡점 전에 추가 조달이 2회 필요합니다.",
+      "basis": []
+     },
+     {
+      "text": "설계안 기준 임상 직접비는 최소 3.72M$입니다.",
+      "basis": [
+       "F04-0025",
+       "F01-0009",
+       "F01-0010",
+       "F01-0011"
+      ],
+      "badges": [
+       "최소"
+      ]
+     },
+     {
+      "text": "여기에는 기관 개설비·CRO 월 비용·국내 환자당 단가·제조(CMC) 비용이 빠져 있어 '최소'입니다.",
+      "basis": []
+     },
+     {
+      "text": "업계 평균으로는 30.3M$입니다(preclinical 5M$ + P1 25.3M$). 산정 방식이 달라 위 금액과 합치지 않습니다.",
+      "basis": [
+       "F01-0011",
+       "F01-0012",
+       "C03-0001",
+       "C03-0006"
+      ]
+     },
+     {
+      "text": "조달은 2027-07-29까지 착수해야 합니다(조달 소요 6개월 기준).",
+      "basis": [
+       "F01-0010",
+       "F01-0006"
+      ]
+     },
+     {
+      "text": "자동 갭(원화) 계산 없음. 문구: '필요 자금은 원문 통화로 표시되며 원화 환산·갭 계산은 정식 버전에서 제공됩니다'",
+      "basis": [
+       "F01-0010",
+       "F01-0006"
+      ]
+     },
+     {
+      "text": "실패 시 LMB-305(탐색 단계)이 남습니다(가치 산출은 정식판).",
+      "basis": [
+       "F01-0015"
+      ]
+     }
+    ],
+    "basis_chunks": [
+     "F01-0001",
+     "F01-0013",
+     "F01-0016",
+     "F01-0003",
+     "F01-0005",
+     "F04-0097",
+     "F04-0025",
+     "F01-0009",
+     "F01-0010",
+     "F01-0011",
+     "F01-0011",
+     "F01-0012",
+     "C03-0001",
+     "C03-0006",
+     "F01-0010",
+     "F01-0006",
+     "F01-0015"
+    ]
+   },
+   {
+    "key": "patent",
+    "title": "특허",
+    "flag": "caution",
+    "lines": [
+     {
+      "text": "[M6 ADC 게이트키퍼 로스터 (링커·컨주·페이로드 원천IP)] 신규 항체·신규 타깃이어도 링커/컨주 화학은 타사 특허(말레이미드·디설파이드·절단형 에스테이트 중첩) → 항체 클린이어도 F1·F3 잔존. 3성분(항체+링커+페이로드) 각 로열티 → stacking이 마진 직격. 게이트키퍼: Lonza/Synaffix: GlycoConnect+HydraSpace+toxSYN (site-specific 글리칸 컨주); Pfizer (舊 Seagen): vc-MMAE, 말레이미드 링커; AbbVie (舊 ImmunoGen): 메이탄시노이드 DM1/DM4; Gilead (舊 Immunomedics): SN-38 (사시투주맙); Daiichi Sankyo: 데룩스테칸/DXd; Araris/Taiho: AraLinQ 펩타이드 링커; Tubulis/Gilead: Tubutecan 링커-페이로드; 🇰🇷 LigaChem(리가켐): ConjuAll (site-specific 컨주+암선택 절단링커+페이로드, 150+ 특허).",
+      "basis": [
+       "T02-0001"
+      ]
+     },
+     {
+      "text": "[M6 ADC F3 모달리티 기본가정] ",
+      "basis": [
+       "T02-0010"
+      ]
+     }
+    ],
+    "pending": "KIPRIS 수집을 돌리면 채워집니다",
+    "basis_chunks": [
+     "C02-0010",
+     "T02-0001",
+     "T02-0010"
+    ]
+   }
+  ],
+  "evidence": {
+   "C01-0166": {
+    "chunk_id": "C01-0166",
+    "text": "BIO 2021 ADCs 기준 P1→approved 누적 성공확률 10.8% (n=184, LOA 계산에 사용한 각 단계 전환 건수의 합 (고유 프로그램 수 아님), 데이터 기간 2011-01-01~2020-11-30, p.17 Figure 10b). 산출 방식: conditional-product LOA (남은 단계 conditional transition probability의 곱). 모집단: company-sponsored, FDA registration-enabling 개발 프로그램. 연구자 주도 연구와 다른 개발 중 약물과의 병용은 제외. 승인 기준은 FDA. Figure 10b에서 항체와 별도로 제공된 모달리티. 해석: 중단에는 과학적 실패뿐 아니라 상업성·규제·포트폴리오 판단에 따른 중단이 포함된다. 임상 평가변수 달성률이 아니다. 후반 단계 n이 16·12로 작다. LOA에 이 소표본 단계가 포함된다. 이미 LOA인 값에 후속 단계 전환율을 다시 곱하지 않는다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C01-0012": {
+    "chunk_id": "C01-0012",
+    "text": "BIO 2021 Oncology 기준 P1→approved 누적 성공확률 5.3% (n=4179, LOA 계산에 사용한 각 단계 전환 건수의 합 (고유 프로그램 수 아님), 데이터 기간 2011-01-01~2020-11-30, p.11 Figure 5b). 산출 방식: conditional-product LOA (남은 단계 conditional transition probability의 곱). 모집단: company-sponsored, FDA registration-enabling 개발 프로그램. 연구자 주도 연구와 다른 개발 중 약물과의 병용은 제외. 승인 기준은 FDA. Biomedtracker 21개 major disease 기준의 Oncology. 희귀 항암 적응증을 포함한다. 해석: 중단에는 과학적 실패뿐 아니라 상업성·규제·포트폴리오 판단에 따른 중단이 포함된다. 임상 평가변수 달성률이 아니다. 모달리티를 구분하지 않은 항암 전체 값이다. 특정 암종·표적·차수의 값이 아니다. 이미 LOA인 값에 후속 단계 전환율을 다시 곱하지 않는다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C01-0162": {
+    "chunk_id": "C01-0162",
+    "text": "BIO 2021 ADCs 기준 P1→P2 조건부 성공확률 41.7% (n=103, advanced + suspended transitions (해당 단계), 데이터 기간 2011-01-01~2020-11-30, p.17 Figure 10b). 산출 방식: phase transition (해당 단계 advanced ÷ (advanced+suspended)). 모집단: company-sponsored, FDA registration-enabling 개발 프로그램. 연구자 주도 연구와 다른 개발 중 약물과의 병용은 제외. 승인 기준은 FDA. Figure 10b에서 항체와 별도로 제공된 모달리티. 해석: 중단에는 과학적 실패뿐 아니라 상업성·규제·포트폴리오 판단에 따른 중단이 포함된다. 임상 평가변수 달성률이 아니다. 후반 단계 n이 16·12로 작다. LOA에 이 소표본 단계가 포함된다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C01-0290": {
+    "chunk_id": "C01-0290",
+    "text": "Paul 2010 All (model) 기준 preclinical→P1 조건부 성공확률 69.0% (n=미보고, model_input, 데이터 기간 2007-01-01~2009-12-31, p.205 Figure 2). 산출 방식: R&D 생산성 모델 입력값(단계 전환 확률 p(TS)). 모집단: 대형 제약사 13곳 벤치마크 기반 모델 입력값(실측 집계 아님) 해석: 비임상 후보물질이 1상에 진입하는 비율. 1상 이후 누적값과 곱하지 않고 나란히 표시",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "How to improve R&D productivity (Nat Rev Drug Discov 9) · Nature Reviews Drug Discovery"
+   },
+   "C02-0084": {
+    "chunk_id": "C02-0084",
+    "text": "Paul 2010 All (model) 기준 preclinical→P1 소요 기간 1.0년 (model_input, n=미보고, 데이터 기간 2007-01-01~2009-12-31). 정의: 비임상(IND 지원 시험) 착수부터 1상 진입까지 cycle time 모집단: 대형 제약사 벤치마크 모델",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "How to improve R&D productivity (Nat Rev Drug Discov 9) · Nature Reviews Drug Discovery"
+   },
+   "C02-0006": {
+    "chunk_id": "C02-0006",
+    "text": "BIO 2021 Oncology 기준 P1→P2 소요 기간 2.7년 (average/mean, n=795, 데이터 기간 2011-01-01~2020-11-30). 정의: 약물–적응증 development program이 해당 단계를 성공적으로 통과한 전환 1건의 소요기간. 해당 단계 개시에 관한 공개 공시부터 다음 단계 개시에 관한 공개 공시까지이며, 마지막 구간은 신청·승인 사건에 대응한다. 한 단계에 여러 임상시험이 포함될 수 있고 반드시 순차적으로 진행되지 않는다. 개별 clinical trial 1건의 시작→종료 기간이 아니다. 모집단: company-sponsored, FDA 등록용 development program. 해당 단계의 성공(advanced) 전환만 포함하며 중단 프로그램의 기간은 제외된다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C04-0055": {
+    "chunk_id": "C04-0055",
+    "text": "[설계 플래그 C04-D08] 조건: population = biomarker_selected. 문장: 바이오마커로 선별한 집단은 반응률과 성공확률이 높게 보고됩니다. 선별 진단법의 동반 개발 계획을 확인합니다. 근거: 바이오마커 선별 시험 성공률 상향(Wong 2019)",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "Wong 2019 Biostatistics; C05 modifier(정식)"
+   },
+   "F06-0009": {
+    "chunk_id": "F06-0009",
+    "text": "[F06-09 딜 컴프 풀] M03에서 모달리티(상위 태그 허용) ∧ 단계 일치. N ≥ 5면 사분위, 아니면 목록. 비공개 계약금은 제외하고 건수만 표시 근거: NONBLEND",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "M03-0001": {
+    "chunk_id": "M03-0001",
+    "text": "기술이전 사례: 리가켐바이오 → J&J(얀센) (2023-12), 자산 LCB84, 모달리티 ADC, 계약 단계 preclinical|P1, 계약금 100000000 USD, 총 규모 1722500000 USD, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0002": {
+    "chunk_id": "M03-0002",
+    "text": "기술이전 사례: 리가켐바이오 → 오노약품 (2024-10), 자산 LCB97/ONO-7429+ConjuAll, 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 700000000 USD, 로열티 경상기술료 별도.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0023": {
+    "chunk_id": "M03-0023",
+    "text": "기술이전 사례: 리가켐바이오 → Shanghai Fosun Pharmaceutical Development (2015-08-17), 자산 LCB14(항HER2 ADC), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 17750000 USD, 로열티 별도.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0047": {
+    "chunk_id": "M03-0047",
+    "text": "기술이전 사례: 리가켐바이오 → Millennium Pharmaceuticals(Takeda) (2017-01-11), 자산 ConjuAll ADC 플랫폼(리서치 라이선스), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 미공개, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0071": {
+    "chunk_id": "M03-0071",
+    "text": "기술이전 사례: 리가켐바이오 → Millennium Pharmaceuticals(Takeda) (2019-03-22), 자산 ADC 원천기술(3개 타깃), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 404000000 USD, 로열티 별도.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0079": {
+    "chunk_id": "M03-0079",
+    "text": "기술이전 사례: 리가켐바이오 → Iksuda Therapeutics (2020-04-14), 자산 ADC 원천기술(3개 타깃 → 정정 후 6개 타깃), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 814500000 USD, 로열티 별도; 제3자 기술이전 시 수익배분.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0082": {
+    "chunk_id": "M03-0082",
+    "text": "기술이전 사례: 리가켐바이오 → Iksuda Therapeutics (2020-05-14), 자산 LCB73(ADC 항암신약 후보물질), 모달리티 ADC, 계약 단계 preclinical, 계약금 5000000 USD, 총 규모 227000000 USD, 로열티 별도.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0092": {
+    "chunk_id": "M03-0092",
+    "text": "기술이전 사례: 리가켐바이오 → CStone Pharmaceuticals (2020-10-29), 자산 ADC 항암신약 후보물질(LCB71/ABL202), 모달리티 ADC, 계약 단계 preclinical, 계약금 10000000 USD, 총 규모 363500000 USD, 로열티 별도.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0095": {
+    "chunk_id": "M03-0095",
+    "text": "기술이전 사례: 리가켐바이오 → Pyxis Oncology (2020-12-02), 자산 LCB67(ADC 항암신약 후보물질), 모달리티 ADC, 계약 단계 preclinical, 계약금 9500000 USD, 총 규모 294000000 USD, 로열티 별도.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0102": {
+    "chunk_id": "M03-0102",
+    "text": "기술이전 사례: 펩트론 → Qilu Pharmaceutical (2021-03-31), 자산 PAb001-ADC(MUC-1 항체 ADC), 모달리티 ADC, 계약 단계 preclinical, 계약금 4618000 USD, 총 규모 미공개 USD, 로열티 순매출액 비례. 2025-09-22 해지.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0110": {
+    "chunk_id": "M03-0110",
+    "text": "기술이전 사례: 리가켐바이오 → Antengene Biologics (2021-10-21), 자산 ADC 공동연구 후보물질(Antengene 항체+ConjuAll), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 미공개, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0115": {
+    "chunk_id": "M03-0115",
+    "text": "기술이전 사례: 리가켐바이오 → SOTIO Biotech (2021-11-17), 자산 ADC 원천기술(5개 타깃), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 1027500000 USD, 로열티 순매출액 기준 합의 비율.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0139": {
+    "chunk_id": "M03-0139",
+    "text": "기술이전 사례: 피노바이오 → 셀트리온 (2022-10-18), 자산 ADC 링커-페이로드 플랫폼(최대 15개 타깃 실시 옵션), 모달리티 ADC, 계약 단계 preclinical, 계약금 1000000000 KRW, 총 규모 1242800000 USD, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0168": {
+    "chunk_id": "M03-0168",
+    "text": "기술이전 사례: 지놈앤컴퍼니 → Debiopharm (2024-06-03), 자산 GENA-111(CD239 항체) 기반 ADC, 모달리티 ADC, 계약 단계 preclinical, 계약금 5000000 USD, 총 규모 426000000 USD, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0182": {
+    "chunk_id": "M03-0182",
+    "text": "기술이전 사례: 인투셀 → 에이비엘바이오 (2024-10-23), 자산 인투셀 ADC 플랫폼(1개 타깃 실시권), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 미공개, 로열티 미공개. 2025-07-09 해지.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0192": {
+    "chunk_id": "M03-0192",
+    "text": "기술이전 사례: 와이바이오로직스 → 리가켐바이오 (2025-05-13), 자산 ADC용 항체(비공개 타깃), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 미공개, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0195": {
+    "chunk_id": "M03-0195",
+    "text": "기술이전 사례: 에임드바이오 → 에스케이플라즈마 (2025-05-30), 자산 AMB303, 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 미공개, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0241": {
+    "chunk_id": "M03-0241",
+    "text": "기술이전 사례: 온코크로스 → 앱티스 (2026-09-01), 자산 신규 타깃·항체 후보물질(ADC/BsADC 공동연구), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 2800000000 KRW, 로열티 미공개.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0244": {
+    "chunk_id": "M03-0244",
+    "text": "기술이전 사례: 에이비온 → 리가켐바이오 (2026-09-30), 자산 iADC 플랫폼(IFN-β mutein 면역사이토카인-항체 + ADC), 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 미공개, 로열티 순매출액에 따라 지급.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0003": {
+    "chunk_id": "M03-0003",
+    "text": "기술이전 사례: 리가켐바이오 → 암젠 (2022), 자산 ADC 플랫폼, 모달리티 ADC, 계약 단계 preclinical, 계약금 미공개, 총 규모 1247500000 USD, 로열티 순매출액 기준 합의 비율.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "dart"
+   },
+   "M02-0004": {
+    "chunk_id": "M02-0004",
+    "text": "2025년 심사년도 기준 건강보험심사평가원 통계에서 C16(위의 악성 신생물) 환자 수는 160,504명입니다. 국내 희귀의약품 규모 기준(2만 명)을 넘습니다. 청구 기반이라 미진단 환자는 포함되지 않습니다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "건강보험심사평가원 보건의료빅데이터개방시스템 질병 소분류·세분류 통계"
+   },
+   "R02-0010": {
+    "chunk_id": "R02-0010",
+    "text": "MFDS 우선심사: 우선순위 심사. 작용 레버 t↓(소) — 신속심사보다 약한 단계. 단서: —. 규칙: t-레버 제도끼리는 시간 단축 중복 적용, PoS 보정은 한 번만; 가속·조건부는 조기 매출(+)과 철회 확률(−)을 함께 모델링.",
+    "kind": "rule",
+    "trust_tier": 1,
+    "source": "규제축 마스터본 A-2 제도 매핑(2026)"
+   },
+   "F01-0001": {
+    "chunk_id": "F01-0001",
+    "text": "[F01-01] 조건: 항상. 규칙: 런웨이(개월) = (현금 − 제한 현금) ÷ 월 소진. 월 소진은 최근 6개월 영업활동 현금유출 평균. 1개월치뿐이면 '단월 기준' 배지 근거: 단일 산식 통일",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 산식(FE-A01)"
+   },
+   "F01-0013": {
+    "chunk_id": "F01-0013",
+    "text": "[F01-13] 조건: 재무 상태 = S3(과제 의존). 규칙: 정부과제 전용 현금은 제한 현금으로 런웨이에서 제외. 매칭 의무 현금은 필요 자금에 가산(정식) 근거: 비희석 자금 처리",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "F01-0016": {
+    "chunk_id": "F01-0016",
+    "text": "[F01-16] 조건: provenance 표시. 규칙: 재무 값 옆에 배지: 공시(DART) / 추출(업로드) / 수기. 케이스 B·C는 '가정값(시연)' 배지 근거: 출처 등급 표시",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "F01-0003": {
+    "chunk_id": "F01-0003",
+    "text": "[F01-03] 조건: RCR ≥ 1.5. 규칙: 커버리지 양호: 변곡점까지 추가 조달 없이 도달 가능한 범위입니다. 근거: 대표 결정 기본값(변경 가능)",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 밴드 규칙 v1"
+   },
+   "F01-0005": {
+    "chunk_id": "F01-0005",
+    "text": "[F01-05] 조건: RCR < 1.0. 규칙: 커버리지 미달: 변곡점 전 조달이 필요합니다. 필요 회수 = ceil(변곡점까지 개월 ÷ 런웨이) − 1 근거: 대표 결정 기본값",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 밴드 규칙 v1"
+   },
+   "F04-0097": {
+    "chunk_id": "F04-0097",
+    "text": "수집 대기 기준 all delay_factor = 2.0 x (typical, 조건: enrollment_delay, 치료영역: all, 지역: global, 통화기준 NA, n=153 global Phase II/III trials, 15,965 sites; 출처 위치 Tufts CSDD 2012 (Getz, 'The Cost of Clinical Trial Delays' CTTI 발표 2015-01, 슬라이드 'Actual Enrollment Timelines Typically Double Planned Timelines'); 데이터 기간 2008-2010). 원문 표현 \"typically double\"(실제 모집기간≈계획의 2배). 슬라이드 TA별 초과율은 PDF 추출상 OVERALL/Oncology/Respiratory/Cardiovascular/Endocrine-Metabolic/CNS 순으로 116/113/99/95/71/94%로 읽히나 라벨-값 매핑이 불확실하여 값으로 채우지 않음(슬라이드 원본 시각 확인 필요). 주의: Tufts CSDD 2024 업데이트(PubMed 38568347, 2012·2019·2023 비교)는 다수 연구에서 실제 등록이 계획을 초과하고 기간이 예상보다 짧았다고 보고 → 계수 2.0은 보수적 상한으로 취급",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "수집 대기"
+   },
+   "F04-0025": {
+    "chunk_id": "F04-0025",
+    "text": "ASPE/ERG 2024 (Sertkaya & Berger) 기준 P1 cost_per_patient = 103344 USD (weighted_mean, 조건: all, 치료영역: oncology, 지역: US, 통화기준 2018, n=Medidata 2004-2012 + IQVIA GrantPlan 2015-2019 + Cutting Edge 2013(140 trials), 연구 수 가중; 출처 위치 ASPE/ERG 2024 'Drug Development' (Sertkaya & Berger, 2024-09-26) Table 2 (pp.10-11); Table 4 (p.17); Table 6 (p.20); 데이터 기간 2004-2019(혼합)). 총 시험비용÷등록환자 수(study+patient+site 비용 모두 포함, p.20). CMC·제조비용 제외(p.34). FE-A03 환자당 단가 1순위 후보",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "ASPE/ERG 2024 (Sertkaya & Berger)"
+   },
+   "F01-0009": {
+    "chunk_id": "F01-0009",
+    "text": "[F01-09] 조건: 필요 자금에 미확보 항목이 있음. 규칙: 부분합에는 '최소' 표기를 붙이고 빠진 항목(사이트·CRO·국내 단가 등)을 문장에 나열 근거: 0으로 채우지 않는 원칙",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "F01-0010": {
+    "chunk_id": "F01-0010",
+    "text": "[F01-10] 조건: MVP. 규칙: 자동 갭(원화) 계산 없음. 문구: '필요 자금은 원문 통화로 표시되며 원화 환산·갭 계산은 정식 버전에서 제공됩니다' 근거: 환율 규칙 미확정",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "대표 결정 9/21"
+   },
+   "F01-0011": {
+    "chunk_id": "F01-0011",
+    "text": "[F01-11] 조건: 벤치마크 비용 표시. 규칙: DiMasi 값은 '산업 평균(대형사 규모·실패 포함)', Moore 값은 '승인 pivotal 시험 중앙값(설계 조건별)', ASPE 환자당 단가는 '2018년 달러'로 라벨. 두 값을 합치지 않음 근거: 규모 차이 10배 이상",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "F04_sources.md"
+   },
+   "F01-0012": {
+    "chunk_id": "F01-0012",
+    "text": "[F01-12] 조건: 단계 비용 합 표시. 규칙: 단계 비용 합은 '회사가 수행할 단계의 예산 합'이며 DiMasi 총개발비로 부르지 않음 근거: C04-0035 처리 원칙",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "C04-0035"
+   },
+   "C03-0001": {
+    "chunk_id": "C03-0001",
+    "text": "Paul 2010 기준 preclinical 단계 비용 5.0 백만 달러 (model_input, 기준연도 미보고, n=미보고). 정의: 프로젝트 1개당 단계 비용으로 설정된 모델 입력값 범위: molecule-only. 초기 탐색연구(타깃 발굴·검증), 출시 후 비용, R&D 조직 지원 비R&D 인력 급여 등 원문이 제시한 overhead 제외. 인건비·시설비·관리비의 세부 포함 범위는 첨부 본문에서 미확인. 질환군·모달리티별로 분리된 값이 아님. 해석: 프로젝트 1개당 단계 비용으로 설정된 모델 입력값이며, 관측된 실제 현금지출이나 특정 회사가 앞으로 지급할 확정 금액이 아니다. 임상시험 1건의 비용이 아니다. 성공·중단 프로젝트 비용의 평균 산출 방식은 첨부 본문에서 확인되지 않는다. attrition 미반영은 출시당 실패·중단 조정 이전이라는 뜻이며, 원자료가 실패 프로젝트를 전혀 포함하지 않았다는 뜻이 아니다. 앞선 발굴 단계(Target-to-hit·Hit-to-lead·Lead optimization) 비용과 구분한다. Figure 2에서 발굴 쪽 색상으로 표시되며, 모든 비임상 발굴 활동의 총합이 아니다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "How to improve R&D productivity (Nat Rev Drug Discov 9) · Nature Reviews Drug Discovery"
+   },
+   "C03-0006": {
+    "chunk_id": "C03-0006",
+    "text": "DiMasi 2016 기준 P1 단계 비용 25.3 백만 달러 (weighted_mean, 2013년 불변 달러, n=97.0). 정의: 해당 단계에 진입한 investigational compound의 해당 단계 보고 현금지출 가중평균 범위: investigational compound 단위 / indication-specific development program 단위가 아님 / 단계 진입 자산 기준 / 중단 자산의 지출 포함 / long-term animal testing(기형발생성·발암성 등) 비용 포함 / 2013 constant USD / 민간부문 비용 / 내부 인건비·overhead·CMC 세부 포함 범위는 본문만으로 미확인 / 모달리티별 값 아님 / 질환군별 값 아님 / 현재 진행률 이후의 잔여비용이 아님 해석: 특정 회사의 현재 시점부터 남은 비용이 아니며, 단일 적응증 프로그램 비용도 아니다. 임상시험 1건의 비용도 아니며, P3는 다수의 대규모 시험을 포함할 수 있다. 보고 시점에 해당 단계를 진행 중인 화합물 5개가 존재한다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Innovation in the pharmaceutical industry: New estimates of R&D costs (J Health Econ 47) · Journal of Health Economics"
+   },
+   "F01-0006": {
+    "chunk_id": "F01-0006",
+    "text": "[F01-06] 조건: 재무 상태 ∈ {S1, S2, S3, S4}. 규칙: 조달 소요 기간 기본값 6개월(시드~프리A 라운드 착수→입금). 조달 마감일 = 현금 소진 시점 − 6개월 근거: 국내 초기 라운드 통상 3~6개월(휴리스틱, 출처 없음 → illustrative)",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 휴리스틱 v1"
+   },
+   "F01-0015": {
+    "chunk_id": "F01-0015",
+    "text": "[F01-15] 조건: 백업 자산 ≥ 1. 규칙: 실패 시 {백업 목록}이 남습니다(가치 산출은 정식판). 근거: FE-B10 문장",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "C02-0010": {
+    "chunk_id": "C02-0010",
+    "text": "BIO 2021 Oncology 기준 P1→approved 소요 기간 10.3년 (단계별 성공 전환 평균 기간의 합, n=미보고, 데이터 기간 2011-01-01~2020-11-30). 정의: 각 단계의 성공 전환 평균 기간을 합쳐 Figure 17a에 제시한 원문 총기간 지표. 동일한 program cohort의 P1→Approval 총기간을 직접 관측한 평균이 아니다. 표시된 단계값을 다시 합산해 이 값을 대체하지 않는다. 모집단: company-sponsored, FDA 등록용 development program. 해당 단계의 성공(advanced) 전환만 포함하며 중단 프로그램의 기간은 제외된다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "T02-0001": {
+    "chunk_id": "T02-0001",
+    "text": "[M6 ADC 게이트키퍼 로스터 (링커·컨주·페이로드 원천IP)] 신규 항체·신규 타깃이어도 링커/컨주 화학은 타사 특허(말레이미드·디설파이드·절단형 에스테이트 중첩) → 항체 클린이어도 F1·F3 잔존. 3성분(항체+링커+페이로드) 각 로열티 → stacking이 마진 직격. 게이트키퍼: Lonza/Synaffix: GlycoConnect+HydraSpace+toxSYN (site-specific 글리칸 컨주); Pfizer (舊 Seagen): vc-MMAE, 말레이미드 링커; AbbVie (舊 ImmunoGen): 메이탄시노이드 DM1/DM4; Gilead (舊 Immunomedics): SN-38 (사시투주맙); Daiichi Sankyo: 데룩스테칸/DXd; Araris/Taiho: AraLinQ 펩타이드 링커; Tubulis/Gilead: Tubutecan 링커-페이로드; 🇰🇷 LigaChem(리가켐): ConjuAll (site-specific 컨주+암선택 절단링커+페이로드, 150+ 특허).",
+    "kind": "rule",
+    "trust_tier": 1,
+    "source": "T-SD3 FTO gatekeeper v1/v2"
+   },
+   "T02-0010": {
+    "chunk_id": "T02-0010",
+    "text": "[M6 ADC F3 모달리티 기본가정] ",
+    "kind": "rule",
+    "trust_tier": 2,
+    "source": "T-SD3 FTO gatekeeper v1/v2"
+   }
+  }
+ },
+ "basis_chunks": [
+  "C01-0166",
+  "C01-0012",
+  "C01-0162",
+  "C01-0290",
+  "C02-0084",
+  "C02-0006",
+  "C04-0055",
+  "F06-0009",
+  "M03-0001",
+  "M03-0002",
+  "M03-0023",
+  "M03-0047",
+  "M03-0071",
+  "M03-0079",
+  "M03-0082",
+  "M03-0092",
+  "M03-0095",
+  "M03-0102",
+  "M03-0110",
+  "M03-0115",
+  "M03-0139",
+  "M03-0168",
+  "M03-0182",
+  "M03-0192",
+  "M03-0195",
+  "M03-0241",
+  "M03-0244",
+  "M03-0003",
+  "M02-0004",
+  "R02-0010",
+  "F01-0001",
+  "F01-0013",
+  "F01-0016",
+  "F01-0003",
+  "F01-0005",
+  "F04-0097",
+  "F04-0025",
+  "F01-0009",
+  "F01-0010",
+  "F01-0011",
+  "F01-0012",
+  "C03-0001",
+  "C03-0006",
+  "F01-0006",
+  "F01-0015",
+  "C02-0010",
+  "T02-0001",
+  "T02-0010"
+ ],
+ "as_of": "2026-10-04",
+ "engines_blocked": [
+  {
+   "id": "CE-03",
+   "name": "대상자 수 벤치마크",
+   "waiting_for": "CT.gov 수집(S3)"
+  },
+  {
+   "id": "CE-07",
+   "name": "경쟁 임상 밀도",
+   "waiting_for": "CT.gov 수집(S3)"
+  },
+  {
+   "id": "FE-C08",
+   "name": "회사 조회·비교군 풀",
+   "waiting_for": "기업 마스터 적재 + DART 인증키"
+  },
+  {
+   "id": "FE-C01",
+   "name": "비교군 선정",
+   "waiting_for": "FE-C08"
+  },
+  {
+   "id": "FE-C02",
+   "name": "비교군 재무 스냅샷",
+   "waiting_for": "DART 인증키"
+  },
+  {
+   "id": "FE-C05",
+   "name": "시장이 지불한 단계 가치",
+   "waiting_for": "DART 인증키 + 비교군 3사 종목코드"
+  },
+  {
+   "id": "ME-01",
+   "name": "유병·발생 조회",
+   "waiting_for": "M02 역학 표 청크"
+  },
+  {
+   "id": "ME-03",
+   "name": "급여 채널 판정",
+   "waiting_for": "M01 급여 규칙 청크"
+  },
+  {
+   "id": "ME-09",
+   "name": "출구 시점 기본값",
+   "waiting_for": "M03 출구 시점 규칙 청크(M-D05-004)"
+  },
+  {
+   "id": "TE-03",
+   "name": "특허 만료 밴드 판정",
+   "waiting_for": "T03 밴드 규칙 청크 (값은 나오고 판정만 코드에 있음)"
+  }
+ ],
+ "steps": [
+  {
+   "id": "normalize",
+   "label": "조건 정규화",
+   "detail": "ADC · 항암 · preclinical · 희귀 N · KR",
+   "ms": 0
+  },
+  {
+   "id": "retrieve",
+   "label": "판단 기준 카드 조회",
+   "detail": "조건에 맞는 589장",
+   "ms": 4
+  },
+  {
+   "id": "engines",
+   "label": "계산기 실행",
+   "detail": "런웨이 · 성공확률 · 기간 · 갭 · 딜 컴프 · 특허 정렬",
+   "ms": 0
+  },
+  {
+   "id": "assemble",
+   "label": "여섯 관점 카드 조립",
+   "detail": "카드 6장 · 근거 48건 연결",
+   "ms": 2
+  }
+ ],
+ "cached": true,
+ "cached_at": "2026-10-04T02:39:45.003Z"
+}

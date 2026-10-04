@@ -9,6 +9,7 @@
  * 가짜 지연은 넣지 않는다. 각 줄이 나가는 시각 = 그 일이 진짜 끝난 시각이다.
  */
 import { runDiagnose, InputError, type Step } from "@/lib/pipeline";
+import { cachedRun } from "@/lib/demo-runs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,10 +36,23 @@ export async function POST(req: Request) {
         const payload = await runDiagnose(body, (s: Step) => send({ t: "step", ...s }));
         send({ t: "done", payload });
       } catch (e) {
-        if (e instanceof InputError) send({ t: "error", error: e.message, issues: e.issues });
-        else {
+        // 입력이 틀린 것은 고쳐야 할 일이다. 굳힌 결과로 덮지 않는다.
+        if (e instanceof InputError) {
+          send({ t: "error", error: e.message, issues: e.issues });
+        } else {
           console.error(e);
-          send({ t: "error", error: (e as Error).message });
+
+          // DB 가 안 되거나 네트워크가 끊긴 경우 — 시연이라면 굳혀 둔 결과를 내보낸다.
+          // 발표장에서 빈 화면을 띄우는 것보다 낫다. 실시간인 척하지는 않는다.
+          const run_id = (body as { run_id?: unknown } | null)?.run_id;
+          const baked = cachedRun(run_id);
+          if (baked) {
+            for (const s of baked.steps ?? [])
+              send({ t: "step", ...s, detail: `${s.detail} (저장된 결과)` });
+            send({ t: "done", payload: baked });
+          } else {
+            send({ t: "error", error: (e as Error).message });
+          }
         }
       } finally {
         c.close();

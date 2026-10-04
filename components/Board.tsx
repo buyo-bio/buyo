@@ -167,7 +167,13 @@ function Summary({ board }: { board: Board }) {
   );
 }
 
-export default function ResultBoard({ board }: { board: Board }) {
+export default function ResultBoard({
+  board, cachedAt,
+}: {
+  board: Board;
+  /** 미리 굳혀 둔 결과를 보고 있으면 언제 굳힌 것인지 — 실시간인 척하지 않는다 */
+  cachedAt?: string | null;
+}) {
   const c = board.conditions;
   const crumb = [
     c.modality || "전체",
@@ -184,6 +190,12 @@ export default function ResultBoard({ board }: { board: Board }) {
         </div>
         <span className="asof">데이터 기준 {board.as_of}</span>
       </div>
+
+      {cachedAt ? (
+        <p className="tip" style={{ marginBottom: 14 }}>
+          저장된 결과입니다({cachedAt.slice(0, 10)} 기준) — 지금 조회한 값이 아닙니다.
+        </p>
+      ) : null}
 
       <Summary board={board} />
 

@@ -1,0 +1,876 @@
+{
+ "run_id": "case-A",
+ "input": {
+  "modality": "antibody_bispecific",
+  "indication": "진행성·전이성 고형암",
+  "indication_code": "MeSH:D009369",
+  "disease_group": "항암",
+  "therapeutic_area": "oncology_solid",
+  "query_en": "Neoplasms",
+  "rare": "N",
+  "phase": "P1",
+  "exit_route": "license_out",
+  "endpoint": "ORR",
+  "comparator": "single_arm",
+  "duration_m": 24,
+  "primary_endpoints_n": 1,
+  "serious_unmet": "Y",
+  "life_threatening": "Y",
+  "no_alternative": "N",
+  "novelty": "new_entity",
+  "has_target_evidence": "Y",
+  "platform_flag": "Y",
+  "endpoint_type": "ORR",
+  "blinding": "open_label",
+  "design_type": "single_arm_descriptive",
+  "population": "all_comers",
+  "population_type": "patients",
+  "chronic": "N",
+  "cash": 560,
+  "monthly_burn": 49,
+  "committed_raise": 0,
+  "planned_raise": 0,
+  "corp_name": "에이비엘바이오"
+ },
+ "normalized": {
+  "cond": {
+   "modality": "antibody_mAb",
+   "modality_badge": "이중항체 전용 값이 없어 단클론항체 값으로 표시합니다",
+   "indication_code": "MeSH:D009369",
+   "disease_group": "항암",
+   "therapeutic_area": "oncology_solid",
+   "query_en": "Neoplasms",
+   "indication_name": "진행성·전이성 고형암",
+   "phase": "P1",
+   "clinical_phase": "P1",
+   "rare": "N",
+   "jurisdiction": "KR",
+   "fin_state": "S5",
+   "next_inflection": "P2_PoC_readout"
+  },
+  "badges": [
+   "이중항체 전용 값이 없어 단클론항체 값으로 표시합니다"
+  ],
+  "stages": [
+   "P1",
+   "P2"
+  ]
+ },
+ "cards": {
+  "as_of": "2026-10-04",
+  "conditions": {
+   "modality": "antibody_mAb",
+   "modality_badge": "이중항체 전용 값이 없어 단클론항체 값으로 표시합니다",
+   "indication_code": "MeSH:D009369",
+   "disease_group": "항암",
+   "therapeutic_area": "oncology_solid",
+   "query_en": "Neoplasms",
+   "indication_name": "진행성·전이성 고형암",
+   "phase": "P1",
+   "clinical_phase": "P1",
+   "rare": "N",
+   "jurisdiction": "KR",
+   "fin_state": "S5",
+   "next_inflection": "P2_PoC_readout"
+  },
+  "badges": [
+   "이중항체 전용 값이 없어 단클론항체 값으로 표시합니다"
+  ],
+  "summary": {
+   "counts": {
+    "positive": 0,
+    "caution": 1,
+    "neutral": 5,
+    "no_evidence": 0
+   },
+   "attention": [
+    {
+     "key": "finance",
+     "title": "재무",
+     "line": "가용 현금으로 11.4개월 버팁니다."
+    }
+   ],
+   "rest": [
+    {
+     "key": "clinical",
+     "title": "임상",
+     "flag": "neutral"
+    },
+    {
+     "key": "design",
+     "title": "설계안",
+     "flag": "neutral"
+    },
+    {
+     "key": "market",
+     "title": "시장",
+     "flag": "neutral"
+    },
+    {
+     "key": "regulatory",
+     "title": "규제",
+     "flag": "neutral"
+    },
+    {
+     "key": "patent",
+     "title": "특허",
+     "flag": "neutral"
+    }
+   ]
+  },
+  "cards": [
+   {
+    "key": "clinical",
+    "title": "임상",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "누적 승인 확률 12.1%(단클론항체 기준), 항암 기준 5.3% — 두 값 사이에서 읽어야 합니다.",
+      "basis": [
+       "C01-0159",
+       "C01-0012"
+      ],
+      "badges": [
+       "이중항체 전용 값이 없어 단클론항체 값으로 표시합니다"
+      ]
+     },
+     {
+      "text": "다음 단계 전환 확률 54.7% (P1→P2, 조건부).",
+      "basis": [
+       "C01-0155"
+      ]
+     },
+     {
+      "text": "2상 개념증명 결과까지 6.4년으로 잡힙니다(프로그램 기준).",
+      "basis": [
+       "C02-0006",
+       "C02-0007"
+      ]
+     }
+    ],
+    "basis_chunks": [
+     "C01-0159",
+     "C01-0012",
+     "C01-0155",
+     "C02-0006",
+     "C02-0007"
+    ]
+   },
+   {
+    "key": "design",
+    "title": "설계안",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "항암 1상은 환자 대상이 일반적이며 용량 확장 코호트에서 초기 효능 신호를 함께 봅니다.",
+      "basis": [
+       "C04-0057"
+      ]
+     },
+     {
+      "text": "설계 플래그 C04-D03 — 계획 대상자 수를 적으면 판정할 수 있습니다.",
+      "basis": []
+     }
+    ],
+    "basis_chunks": [
+     "C04-0057"
+    ]
+   },
+   {
+    "key": "market",
+    "title": "시장",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "같은 약 종류·단계의 기술이전 사례가 3건 있습니다.",
+      "basis": [
+       "F06-0009",
+       "M03-0009",
+       "M03-0054",
+       "M03-0171"
+      ]
+     },
+     {
+      "text": "아델 → — (—) 계약금 80000000",
+      "basis": [
+       "M03-0009"
+      ]
+     },
+     {
+      "text": "한올바이오파마 → — (—) 계약금 30000000",
+      "basis": [
+       "M03-0054"
+      ]
+     },
+     {
+      "text": "이수앱지스 → — (—) 계약금 3000000",
+      "basis": [
+       "M03-0171"
+      ]
+     },
+     {
+      "text": "비교군 제외 2건 — 기술도입(해외→국내); 표에 비교군 제외 표시",
+      "basis": [
+       "M03-0080",
+       "M03-0173"
+      ]
+     },
+     {
+      "text": "급여 경로는 M01 카드가 들어오면 채워집니다.",
+      "basis": []
+     }
+    ],
+    "basis_chunks": [
+     "F06-0009",
+     "M03-0009",
+     "M03-0054",
+     "M03-0171"
+    ]
+   },
+   {
+    "key": "regulatory",
+    "title": "규제",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "MFDS 우선심사: 우선순위 심사. 작용 레버 t↓(소) — 신속심사보다 약한 단계. 단서: —.",
+      "basis": [
+       "R02-0010"
+      ],
+      "badges": [
+       "KR"
+      ]
+     }
+    ],
+    "basis_chunks": [
+     "R02-0010"
+    ]
+   },
+   {
+    "key": "finance",
+    "title": "재무",
+    "flag": "caution",
+    "lines": [
+     {
+      "text": "가용 현금으로 11.4개월 버팁니다.",
+      "basis": [
+       "F01-0001",
+       "F01-0016",
+       "F01-0017"
+      ]
+     },
+     {
+      "text": "변곡점까지 자금 충족 비율 0.15 — 미달 (필요 기간 76.8개월)",
+      "basis": [
+       "F01-0005",
+       "C02-0006",
+       "C02-0007",
+       "F04-0097"
+      ],
+      "badges": [
+       "미달"
+      ]
+     },
+     {
+      "text": "변곡점 전에 추가 조달이 6회 필요합니다.",
+      "basis": []
+     },
+     {
+      "text": "설계안 기준 임상 직접비는 최소 5.99M$입니다.",
+      "basis": [
+       "F04-0025",
+       "F04-0067",
+       "F04-0026",
+       "F04-0068",
+       "F01-0009",
+       "F01-0010",
+       "F01-0011"
+      ],
+      "badges": [
+       "최소"
+      ]
+     },
+     {
+      "text": "여기에는 기관 개설비·CRO 월 비용·국내 환자당 단가·제조(CMC) 비용이 빠져 있어 '최소'입니다.",
+      "basis": []
+     },
+     {
+      "text": "업계 평균으로는 83.9M$입니다(P1 25.3M$ + P2 58.6M$). 산정 방식이 달라 위 금액과 합치지 않습니다.",
+      "basis": [
+       "F01-0011",
+       "F01-0012",
+       "C03-0006",
+       "C03-0007"
+      ]
+     },
+     {
+      "text": "조달은 2027-06-18까지 착수해야 합니다(조달 소요 3개월 기준).",
+      "basis": [
+       "F01-0010",
+       "F01-0007"
+      ]
+     },
+     {
+      "text": "자동 갭(원화) 계산 없음. 문구: '필요 자금은 원문 통화로 표시되며 원화 환산·갭 계산은 정식 버전에서 제공됩니다'",
+      "basis": [
+       "F01-0010",
+       "F01-0007"
+      ]
+     },
+     {
+      "text": "실패 시 ABL001, ABL111이 남습니다(가치 산출은 정식판).",
+      "basis": [
+       "F01-0015"
+      ]
+     }
+    ],
+    "basis_chunks": [
+     "F01-0001",
+     "F01-0016",
+     "F01-0017",
+     "F01-0005",
+     "C02-0006",
+     "C02-0007",
+     "F04-0097",
+     "F04-0025",
+     "F04-0067",
+     "F04-0026",
+     "F04-0068",
+     "F01-0009",
+     "F01-0010",
+     "F01-0011",
+     "F01-0011",
+     "F01-0012",
+     "C03-0006",
+     "C03-0007",
+     "F01-0010",
+     "F01-0007",
+     "F01-0015"
+    ]
+   },
+   {
+    "key": "patent",
+    "title": "특허",
+    "flag": "neutral",
+    "lines": [
+     {
+      "text": "특허 31건이 조회됩니다(등록 15건).",
+      "basis": [
+       "T06-0389",
+       "T07-0389",
+       "T06-0149",
+       "T07-0149",
+       "T06-0102",
+       "T07-0102",
+       "T06-0481",
+       "T07-0481",
+       "T06-0107",
+       "T07-0107",
+       "T06-0154",
+       "T07-0154",
+       "T06-0476",
+       "T07-0476",
+       "T06-0094",
+       "T07-0094",
+       "T06-0302",
+       "T07-0302",
+       "T06-0369",
+       "T07-0369",
+       "T06-0384",
+       "T07-0384",
+       "T06-0365",
+       "T07-0365",
+       "T06-0105",
+       "T07-0105",
+       "T06-0103",
+       "T07-0103",
+       "T06-0381",
+       "T07-0381",
+       "T06-0172",
+       "T07-0172",
+       "T06-0106",
+       "T07-0106"
+      ]
+     },
+     {
+      "text": "C07K16/28 28건 — 항체·면역글로불린(단클론·다클론)",
+      "basis": [
+       "T06-0389",
+       "T07-0389"
+      ]
+     },
+     {
+      "text": "A61P35/00 21건 — 항암제",
+      "basis": [
+       "T06-0154",
+       "T07-0154"
+      ]
+     },
+     {
+      "text": "A61K39/00 19건 — 항원·항체 함유 제제(백신·항체의약)",
+      "basis": [
+       "T06-0102",
+       "T07-0102"
+      ]
+     },
+     {
+      "text": "A61K47/68 11건 — 항체-약물 접합(ADC) 등 항체 기반 표적화",
+      "basis": [
+       "T06-0107",
+       "T07-0107"
+      ]
+     },
+     {
+      "text": "C07K16/18 5건 — 항체·면역글로불린(단클론·다클론)",
+      "basis": [
+       "T06-0389",
+       "T07-0389"
+      ]
+     },
+     {
+      "text": "물질특허 후보: C07K16/28, C07K16/18, C07K16/40, C07C237/20, C07K16/06, C07K16/32 (IPC 기준 추정이며 확정이 아닙니다)",
+      "basis": [],
+      "badges": [
+       "추정"
+      ]
+     },
+     {
+      "text": "출시 추정 2036년 시점에 물질특허가 -2년 남습니다(만료 2034년).",
+      "basis": [
+       "C02-0010"
+      ],
+      "badges": [
+       "주의"
+      ]
+     },
+     {
+      "text": "독점 기간 짧음 — 존속기간 연장·데이터 보호(RE-03) 확인 필요",
+      "basis": []
+     },
+     {
+      "text": "[F1 제3자 차단특허 — 1~5 앵커] {'5': '차단특허 없음/만료/자가보유, 클린 FTO 의견 가능', '4': '주변특허만, 디자인어라운드 가능, 파운데이셔널 블로커 無', '3': '파운데이셔널 존재하나 표준조건 비독점 라이선스 가능', '2': '경쟁사/독점라이선시가 파운데이셔널 락, 라이선스 불확실', '1': '다중 중첩 파운데이셔널 + 활성 enforcement, 라이선스 경로 無'}",
+      "basis": [
+       "T02-0006"
+      ]
+     },
+     {
+      "text": "[F2 인라이선스 의존도·조건 — 1~5 앵커] {'5': '인라이선스 불요(풀스택 소유)', '4': '비독점·서브라이선스 가능·CoC無·로열티 경미', '3': '표준 시장조건 인라이선스 + 일부 stacking', '2': 'CoC 조항(M&A 엑싯 위협) or 서브라이선스 不可 or anti-stacking 부재', '1': '단일 라이선서 CoC 킬스위치 / 서브라이선스 不可 / punitive 로열티 / 엑싯 차단'}",
+      "basis": [
+       "T02-0007"
+      ]
+     }
+    ],
+    "basis_chunks": [
+     "T06-0389",
+     "T07-0389",
+     "T06-0154",
+     "T07-0154",
+     "T06-0102",
+     "T07-0102",
+     "T06-0107",
+     "T07-0107",
+     "C02-0010",
+     "T02-0006",
+     "T02-0007"
+    ]
+   }
+  ],
+  "evidence": {
+   "C01-0159": {
+    "chunk_id": "C01-0159",
+    "text": "BIO 2021 Monoclonal antibody 기준 P1→approved 누적 성공확률 12.1% (n=2136, LOA 계산에 사용한 각 단계 전환 건수의 합 (고유 프로그램 수 아님), 데이터 기간 2011-01-01~2020-11-30, p.17 Figure 10b). 산출 방식: conditional-product LOA (남은 단계 conditional transition probability의 곱). 모집단: company-sponsored, FDA registration-enabling 개발 프로그램. 연구자 주도 연구와 다른 개발 중 약물과의 병용은 제외. 승인 기준은 FDA. 원문 분류는 단클론항체. 이중항체·항체절편의 포함 규칙은 원문에 제시되지 않았다. 해석: 중단에는 과학적 실패뿐 아니라 상업성·규제·포트폴리오 판단에 따른 중단이 포함된다. 임상 평가변수 달성률이 아니다. BUYO antibody가 더 넓은 항체 범주를 뜻한다면 같은 모집단이 아니다. 원문 하위분류를 반드시 보존한다. 이미 LOA인 값에 후속 단계 전환율을 다시 곱하지 않는다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C01-0012": {
+    "chunk_id": "C01-0012",
+    "text": "BIO 2021 Oncology 기준 P1→approved 누적 성공확률 5.3% (n=4179, LOA 계산에 사용한 각 단계 전환 건수의 합 (고유 프로그램 수 아님), 데이터 기간 2011-01-01~2020-11-30, p.11 Figure 5b). 산출 방식: conditional-product LOA (남은 단계 conditional transition probability의 곱). 모집단: company-sponsored, FDA registration-enabling 개발 프로그램. 연구자 주도 연구와 다른 개발 중 약물과의 병용은 제외. 승인 기준은 FDA. Biomedtracker 21개 major disease 기준의 Oncology. 희귀 항암 적응증을 포함한다. 해석: 중단에는 과학적 실패뿐 아니라 상업성·규제·포트폴리오 판단에 따른 중단이 포함된다. 임상 평가변수 달성률이 아니다. 모달리티를 구분하지 않은 항암 전체 값이다. 특정 암종·표적·차수의 값이 아니다. 이미 LOA인 값에 후속 단계 전환율을 다시 곱하지 않는다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C01-0155": {
+    "chunk_id": "C01-0155",
+    "text": "BIO 2021 Monoclonal antibody 기준 P1→P2 조건부 성공확률 54.7% (n=804, advanced + suspended transitions (해당 단계), 데이터 기간 2011-01-01~2020-11-30, p.17 Figure 10b). 산출 방식: phase transition (해당 단계 advanced ÷ (advanced+suspended)). 모집단: company-sponsored, FDA registration-enabling 개발 프로그램. 연구자 주도 연구와 다른 개발 중 약물과의 병용은 제외. 승인 기준은 FDA. 원문 분류는 단클론항체. 이중항체·항체절편의 포함 규칙은 원문에 제시되지 않았다. 해석: 중단에는 과학적 실패뿐 아니라 상업성·규제·포트폴리오 판단에 따른 중단이 포함된다. 임상 평가변수 달성률이 아니다. BUYO antibody가 더 넓은 항체 범주를 뜻한다면 같은 모집단이 아니다. 원문 하위분류를 반드시 보존한다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C02-0006": {
+    "chunk_id": "C02-0006",
+    "text": "BIO 2021 Oncology 기준 P1→P2 소요 기간 2.7년 (average/mean, n=795, 데이터 기간 2011-01-01~2020-11-30). 정의: 약물–적응증 development program이 해당 단계를 성공적으로 통과한 전환 1건의 소요기간. 해당 단계 개시에 관한 공개 공시부터 다음 단계 개시에 관한 공개 공시까지이며, 마지막 구간은 신청·승인 사건에 대응한다. 한 단계에 여러 임상시험이 포함될 수 있고 반드시 순차적으로 진행되지 않는다. 개별 clinical trial 1건의 시작→종료 기간이 아니다. 모집단: company-sponsored, FDA 등록용 development program. 해당 단계의 성공(advanced) 전환만 포함하며 중단 프로그램의 기간은 제외된다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C02-0007": {
+    "chunk_id": "C02-0007",
+    "text": "BIO 2021 Oncology 기준 P2→P3 소요 기간 3.7년 (average/mean, n=426, 데이터 기간 2011-01-01~2020-11-30). 정의: 약물–적응증 development program이 해당 단계를 성공적으로 통과한 전환 1건의 소요기간. 해당 단계 개시에 관한 공개 공시부터 다음 단계 개시에 관한 공개 공시까지이며, 마지막 구간은 신청·승인 사건에 대응한다. 한 단계에 여러 임상시험이 포함될 수 있고 반드시 순차적으로 진행되지 않는다. 개별 clinical trial 1건의 시작→종료 기간이 아니다. 모집단: company-sponsored, FDA 등록용 development program. 해당 단계의 성공(advanced) 전환만 포함하며 중단 프로그램의 기간은 제외된다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "C04-0057": {
+    "chunk_id": "C04-0057",
+    "text": "[설계 플래그 C04-D10] 조건: phase = P1 ∧ population = patients ∧ disease_group = 항암. 문장: 항암 1상은 환자 대상이 일반적이며 용량 확장 코호트에서 초기 효능 신호를 함께 봅니다. 근거: 항암 1상 관행",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "교안 3장 표 11.1"
+   },
+   "F06-0009": {
+    "chunk_id": "F06-0009",
+    "text": "[F06-09 딜 컴프 풀] M03에서 모달리티(상위 태그 허용) ∧ 단계 일치. N ≥ 5면 사분위, 아니면 목록. 비공개 계약금은 제외하고 건수만 표시 근거: NONBLEND",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "M03-0009": {
+    "chunk_id": "M03-0009",
+    "text": "기술이전 사례: 아델 → 사노피 (2025-12), 자산 ADEL-Y01, 모달리티 antibody_mAb, 계약 단계 preclinical|P1, 계약금 80000000 USD, 총 규모 미공개, 로열티 순매출액에 따른 합의 비율.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0054": {
+    "chunk_id": "M03-0054",
+    "text": "기술이전 사례: 한올바이오파마 → Roivant Sciences (2017-12-19), 자산 HL161(바토클리맙), 모달리티 antibody_mAb, 계약 단계 P1, 계약금 30000000 USD, 총 규모 502500000 USD, 로열티 별도.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "M03-0171": {
+    "chunk_id": "M03-0171",
+    "text": "기술이전 사례: 이수앱지스 → 미국 소재 항암제 개발 기업(비공개) (2024-06-26), 자산 ISU104(바레세타맙), 모달리티 antibody_mAb, 계약 단계 P1, 계약금 3000000 USD, 총 규모 85500000 USD, 로열티 순매출액에 따른 합의 비율.",
+    "kind": "parameter",
+    "trust_tier": 1,
+    "source": "dart"
+   },
+   "R02-0010": {
+    "chunk_id": "R02-0010",
+    "text": "MFDS 우선심사: 우선순위 심사. 작용 레버 t↓(소) — 신속심사보다 약한 단계. 단서: —. 규칙: t-레버 제도끼리는 시간 단축 중복 적용, PoS 보정은 한 번만; 가속·조건부는 조기 매출(+)과 철회 확률(−)을 함께 모델링.",
+    "kind": "rule",
+    "trust_tier": 1,
+    "source": "규제축 마스터본 A-2 제도 매핑(2026)"
+   },
+   "F01-0001": {
+    "chunk_id": "F01-0001",
+    "text": "[F01-01] 조건: 항상. 규칙: 런웨이(개월) = (현금 − 제한 현금) ÷ 월 소진. 월 소진은 최근 6개월 영업활동 현금유출 평균. 1개월치뿐이면 '단월 기준' 배지 근거: 단일 산식 통일",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 산식(FE-A01)"
+   },
+   "F01-0016": {
+    "chunk_id": "F01-0016",
+    "text": "[F01-16] 조건: provenance 표시. 규칙: 재무 값 옆에 배지: 공시(DART) / 추출(업로드) / 수기. 케이스 B·C는 '가정값(시연)' 배지 근거: 출처 등급 표시",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "F01-0017": {
+    "chunk_id": "F01-0017",
+    "text": "[F01-17] 조건: 현금 소진 시점 ≤ 12개월. 규칙: 주의 플래그: 12개월 이내 현금 소진 근거: 대표 결정 기본값",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 밴드 규칙 v1"
+   },
+   "F01-0005": {
+    "chunk_id": "F01-0005",
+    "text": "[F01-05] 조건: RCR < 1.0. 규칙: 커버리지 미달: 변곡점 전 조달이 필요합니다. 필요 회수 = ceil(변곡점까지 개월 ÷ 런웨이) − 1 근거: 대표 결정 기본값",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 밴드 규칙 v1"
+   },
+   "F04-0097": {
+    "chunk_id": "F04-0097",
+    "text": "수집 대기 기준 all delay_factor = 2.0 x (typical, 조건: enrollment_delay, 치료영역: all, 지역: global, 통화기준 NA, n=153 global Phase II/III trials, 15,965 sites; 출처 위치 Tufts CSDD 2012 (Getz, 'The Cost of Clinical Trial Delays' CTTI 발표 2015-01, 슬라이드 'Actual Enrollment Timelines Typically Double Planned Timelines'); 데이터 기간 2008-2010). 원문 표현 \"typically double\"(실제 모집기간≈계획의 2배). 슬라이드 TA별 초과율은 PDF 추출상 OVERALL/Oncology/Respiratory/Cardiovascular/Endocrine-Metabolic/CNS 순으로 116/113/99/95/71/94%로 읽히나 라벨-값 매핑이 불확실하여 값으로 채우지 않음(슬라이드 원본 시각 확인 필요). 주의: Tufts CSDD 2024 업데이트(PubMed 38568347, 2012·2019·2023 비교)는 다수 연구에서 실제 등록이 계획을 초과하고 기간이 예상보다 짧았다고 보고 → 계수 2.0은 보수적 상한으로 취급",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "수집 대기"
+   },
+   "F04-0025": {
+    "chunk_id": "F04-0025",
+    "text": "ASPE/ERG 2024 (Sertkaya & Berger) 기준 P1 cost_per_patient = 103344 USD (weighted_mean, 조건: all, 치료영역: oncology, 지역: US, 통화기준 2018, n=Medidata 2004-2012 + IQVIA GrantPlan 2015-2019 + Cutting Edge 2013(140 trials), 연구 수 가중; 출처 위치 ASPE/ERG 2024 'Drug Development' (Sertkaya & Berger, 2024-09-26) Table 2 (pp.10-11); Table 4 (p.17); Table 6 (p.20); 데이터 기간 2004-2019(혼합)). 총 시험비용÷등록환자 수(study+patient+site 비용 모두 포함, p.20). CMC·제조비용 제외(p.34). FE-A03 환자당 단가 1순위 후보",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "ASPE/ERG 2024 (Sertkaya & Berger)"
+   },
+   "F04-0067": {
+    "chunk_id": "F04-0067",
+    "text": "ASPE/ERG 2024 (Sertkaya & Berger) 기준 P1 patients_per_trial = 58 patients (weighted_mean, 조건: all, 치료영역: oncology, 지역: US, 통화기준 NA, n=Medidata 2004-2012 + clinicaltrials.gov 2014-2020(9,004 studies) + FDA DASH 2007-2017, 연구 수 가중; 출처 위치 ASPE/ERG 2024 'Drug Development' (Sertkaya & Berger, 2024-09-26) Table 2 (pp.10-11); Table 4 (p.17); Table 6 (p.20); 데이터 기간 2004-2020(혼합)). 시험 1건당 등록환자 수. 사이트 수는 원문에 없음(미확인)",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "ASPE/ERG 2024 (Sertkaya & Berger)"
+   },
+   "F04-0026": {
+    "chunk_id": "F04-0026",
+    "text": "ASPE/ERG 2024 (Sertkaya & Berger) 기준 P2 cost_per_patient = 78753 USD (weighted_mean, 조건: all, 치료영역: oncology, 지역: US, 통화기준 2018, n=Medidata 2004-2012 + IQVIA GrantPlan 2015-2019 + Cutting Edge 2013(140 trials), 연구 수 가중; 출처 위치 ASPE/ERG 2024 'Drug Development' (Sertkaya & Berger, 2024-09-26) Table 2 (pp.10-11); Table 4 (p.17); Table 6 (p.20); 데이터 기간 2004-2019(혼합)). 총 시험비용÷등록환자 수(study+patient+site 비용 모두 포함, p.20). CMC·제조비용 제외(p.34). FE-A03 환자당 단가 1순위 후보",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "ASPE/ERG 2024 (Sertkaya & Berger)"
+   },
+   "F04-0068": {
+    "chunk_id": "F04-0068",
+    "text": "ASPE/ERG 2024 (Sertkaya & Berger) 기준 P2 patients_per_trial = 137 patients (weighted_mean, 조건: all, 치료영역: oncology, 지역: US, 통화기준 NA, n=Medidata 2004-2012 + clinicaltrials.gov 2014-2020(9,004 studies) + FDA DASH 2007-2017, 연구 수 가중; 출처 위치 ASPE/ERG 2024 'Drug Development' (Sertkaya & Berger, 2024-09-26) Table 2 (pp.10-11); Table 4 (p.17); Table 6 (p.20); 데이터 기간 2004-2020(혼합)). 시험 1건당 등록환자 수. 사이트 수는 원문에 없음(미확인)",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "ASPE/ERG 2024 (Sertkaya & Berger)"
+   },
+   "F01-0009": {
+    "chunk_id": "F01-0009",
+    "text": "[F01-09] 조건: 필요 자금에 미확보 항목이 있음. 규칙: 부분합에는 '최소' 표기를 붙이고 빠진 항목(사이트·CRO·국내 단가 등)을 문장에 나열 근거: 0으로 채우지 않는 원칙",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "F01-0010": {
+    "chunk_id": "F01-0010",
+    "text": "[F01-10] 조건: MVP. 규칙: 자동 갭(원화) 계산 없음. 문구: '필요 자금은 원문 통화로 표시되며 원화 환산·갭 계산은 정식 버전에서 제공됩니다' 근거: 환율 규칙 미확정",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "대표 결정 9/21"
+   },
+   "F01-0011": {
+    "chunk_id": "F01-0011",
+    "text": "[F01-11] 조건: 벤치마크 비용 표시. 규칙: DiMasi 값은 '산업 평균(대형사 규모·실패 포함)', Moore 값은 '승인 pivotal 시험 중앙값(설계 조건별)', ASPE 환자당 단가는 '2018년 달러'로 라벨. 두 값을 합치지 않음 근거: 규모 차이 10배 이상",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "F04_sources.md"
+   },
+   "F01-0012": {
+    "chunk_id": "F01-0012",
+    "text": "[F01-12] 조건: 단계 비용 합 표시. 규칙: 단계 비용 합은 '회사가 수행할 단계의 예산 합'이며 DiMasi 총개발비로 부르지 않음 근거: C04-0035 처리 원칙",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "C04-0035"
+   },
+   "C03-0006": {
+    "chunk_id": "C03-0006",
+    "text": "DiMasi 2016 기준 P1 단계 비용 25.3 백만 달러 (weighted_mean, 2013년 불변 달러, n=97.0). 정의: 해당 단계에 진입한 investigational compound의 해당 단계 보고 현금지출 가중평균 범위: investigational compound 단위 / indication-specific development program 단위가 아님 / 단계 진입 자산 기준 / 중단 자산의 지출 포함 / long-term animal testing(기형발생성·발암성 등) 비용 포함 / 2013 constant USD / 민간부문 비용 / 내부 인건비·overhead·CMC 세부 포함 범위는 본문만으로 미확인 / 모달리티별 값 아님 / 질환군별 값 아님 / 현재 진행률 이후의 잔여비용이 아님 해석: 특정 회사의 현재 시점부터 남은 비용이 아니며, 단일 적응증 프로그램 비용도 아니다. 임상시험 1건의 비용도 아니며, P3는 다수의 대규모 시험을 포함할 수 있다. 보고 시점에 해당 단계를 진행 중인 화합물 5개가 존재한다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Innovation in the pharmaceutical industry: New estimates of R&D costs (J Health Econ 47) · Journal of Health Economics"
+   },
+   "C03-0007": {
+    "chunk_id": "C03-0007",
+    "text": "DiMasi 2016 기준 P2 단계 비용 58.6 백만 달러 (weighted_mean, 2013년 불변 달러, n=78.0). 정의: 해당 단계에 진입한 investigational compound의 해당 단계 보고 현금지출 가중평균 범위: investigational compound 단위 / indication-specific development program 단위가 아님 / 단계 진입 자산 기준 / 중단 자산의 지출 포함 / long-term animal testing(기형발생성·발암성 등) 비용 포함 / 2013 constant USD / 민간부문 비용 / 내부 인건비·overhead·CMC 세부 포함 범위는 본문만으로 미확인 / 모달리티별 값 아님 / 질환군별 값 아님 / 현재 진행률 이후의 잔여비용이 아님 해석: 특정 회사의 현재 시점부터 남은 비용이 아니며, 단일 적응증 프로그램 비용도 아니다. 임상시험 1건의 비용도 아니며, P3는 다수의 대규모 시험을 포함할 수 있다. 보고 시점에 해당 단계를 진행 중인 화합물 5개가 존재한다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Innovation in the pharmaceutical industry: New estimates of R&D costs (J Health Econ 47) · Journal of Health Economics"
+   },
+   "F01-0007": {
+    "chunk_id": "F01-0007",
+    "text": "[F01-07] 조건: 재무 상태 = S5(상장). 규칙: 조달 소요 기간 기본값 3개월(유상증자·CB). 관리종목 요건 문장을 재무 카드 상세에 표시 근거: 상장사 조달은 공시 절차 기준",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 휴리스틱 v1"
+   },
+   "F01-0015": {
+    "chunk_id": "F01-0015",
+    "text": "[F01-15] 조건: 백업 자산 ≥ 1. 규칙: 실패 시 {백업 목록}이 남습니다(가치 산출은 정식판). 근거: FE-B10 문장",
+    "kind": "rule",
+    "trust_tier": 3,
+    "source": "내부 규칙"
+   },
+   "T06-0389": {
+    "chunk_id": "T06-0389",
+    "text": "IPC C07K16/00 — 면역글로불린(Immunoglobulins), 예. 모노클로날(monoclonal) 또는 폴리클로날 항체(polyclonal antibodies) [2006.01]. 항체·면역글로불린(단클론·다클론). 항체·면역글로불린(단클론·다클론) 분류로, 바이오의약 최대 매출 영역인 항체의약의 원천이다. 표적 치료 시장이 거대하다. 항체 엔지니어링·표적 차별성과 생산 역량이 관건으로, 임상 데이터와 바이오시밀러 경쟁 구도가 가치를 좌우한다.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "BUYO IPC 분류표(Claude 주석) 2026-09"
+   },
+   "T07-0389": {
+    "chunk_id": "T07-0389",
+    "text": "IPC C07K16/00 — 항체·면역글로불린(단클론·다클론) → 분류 M4 (항체-단일/신약), 트랙 T1, 아키타입 힌트 A, 모달리티 태그 antibody_mAb. 휴리스틱, 사용자 확정 전 저장 금지.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "T-SD4 IPC 514 태깅 v2"
+   },
+   "T06-0154": {
+    "chunk_id": "T06-0154",
+    "text": "IPC A61P35/00 — 항종양제 [2006.01]. 항암제. 의약품 시장에서 가장 규모가 크고 미충족 수요가 높은 항암 치료제로, 표적·면역항암제로 세분화되며 성공 시 블록버스터 가능성이 크다. 다만 경쟁이 치열하고 임상 실패율도 높아, 작용기전의 차별성과 경쟁 약물 대비 우위를 면밀히 따져야 한다.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "BUYO IPC 분류표(Claude 주석) 2026-09"
+   },
+   "T07-0154": {
+    "chunk_id": "T07-0154",
+    "text": "IPC A61P35/00 — 항암제 → 분류 INF-INDIC ((공용인프라)), 트랙 INF, 아키타입 힌트 —, 모달리티 태그 없음(인프라·범위밖). 휴리스틱, 사용자 확정 전 저장 금지.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "T-SD4 IPC 514 태깅 v2"
+   },
+   "T06-0102": {
+    "chunk_id": "T06-0102",
+    "text": "IPC A61K39/00 — 항원 또는 항체를 함유한 의료품 제제 (면역분석용 물질 G01N 33/53) [2006.01]. 항원·항체 함유 제제(백신·항체의약). 백신과 항체의약품의 근간이 되는 항원·항체 함유 제제로, 감염병·면역질환·항암과 직결된다. 글로벌 대형 시장이나 개발 난이도·비용이 높다. 파이프라인의 적응증과 임상 단계를 함께 확인해야 가치 판단이 가능하다.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "BUYO IPC 분류표(Claude 주석) 2026-09"
+   },
+   "T07-0102": {
+    "chunk_id": "T07-0102",
+    "text": "IPC A61K39/00 — 항원·항체 함유 제제(백신·항체의약) → 분류 M4 (항체-단일/신약), 트랙 T1, 아키타입 힌트 A, 모달리티 태그 antibody_mAb. 휴리스틱, 사용자 확정 전 저장 금지.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "T-SD4 IPC 514 태깅 v2"
+   },
+   "T06-0107": {
+    "chunk_id": "T06-0107",
+    "text": "IPC A61K47/68 — ... 개질제가 항체, 면역글로불린 또는 그것의 분절(fragment), 예. Fc-분절 인 것 [2017.01]. 항체-약물 접합(ADC) 등 항체 기반 표적화. 항체-약물 접합(ADC) 등 항체 기반 표적화 기술로, 항암 분야 최첨단 모달리티다. 정밀 타격으로 효능·안전성을 높여 고성장한다. 링커·페이로드 기술과 표적 차별성, 임상 데이터가 핵심 가치다.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "BUYO IPC 분류표(Claude 주석) 2026-09"
+   },
+   "T07-0107": {
+    "chunk_id": "T07-0107",
+    "text": "IPC A61K47/68 — 항체-약물 접합(ADC) 등 항체 기반 표적화 → 분류 M6 (ADC 2.0), 트랙 T1, 아키타입 힌트 B, 모달리티 태그 ADC. 휴리스틱, 사용자 확정 전 저장 금지.",
+    "kind": "mapping",
+    "trust_tier": 3,
+    "source": "T-SD4 IPC 514 태깅 v2"
+   },
+   "C02-0010": {
+    "chunk_id": "C02-0010",
+    "text": "BIO 2021 Oncology 기준 P1→approved 소요 기간 10.3년 (단계별 성공 전환 평균 기간의 합, n=미보고, 데이터 기간 2011-01-01~2020-11-30). 정의: 각 단계의 성공 전환 평균 기간을 합쳐 Figure 17a에 제시한 원문 총기간 지표. 동일한 program cohort의 P1→Approval 총기간을 직접 관측한 평균이 아니다. 표시된 단계값을 다시 합산해 이 값을 대체하지 않는다. 모집단: company-sponsored, FDA 등록용 development program. 해당 단계의 성공(advanced) 전환만 포함하며 중단 프로그램의 기간은 제외된다.",
+    "kind": "parameter",
+    "trust_tier": 2,
+    "source": "Clinical Development Success Rates and Contributing Factors 2011–2020 · BIO·Informa Pharma Intelligence·QLS Advisors"
+   },
+   "T02-0006": {
+    "chunk_id": "T02-0006",
+    "text": "[F1 제3자 차단특허 — 1~5 앵커] {'5': '차단특허 없음/만료/자가보유, 클린 FTO 의견 가능', '4': '주변특허만, 디자인어라운드 가능, 파운데이셔널 블로커 無', '3': '파운데이셔널 존재하나 표준조건 비독점 라이선스 가능', '2': '경쟁사/독점라이선시가 파운데이셔널 락, 라이선스 불확실', '1': '다중 중첩 파운데이셔널 + 활성 enforcement, 라이선스 경로 無'}",
+    "kind": "rule",
+    "trust_tier": 2,
+    "source": "T-SD3 FTO gatekeeper v1/v2"
+   },
+   "T02-0007": {
+    "chunk_id": "T02-0007",
+    "text": "[F2 인라이선스 의존도·조건 — 1~5 앵커] {'5': '인라이선스 불요(풀스택 소유)', '4': '비독점·서브라이선스 가능·CoC無·로열티 경미', '3': '표준 시장조건 인라이선스 + 일부 stacking', '2': 'CoC 조항(M&A 엑싯 위협) or 서브라이선스 不可 or anti-stacking 부재', '1': '단일 라이선서 CoC 킬스위치 / 서브라이선스 不可 / punitive 로열티 / 엑싯 차단'}",
+    "kind": "rule",
+    "trust_tier": 2,
+    "source": "T-SD3 FTO gatekeeper v1/v2"
+   }
+  }
+ },
+ "basis_chunks": [
+  "C01-0159",
+  "C01-0012",
+  "C01-0155",
+  "C02-0006",
+  "C02-0007",
+  "C04-0057",
+  "F06-0009",
+  "M03-0009",
+  "M03-0054",
+  "M03-0171",
+  "R02-0010",
+  "F01-0001",
+  "F01-0016",
+  "F01-0017",
+  "F01-0005",
+  "F04-0097",
+  "F04-0025",
+  "F04-0067",
+  "F04-0026",
+  "F04-0068",
+  "F01-0009",
+  "F01-0010",
+  "F01-0011",
+  "F01-0012",
+  "C03-0006",
+  "C03-0007",
+  "F01-0007",
+  "F01-0015",
+  "T06-0389",
+  "T07-0389",
+  "T06-0154",
+  "T07-0154",
+  "T06-0102",
+  "T07-0102",
+  "T06-0107",
+  "T07-0107",
+  "C02-0010",
+  "T02-0006",
+  "T02-0007"
+ ],
+ "as_of": "2026-10-04",
+ "engines_blocked": [
+  {
+   "id": "CE-03",
+   "name": "대상자 수 벤치마크",
+   "waiting_for": "CT.gov 수집(S3)"
+  },
+  {
+   "id": "CE-07",
+   "name": "경쟁 임상 밀도",
+   "waiting_for": "CT.gov 수집(S3)"
+  },
+  {
+   "id": "FE-C08",
+   "name": "회사 조회·비교군 풀",
+   "waiting_for": "기업 마스터 적재 + DART 인증키"
+  },
+  {
+   "id": "FE-C01",
+   "name": "비교군 선정",
+   "waiting_for": "FE-C08"
+  },
+  {
+   "id": "FE-C02",
+   "name": "비교군 재무 스냅샷",
+   "waiting_for": "DART 인증키"
+  },
+  {
+   "id": "FE-C05",
+   "name": "시장이 지불한 단계 가치",
+   "waiting_for": "DART 인증키 + 비교군 3사 종목코드"
+  },
+  {
+   "id": "ME-01",
+   "name": "유병·발생 조회",
+   "waiting_for": "M02 역학 표 청크"
+  },
+  {
+   "id": "ME-03",
+   "name": "급여 채널 판정",
+   "waiting_for": "M01 급여 규칙 청크"
+  },
+  {
+   "id": "ME-09",
+   "name": "출구 시점 기본값",
+   "waiting_for": "M03 출구 시점 규칙 청크(M-D05-004)"
+  },
+  {
+   "id": "TE-03",
+   "name": "특허 만료 밴드 판정",
+   "waiting_for": "T03 밴드 규칙 청크 (값은 나오고 판정만 코드에 있음)"
+  }
+ ],
+ "steps": [
+  {
+   "id": "normalize",
+   "label": "조건 정규화",
+   "detail": "antibody_mAb · 항암 · P1 · 희귀 N · KR",
+   "ms": 8
+  },
+  {
+   "id": "retrieve",
+   "label": "판단 기준 카드 조회",
+   "detail": "조건에 맞는 2,334장",
+   "ms": 23
+  },
+  {
+   "id": "engines",
+   "label": "계산기 실행",
+   "detail": "런웨이 · 성공확률 · 기간 · 갭 · 딜 컴프 · 특허 정렬",
+   "ms": 0
+  },
+  {
+   "id": "assemble",
+   "label": "여섯 관점 카드 조립",
+   "detail": "카드 6장 · 근거 39건 연결",
+   "ms": 5
+  }
+ ],
+ "cached": true,
+ "cached_at": "2026-10-04T02:39:44.988Z"
+}

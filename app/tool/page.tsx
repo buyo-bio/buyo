@@ -26,6 +26,8 @@ export default function Tool() {
   const [demo, setDemo] = useState<DemoKey | null>(null);
   const [stage, setStage] = useState<Stage>("blank");
   const [board, setBoard] = useState<Board | null>(null);
+  /** 굳혀 둔 결과를 받았으면 언제 굳힌 것인지 — 화면에 그대로 밝힌다 */
+  const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [err, setErr] = useState<string>("");
 
@@ -46,6 +48,7 @@ export default function Tool() {
     setSteps([]);
     setErr("");
     setBoard(null);
+    setCachedAt(null);
 
     try {
       const res = await fetch("/api/diagnose/stream", {
@@ -73,11 +76,14 @@ export default function Tool() {
 
           const ev = JSON.parse(line) as
             | ({ t: "step" } & Step)
-            | { t: "done"; payload: { cards: Board } }
+            | { t: "done"; payload: { cards: Board; cached?: boolean; cached_at?: string } }
             | { t: "error"; error: string; issues?: string[] };
 
           if (ev.t === "step") setSteps((prev) => [...prev, ev as Step]);
-          else if (ev.t === "done") got = ev.payload.cards;
+          else if (ev.t === "done") {
+            got = ev.payload.cards;
+            if (ev.payload.cached) setCachedAt(ev.payload.cached_at ?? "");
+          }
           else throw new Error(ev.issues?.join(" / ") ?? ev.error);
         }
         if (done) break;
@@ -152,7 +158,7 @@ export default function Tool() {
               </div>
             ) : null}
 
-            {stage === "result" && board ? <ResultBoard board={board} /> : null}
+            {stage === "result" && board ? <ResultBoard board={board} cachedAt={cachedAt} /> : null}
           </>
         ) : (
           <div className="side-page">

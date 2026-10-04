@@ -9,6 +9,7 @@
 import { NextResponse } from "next/server";
 import { runDiagnose, InputError } from "@/lib/pipeline";
 import { getRun } from "@/lib/store";
+import { cachedRun } from "@/lib/demo-runs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +24,14 @@ export async function GET(req: Request) {
   const runId = new URL(req.url).searchParams.get("run_id");
   if (!runId) return NextResponse.json({ error: "run_id 가 필요합니다" }, { status: 400 });
 
-  const run = await getRun(runId);
+  // DB 가 안 되면 굳혀 둔 시연 결과로 — 발표장 네트워크 대비
+  let run: unknown = null;
+  try {
+    run = await getRun(runId);
+  } catch (e) {
+    console.error("getRun 실패:", (e as Error).message);
+  }
+  if (!run) run = cachedRun(runId);
   if (!run) return NextResponse.json({ error: `${runId} 결과가 없습니다` }, { status: 404 });
   return NextResponse.json(run);
 }
@@ -42,6 +50,8 @@ export async function POST(req: Request) {
     if (e instanceof InputError)
       return NextResponse.json({ error: e.message, issues: e.issues }, { status: 422 });
     console.error(e);
+    const baked = cachedRun((body as { run_id?: unknown } | null)?.run_id);
+    if (baked) return NextResponse.json(baked);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
 }
