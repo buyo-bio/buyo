@@ -35,6 +35,14 @@ export type FetchResult = {
   fetched: number;
   records: PatentRecord[];
   as_of: string;
+  /** 다 받았나 */
+  complete: boolean;
+  /** 못 받은 건수 — 0 이 아니면 다시 돌려야 한다 */
+  missing: number;
+  /** 몇 번 불렀나 (무료 한도 월 1,000회) */
+  calls: number;
+  /** 호출 상한에 걸려 멈췄나 */
+  capped: boolean;
 };
 
 /** <tag>값</tag> 하나 꺼내기 */
@@ -80,18 +88,29 @@ function parse(xml: string): { total: number; records: PatentRecord[] } {
  */
 export async function fetchByApplicant(
   applicant: string,
-  opts: { serviceKey?: string; rows?: number; maxPages?: number } = {}
+  opts: { serviceKey?: string; rows?: number; maxCalls?: number } = {}
 ): Promise<FetchResult> {
   const key = opts.serviceKey ?? process.env.KIPRIS_API_KEY;
   if (!key) throw new Error("KIPRIS_API_KEY 가 없습니다. .env.local 을 확인하세요.");
 
   const rows = opts.rows ?? 100;
-  const maxPages = opts.maxPages ?? 3;
+
+  // 예전에는 maxPages 가 3 이었다 — 100건씩 세 번, 즉 300건에서 잘렸다.
+  // 유한양행 356건 중 56건이 그래서 빠졌고, 스크립트는 "총 356 · 받음 300" 이라고만
+  // 적고 넘어갔다. 몇 장을 받아야 하는지는 첫 장이 알려 주는 total 이 정한다.
+  //
+  // 무료 한도가 월 1,000회이므로 멈출 선은 둔다. 다만 상한에 걸려 멈췄으면
+  // 조용히 끝내지 않고 몇 건이 남았는지 밝힌다.
+  const maxCalls = opts.maxCalls ?? 20;
 
   const all: PatentRecord[] = [];
   let total = 0;
+  let calls = 0;
+  let capped = false;
 
-  for (let page = 1; page <= maxPages; page++) {
+  for (let page = 1; ; page++) {
+    if (calls >= maxCalls) { capped = true; break; }
+
     const q = new URLSearchParams({
       applicant,
       patent: "true",
@@ -102,12 +121,16 @@ export async function fetchByApplicant(
     });
 
     const res = await fetch(`${BASE}/getAdvancedSearch?${q}`);
+    calls++;
     if (!res.ok) throw new Error(`KIPRIS HTTP ${res.status}`);
     const { total: t, records } = parse(await res.text());
 
     total = t;
     all.push(...records);
     if (all.length >= total || records.length === 0) break;
+
+    // 한 장과 다음 장 사이에 숨을 둔다 — 급하게 두드리지 않는다
+    await new Promise((ok) => setTimeout(ok, 300));
   }
 
   return {
@@ -116,5 +139,11 @@ export async function fetchByApplicant(
     fetched: all.length,
     records: all,
     as_of: new Date().toISOString().slice(0, 10),
+    // 다 받았나 — 못 받았으면 몇 건이 남았는지 파일에 적어 둔다.
+    // "총 356 · 받음 300" 을 눈으로 비교하다 놓치면 영영 모른다.
+    complete: all.length >= total,
+    missing: Math.max(0, total - all.length),
+    calls,
+    capped,
   };
 }

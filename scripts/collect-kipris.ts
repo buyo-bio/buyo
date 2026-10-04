@@ -22,18 +22,24 @@ async function main() {
   const targets = names.length ? names : DEFAULTS;
 
   fs.mkdirSync(OUT, { recursive: true });
+  const short: { name: string; missing: number }[] = [];
   console.log(`출원인 ${targets.length}곳 조회\n`);
 
   for (const name of targets) {
     process.stdout.write(`  ${name.padEnd(16)} `);
     try {
-      const r = await fetchByApplicant(name, { rows: 100, maxPages: 3 });
+      const r = await fetchByApplicant(name, { rows: 100 });
       const file = path.join(OUT, `${name}.json`);
       fs.writeFileSync(file, JSON.stringify(r, null, 2));
 
       const reg = r.records.filter((x) => x.register_status === "등록").length;
       const ipc = new Set(r.records.flatMap((x) => x.ipc)).size;
-      console.log(`총 ${String(r.total).padStart(4)}건 · 받음 ${String(r.fetched).padStart(4)} · 등록 ${String(reg).padStart(3)} · IPC ${ipc}종`);
+      if (!r.complete) short.push({ name, missing: r.missing });
+      console.log(
+        `총 ${String(r.total).padStart(4)}건 · 받음 ${String(r.fetched).padStart(4)}` +
+        ` · 등록 ${String(reg).padStart(3)} · IPC ${ipc}종 · 호출 ${r.calls}회` +
+        (r.complete ? "" : `   ⚠️ ${r.missing}건 못 받음${r.capped ? " (호출 상한)" : ""}`)
+      );
     } catch (e) {
       console.log(`❌ ${(e as Error).message}`);
     }
@@ -41,6 +47,10 @@ async function main() {
     await new Promise((ok) => setTimeout(ok, 400));
   }
 
+  if (short.length) {
+    console.log(`\n⚠️ 덜 받은 출원인 ${short.length}곳 — 다시 돌리면 이어서 받습니다`);
+    for (const x of short) console.log(`   ${x.name}  ${x.missing}건 남음`);
+  }
   console.log(`\n저장 위치  ${OUT}`);
   console.log(`다음       npm run patents:check`);
 }
