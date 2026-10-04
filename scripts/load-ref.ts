@@ -82,7 +82,40 @@ function toInt(v: string | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-async function insert(table: string, rows: Record<string, unknown>[]) {
+/**
+ * 이미 들어 있는 줄은 덮어쓴다(upsert).
+ *
+ * 예전에는 insert 였다. 그래서 두 번째로 돌리면
+ * "duplicate key value violates unique constraint" 로 터졌다.
+ * 자료가 새로 올 때마다 이 벽에 부딪히는데, 그때 할 일은
+ * "표를 손으로 비우기" 가 아니라 "다시 돌리기" 여야 한다.
+ *
+ * 열 이름이 자연키인 표(치료영역·KCD·표기사전)에만 쓴다.
+ */
+async function upsert(table: string, rows: Record<string, unknown>[]) {
+  for (let i = 0; i < rows.length; i += BATCH) {
+    const part = rows.slice(i, i + BATCH);
+    const { error } = await db.from(table).upsert(part);
+    if (error) throw new Error(`${table} ${i}~${i + part.length} 실패: ${error.message}`);
+    process.stdout.write(`\r  ${table}  ${Math.min(i + BATCH, rows.length)}/${rows.length}`);
+  }
+  process.stdout.write("\n");
+}
+
+/**
+ * 비우고 다시 넣는다.
+ *
+ * indications 는 번호(serial)가 열쇠라서 덮어쓸 기준이 없다.
+ * 그냥 또 넣으면 같은 적응증이 두 줄이 되고, 자동완성에 중복이 뜬다.
+ * 216줄짜리 표이므로 비우고 다시 넣는 편이 안전하다.
+ *
+ * 비우기와 넣기 사이에 표가 잠깐 빈다. 진단 중에는 돌리지 않는다.
+ */
+async function replace(table: string, rows: Record<string, unknown>[]) {
+  const { error: del } = await db.from(table).delete().gte("id", 0);
+  if (del) throw new Error(`${table} 비우기 실패: ${del.message}`);
+  console.log(`  ${table}  비웠습니다`);
+
   for (let i = 0; i < rows.length; i += BATCH) {
     const part = rows.slice(i, i + BATCH);
     const { error } = await db.from(table).insert(part);
@@ -97,11 +130,11 @@ async function main() {
 
   // 0층 — 세부 치료영역 등록부. 1·2층이 이걸 참조하므로 먼저 넣는다
   const ta = readCsv("therapeutic_area_registry_v1.csv");
-  await insert("therapeutic_area", ta);
+  await upsert("therapeutic_area", ta);
 
   // 표기 사전
   const term = readCsv("kcd_term_map_v1.csv");
-  await insert("kcd_term_map", term);
+  await upsert("kcd_term_map", term);
 
   // 1층 — 자주 쓰는 적응증. id 는 serial 이므로 넣지 않는다
   const ind = readCsv("indication_master_v0_4.csv").map((r) => ({
@@ -111,7 +144,8 @@ async function main() {
     therapeutic_area: r.therapeutic_area, ta_source: r.ta_source, ta_alt: r.ta_alt,
     rare_hint: r.rare_hint, note: r.note,
   }));
-  await insert("indications", ind);
+  // 번호가 열쇠라 덮어쓸 기준이 없다 — 비우고 다시 넣는다
+  await replace("indications", ind);
 
   // 2층 — KCD 전체
   const kcd = readCsv("kcd_master_v3.csv").map((r) => ({
@@ -123,7 +157,7 @@ async function main() {
     needs_user_confirm: r.needs_user_confirm, rare_user_confirm: r.rare_user_confirm,
     kcd_version: r.kcd_version, note: r.note,
   }));
-  await insert("kcd_master", kcd);
+  await upsert("kcd_master", kcd);
 
   // 센 수를 그대로 보여 준다. 기대값과 다르면 여기서 바로 보인다.
   const pool = kcd.filter((k) => k.searchable === "Y" && k.master_ref == null).length;
