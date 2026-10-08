@@ -83,7 +83,10 @@ async function main() {
     const need = (r.need.values as { need_current_phase_usd: number | null }).need_current_phase_usd;
     checks.push(["A 런웨이", "11.4개월", `${f1(run)}개월`, near(run, 11.4, 0.05)]);
     checks.push(["A 커버리지", "0.15", t ? t.RCR.toFixed(2) : "—", near(t?.RCR ?? null, 0.15, 0.005)]);
-    checks.push(["A 설계안 최소", "$5.99M", usdM(need), near(need ? need / 1e6 : null, 5.99, 0.02)]);
+    // 2026-10-08 릴리스에서 F04 비용이 2018년 달러 → 2024년 달러로 환산됐다
+    // (BRDPI 170.6→204.3, 배수 1.1975). 5.99 × 1.1975 = 7.17.
+    // 명세의 5.99 는 옛 기준연도 값이라 더는 맞지 않는다 — 대표님께 보고함.
+    checks.push(["A 설계안 최소", "$7.18M (2024년 달러)", usdM(need), near(need ? need / 1e6 : null, 7.18, 0.02)]);
   }
   {
     const { cond, engines: r } = await runCase("C");
@@ -100,7 +103,8 @@ async function main() {
     checks.push(["C IND까지", "1.98 양호", ind ? ind.RCR.toFixed(2) : "—", near(ind?.RCR ?? null, 1.98, 0.01)]);
     checks.push(["C P1 완료까지", "0.38 미달", p1 ? p1.RCR.toFixed(2) : "—", near(p1?.RCR ?? null, 0.38, 0.01)]);
     checks.push(["C 추가 조달", "2회", p1?.raises_needed != null ? `${p1.raises_needed}회` : "—", p1?.raises_needed === 2]);
-    checks.push(["C 설계안 최소", "$3.72M", usdM(need), near(need ? need / 1e6 : null, 3.72, 0.02)]);
+    // 같은 환산. 3.72 × 1.1975 = 4.455
+    checks.push(["C 설계안 최소", "$4.46M (2024년 달러)", usdM(need), near(need ? need / 1e6 : null, 4.46, 0.02)]);
     checks.push(["C 업계 평균", "$30.3M (5.0+25.3)", bench !== null ? `$${bench.toFixed(1)}M` : "—", near(bench, 30.3, 0.05)]);
     checks.push(["C ADC 누적확률", "10.8%", suc.cumulative ? `${suc.cumulative.value}%` : "—", suc.cumulative?.value === 10.8]);
   }

@@ -12,6 +12,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type { PickedIndication } from "@/lib/demo-cases";
+import { DISEASE_GROUPS as ENUM_GROUPS } from "@/lib/enums";
 
 type Item = {
   layer: 1 | 2;
@@ -25,10 +26,8 @@ type Item = {
   match_type: string;
 };
 
-export const DISEASE_GROUPS = [
-  "항암", "감염", "대사·내분비", "심혈관",
-  "중추신경(신경)", "중추신경(정신)", "기타",
-];
+/** 질환군 — enums_v1.json 이 정본. "전체"는 사용자가 고를 값이 아니라 빼 둔다 */
+export const DISEASE_GROUPS = ENUM_GROUPS.filter((g) => g !== "전체");
 
 /** 1층은 MeSH, 2층은 KCD 코드를 쓴다 */
 function codeOf(it: Item): string | null {
@@ -105,7 +104,12 @@ export default function IndicationPicker({
 
   return (
     <div className="field ind" ref={box} style={{ gridColumn: "1/-1" }}>
-      <label htmlFor="indication"><span className="req">*</span> 적응증</label>
+      <label htmlFor="indication">
+        적응증
+        <span className={`tag-req${value.trim() ? " done" : ""}`}>
+          {value.trim() ? "필수 ✓" : "필수"}
+        </span>
+      </label>
 
       <div className="ind-input">
         <input

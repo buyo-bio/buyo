@@ -11,6 +11,7 @@ import type { Conditions } from "../types";
 import type { EngineResult } from "./base";
 import { CE_01, CE_02, CE_06, durationToApproval } from "./clinical";
 import { ME_02, ME_08 } from "./market";
+import { FE_C08 } from "./company";
 import { TE_03, TE_08, TE_09 } from "./patent";
 import type { PatentRecord } from "../collect/kipris";
 import { FE_A01, FE_A02, FE_A03, FE_A04, FE_A05, FE_B10, type RunwayInput, type Target } from "./finance";
@@ -30,8 +31,9 @@ export * from "./patent";
 export const BLOCKED_ENGINES: { id: string; name: string; waiting_for: string }[] = [
   { id: "CE-03", name: "대상자 수 벤치마크", waiting_for: "CT.gov 수집(S3)" },
   { id: "CE-07", name: "경쟁 임상 밀도", waiting_for: "CT.gov 수집(S3)" },
-  { id: "FE-C08", name: "회사 조회·비교군 풀", waiting_for: "기업 마스터 적재 + DART 인증키" },
-  { id: "FE-C01", name: "비교군 선정", waiting_for: "FE-C08" },
+  // FE-C08 의 '회사 조회'와 '풀 세기'는 됩니다(기업 마스터 508사 적재 완료).
+  // 남은 것은 좁히기에 쓸 칸이 마스터에 없다는 것뿐입니다.
+  { id: "FE-C01", name: "비교군 선정", waiting_for: "기업 마스터에 모달리티·질환군 칸 (F06-02 좁히기)" },
   { id: "FE-C02", name: "비교군 재무 스냅샷", waiting_for: "DART 인증키" },
   { id: "FE-C05", name: "시장이 지불한 단계 가치", waiting_for: "DART 인증키 + 비교군 3사 종목코드" },
   { id: "ME-01", name: "유병·발생 조회", waiting_for: "M02 역학 표 청크" },
@@ -57,6 +59,8 @@ export type RunInput = RunwayInput & {
   patent_records?: PatentRecord[];
   /** 사용자가 적은 물질특허 만료 연도 */
   patent_expiry_year?: number;
+  /** 회사 이름 — 기업 마스터에서 종목코드·DART번호를 찾는다 */
+  corp_name?: string;
 };
 
 export type RunOutput = {
@@ -72,6 +76,8 @@ export type RunOutput = {
   deals: EngineResult;
   /** 국내 환자 수(M02) */
   patients: EngineResult;
+  /** 회사 조회·비교군 풀(F06-01) */
+  company: EngineResult;
   /** 특허 포트폴리오 · 모달리티 힌트 · 만료 정렬 */
   portfolio: EngineResult;
   patentHint: EngineResult;
@@ -108,6 +114,7 @@ export async function runEngines(cond: Conditions, inp: RunInput): Promise<RunOu
   // ── M축: 같은 조건의 기술이전은 얼마였나
   const deals = await ME_08(cond);
   const patients = await ME_02(cond);
+  const company = await FE_C08(cond, inp.corp_name);
 
   // ── T축: 특허
   const portfolio = await TE_08(inp.patent_records ?? []);
@@ -127,7 +134,7 @@ export async function runEngines(cond: Conditions, inp: RunInput): Promise<RunOu
   const gate = await CE_06([...success.basis_chunks, ...duration.basis_chunks]);
 
   return {
-    success, duration, runway, bench, need, gap, deals, patients,
+    success, duration, runway, bench, need, gap, deals, patients, company,
     portfolio, patentHint, patentAlign,
     rcr, downside, gate, blocked: BLOCKED_ENGINES,
   };

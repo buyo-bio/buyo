@@ -48,23 +48,27 @@ async function runCase(k: DemoKey) {
   // 파이프라인과 같이 특허 파일을 읽는다.
   // 안 읽으면 특허 카드가 "만료일 미입력" 으로 보이고, 실제 화면과 어긋난다.
   const patents = loadPatents(req.corp_name);
+  // 여기서도 필드를 골라 넘기지 않는다. 세 번이나 같은 구멍이 났다
+  //   ① 치료영역이 빠져 항암 값이 전체 값으로 내려감
+  //   ② 특허 파일을 안 읽어 "만료일 미입력" 으로 보임
+  //   ③ 회사 이름이 빠져 "기업 마스터에 없습니다" 로 보임
   const engines = await runEngines(cond, {
+    ...(req as unknown as Record<string, unknown>),
     patent_records: patents.records,
-    cash: req.cash, restricted_cash: req.restricted_cash,
-    monthly_burn: req.monthly_burn, committed_raise: req.committed_raise,
-    stages, planned_n: req.planned_n,
-    backup_assets: req.backup_assets, targets: req.targets,
-  });
+    stages,
+  } as never);
   // 사실 묶음은 파이프라인과 같은 함수로 만든다 — 따로 적으면 칸이 조용히 빠진다
   const rcrWorst = (engines.rcr.values as { targets?: { RCR: number }[] }).targets?.slice(-1)[0]?.RCR;
   const facts = factsFromInput(cond, req as unknown as Record<string, unknown>, {
     rcr: rcrWorst,
     backup_n: (req.backup_assets ?? []).length,
+    rare_kr: (engines.patients.values as { rare_kr?: string }).rare_kr,
   });
   const des = await matchRules("CE-04", cond, { limit: 6, facts });
   const reg = await matchRules("RE-02", cond, { limit: 4, facts });
   const pat = await matchRules("TE-02", cond, { limit: 2, facts });
   const board = await assemble(cond, badges, engines, {
+    corp_name: req.corp_name,
     design: des.values as never, regulatory: reg.values as never, patentRules: pat.values as never,
   });
   return { cond, board };

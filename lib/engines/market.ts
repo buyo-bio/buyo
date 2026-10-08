@@ -192,7 +192,12 @@ export type PatientRow = {
   role: "default" | "detail";
   /** 화면에 붙일 한글 꼬리표 */
   notes: string[];
+  /** M02 가 적어 둔 희귀 판정 글자 */
+  judgement: string | null;
 };
+
+/** M02 가 적어 둔 국내 희귀 판정 → 규제 규칙이 쓰는 rare_kr */
+export type RareKr = "Y" | "N" | "unknown";
 
 export type PatientsValues = {
   rows: PatientRow[];
@@ -200,7 +205,29 @@ export type PatientsValues = {
   first_line: boolean;
   /** 코드 기준 값뿐일 때 첫 줄에 쓸 문장 */
   held_sentence: string | null;
+  /**
+   * 국내 희귀 요건 판정 (대표님 20261004_1709).
+   *
+   *   below_threshold               → Y
+   *   above_threshold               → N
+   *   above_threshold_code_broader  → unknown  (코드가 적응증보다 넓다)
+   *   below_threshold_code_partial  → unknown  (코드가 적응증 일부만 덮는다)
+   *   M02 청크 없음                  → unknown
+   *
+   * 모르면 'unknown' 이다 — 빈 값이 아니다. R02-0016(판정 보류) 규칙이
+   * rare_kr == 'unknown' 으로 걸리기 때문에, 비워 두면 그 안내도 안 나온다.
+   */
+  rare_kr: RareKr;
 };
+
+/** M02 판정 글자 → Y/N/unknown */
+function toRareKr(judgement: unknown): RareKr {
+  switch (judgement) {
+    case "below_threshold": return "Y";
+    case "above_threshold": return "N";
+    default: return "unknown";   // 코드가 넓거나 일부만 덮으면 판정하지 않는다
+  }
+}
 
 /** M02 배지 → 화면 꼬리표. 뜻을 모르는 배지는 그대로 둔다 */
 const M02_NOTE: Record<string, string> = {
@@ -225,7 +252,9 @@ export async function ME_02(cond: Conditions): Promise<EngineResult<PatientsValu
     indication_name: cond.indication_name ?? null,
   };
 
-  const empty: PatientsValues = { rows: [], first_line: false, held_sentence: null };
+  const empty: PatientsValues = {
+    rows: [], first_line: false, held_sentence: null, rare_kr: "unknown",
+  };
   if (!inp.indication_name)
     return ctx.none(empty, "적응증을 목록에서 고르면 국내 환자 수를 찾습니다");
 
@@ -244,6 +273,7 @@ export async function ME_02(cond: Conditions): Promise<EngineResult<PatientsValu
         role: ((field(c, "display_role") ?? "default") === "detail"
           ? "detail"
           : "default") as PatientRow["role"],
+        judgement: (field(c, "rare_judgement") as string) ?? null,
         notes: badges.map((b) => M02_NOTE[b]).filter(Boolean),
       };
     })
@@ -258,9 +288,15 @@ export async function ME_02(cond: Conditions): Promise<EngineResult<PatientsValu
   if (rows.length > 1)
     ctx.note("상병코드가 여러 개입니다 — 청구 기반 집계라 코드끼리 더하지 않고 따로 표시합니다");
 
+  // 희귀 판정은 첫 줄에 쓸 수 있는 값(default)에서만 가져온다.
+  // 코드가 적응증보다 넓은 값으로 "2만 명 초과" 를 단정하면 안 된다.
+  const head = rows.find((x) => x.role === "default") ?? null;
+  const rare_kr = head ? toRareKr(head.judgement) : "unknown";
+
   return ctx.done({
     rows,
     first_line: firstLine,
     held_sentence: firstLine ? null : HELD,
+    rare_kr,
   });
 }

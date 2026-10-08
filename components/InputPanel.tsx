@@ -19,6 +19,18 @@ function grouped() {
 }
 
 /**
+ * 필수·선택 꼬리표.
+ *
+ * 별표 하나로는 구분이 안 된다는 지적(대표님 10/4). 판정 칸을 더하면서
+ * 입력 칸이 서른 개가 넘었으니, "어디까지 채워야 시작되는가" 가 보여야 한다.
+ * 채운 필수 칸은 꼬리표를 눌러 둔다 — 남은 칸만 눈에 띈다.
+ */
+function Req({ done }: { done: boolean }) {
+  return <span className={`tag-req${done ? " done" : ""}`}>{done ? "필수 ✓" : "필수"}</span>;
+}
+const Opt = () => <span className="tag-opt">선택</span>;
+
+/**
  * 자기신고 칸 하나.
  *
  * 첫 선택지는 언제나 "고르지 않음"(빈 글자)이다.
@@ -56,7 +68,11 @@ export default function InputPanel({
   const setJudge = (k: string, v: string) =>
     onChange({ ...form, judge: { ...form.judge, [k]: v } });
 
-  const judgeOf = (g: JudgeField["group"]) => JUDGE_FIELDS.filter((f) => f.group === g);
+  // 질환군이 맞을 때만 묻는 칸이 있다(감염 치료제의 작용 병원체 등)
+  const group = form.picked?.disease_group ?? form.manual_group;
+  const judgeOf = (g: JudgeField["group"]) =>
+    JUDGE_FIELDS.filter((f) => f.group === g)
+      .filter((f) => !f.only_disease_group || f.only_disease_group === group);
   const judgeBlank = JUDGE_FIELDS.filter((f) => !form.judge?.[f.key]).length;
 
   const missing = missingRequired(form);
@@ -79,10 +95,10 @@ export default function InputPanel({
         </div>
 
         <div className="group">
-          <h2>파이프라인</h2>
+          <h2>파이프라인 <span className="tag-req">필수 3항목</span></h2>
           <div className="g2">
             <div className={`field${!form.modality ? "" : ""}`} style={{ gridColumn: "1/-1" }}>
-              <label htmlFor="modality"><span className="req">*</span> 모달리티</label>
+              <label htmlFor="modality">모달리티 <Req done={!!form.modality} /></label>
               <select id="modality" value={form.modality}
                 onChange={(e) => set("modality", e.target.value)}>
                 <option value="">선택</option>
@@ -137,7 +153,7 @@ export default function InputPanel({
             ) : null}
 
             <div className="field">
-              <label htmlFor="phase"><span className="req">*</span> 개발 단계</label>
+              <label htmlFor="phase">개발 단계 <Req done={!!form.phase} /></label>
               <select id="phase" value={form.phase} onChange={(e) => set("phase", e.target.value)}>
                 <option value="">선택</option>
                 {PHASES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -156,7 +172,7 @@ export default function InputPanel({
         </div>
 
         <div className="group">
-          <h2>설계안</h2>
+          <h2>설계안 <Opt /></h2>
           <div className="g2">
             <div className="field">
               <label htmlFor="ep">1차 평가변수</label>
@@ -194,7 +210,7 @@ export default function InputPanel({
         </div>
 
         <div className="group">
-          <h2>규제·판정</h2>
+          <h2>규제·판정 <Opt /></h2>
           <p className="tip" style={{ margin: "0 0 10px" }}>
             제도 해당 여부를 가르는 칸입니다. 고르지 않으면 그 제도는
             &ldquo;적으면 판정할 수 있습니다&rdquo;로 남습니다 — 해당 없음으로 단정하지 않습니다.
@@ -208,7 +224,7 @@ export default function InputPanel({
         </div>
 
         <div className="group">
-          <h2>재무 (억 원)</h2>
+          <h2>재무 (억 원) <Opt /></h2>
           <div className="g2">
             <div className="field">
               <label htmlFor="cash">현금</label>
@@ -245,10 +261,10 @@ export default function InputPanel({
         </button>
         <p className={`go-why${missing.length ? " warn" : ""}`}>
           {missing.length
-            ? `${missing.join(" · ")} 를 채워 주세요`
+            ? `필수 ${missing.length}개 남음 — ${missing.join(" · ")}`
             : judgeBlank > 0
-              ? `지금도 진단할 수 있습니다 — 판정 칸 ${judgeBlank}개를 더 고르면 제도 판정이 늘어납니다`
-              : "필수 3항목이 모두 채워졌습니다"}
+              ? `필수 3항목 완료 · 선택 ${judgeBlank}개를 더 고르면 제도 판정이 늘어납니다`
+              : "필수 3항목 완료 · 선택 칸도 모두 채워졌습니다"}
         </p>
       </div>
     </aside>

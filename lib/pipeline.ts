@@ -112,6 +112,7 @@ export async function runDiagnose(
     planned_n: (opts.planned_n as number | undefined) ?? input.n,
     backup_assets: (opts.backup_assets as string[]) ?? [],
     targets: opts.targets as never,
+    corp_name: input.corp_name,
     patent_records: patents.records,
     patent_expiry_year: opts.patent_expiry_year as number | undefined,
     planned_raise_date: opts.planned_raise_date as string | undefined,
@@ -125,6 +126,8 @@ export async function runDiagnose(
   const facts = factsFromInput(cond, { ...input, ...opts }, {
     rcr: rcrWorst,
     backup_n: ((opts.backup_assets as string[]) ?? []).length,
+    // 국내 희귀 판정은 M02 가 만든다 — 묻지 않는다
+    rare_kr: (engines.patients.values as { rare_kr?: string }).rare_kr,
   });
 
   const design = await matchRules("CE-04", cond, { limit: 6, facts });
@@ -144,6 +147,7 @@ export async function runDiagnose(
 
   // ⑤ 조립 — 문장 틀에 위 결과만 끼운다. 여기서 DB를 다시 보지 않는다.
   const board = await assemble(cond, badges, engines, {
+    corp_name: input.corp_name,
     design: design.values,
     regulatory: regulatory.values,
     patentRules: patentRules.values,

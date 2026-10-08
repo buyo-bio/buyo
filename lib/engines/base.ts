@@ -240,7 +240,25 @@ export function phaseMatches(c: Chunk, want?: string | null): boolean {
 export function modalityMatches(c: Chunk, family: string[]): boolean {
   const m = field(c, "modality");
   if (m == null) return true;                    // 빈 칸은 모든 경우에 해당
-  return family.includes(String(m));
+
+  // 규칙 카드의 modality 칸은 한 태그가 아니라 묶음일 수 있다.
+  //   "antibody|antibody_*|protein"
+  // 세로줄은 "이 중 하나", 별표는 "이 글자로 시작하는 모든 태그" 다.
+  //
+  // 전에는 글자를 통째로 비교해서 R03-0004(항체 제조·품질)가
+  // antibody_mAb 에 안 걸렸다. 규칙이 들어와 있는데 화면에 안 나오는 꼴이었다.
+  //
+  // 자리 정의(resolve.ts)의 비교는 손대지 않는다 — 그쪽은 대표님 감사 도구와
+  // 글자를 맞춰야 한다. 여기는 우리 규칙 조회에만 쓰인다.
+  return String(m)
+    .split("|")
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .some((tag) =>
+      tag.endsWith("*")
+        ? family.some((f) => f.startsWith(tag.slice(0, -1)))
+        : family.includes(tag)
+    );
 }
 
 /**

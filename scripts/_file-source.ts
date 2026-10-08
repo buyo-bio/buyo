@@ -26,8 +26,14 @@ function pass(c: Chunk, key: string, want?: string | null): boolean {
     : (field(c, key) as string | null | undefined) ?? null;
   if (v == null) return true;
 
-  // 관할만 규칙이 하나 더 있다 — GLOBAL 은 어느 나라에나 해당한다
-  if (key === "jurisdiction" && v === "GLOBAL") return true;
+  // 관할만 규칙이 둘 더 있다.
+  //   · GLOBAL 은 어느 나라에나 해당한다
+  //   · "KR|US" 처럼 세로줄로 묶인 칸은 그중 하나만 맞아도 해당한다
+  //     (R01 12건 중 8건이 이 꼴이라 KR 로는 하나도 안 걸리고 있었다)
+  if (key === "jurisdiction") {
+    const list = String(v).split("|").map((x) => x.trim());
+    return list.includes("GLOBAL") || list.includes(want);
+  }
 
   return v === want;
 }

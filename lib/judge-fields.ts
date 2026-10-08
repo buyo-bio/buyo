@@ -27,6 +27,8 @@ export type JudgeField = {
   /** 고를 수 있는 값 — [넘기는 값, 화면 글자] */
   options: [string, string][];
   group: "regulatory" | "design";
+  /** 이 조건일 때만 묻는다 — 감염 치료제가 아니면 병원체를 물을 이유가 없다 */
+  only_disease_group?: string;
 };
 
 const YN: [string, string][] = [["Y", "예"], ["N", "아니오"]];
@@ -101,6 +103,42 @@ export const JUDGE_FIELDS: JudgeField[] = [
     label: "플랫폼 기술",
     hint: "같은 기반기술로 여러 자산을 만드는지",
     options: YN,
+  },
+
+  // ── 해외 희귀 요건 (대표님 20261004_1709)
+  //
+  // 국내(rare_kr)는 M02 환자 수에서 만든다 — 묻지 않는다.
+  // 해외는 우리가 가진 자료가 없어 회사가 아는 것을 받는다.
+  // "모른다" 를 고를 수 있어야 한다 — 안 고르면 '확인 필요' 로 남는다.
+  {
+    key: "rare_us", group: "regulatory",
+    label: "미국 희귀 요건",
+    hint: "미국 환자 수가 20만 명 미만이라는 자료가 있습니까",
+    options: [["Y", "예"], ["N", "아니오"], ["unknown", "모름"]],
+  },
+  {
+    key: "rare_eu", group: "regulatory",
+    label: "유럽 희귀 요건",
+    hint: "유럽 유병률이 1만 명당 5명 이하라는 자료가 있습니까",
+    options: [["Y", "예"], ["N", "아니오"], ["unknown", "모름"]],
+  },
+  {
+    key: "rare_jp", group: "regulatory",
+    label: "일본 희귀 요건",
+    hint: "일본 환자 수가 희귀질환 기준 미만이라는 자료가 있습니까",
+    options: [["Y", "예"], ["N", "아니오"], ["unknown", "모름"]],
+  },
+  {
+    key: "anti_infective_type", group: "regulatory",
+    label: "작용 병원체",
+    hint: "감염 치료제일 때만 묻습니다",
+    only_disease_group: "감염",
+    options: [
+      ["antibacterial", "세균"],
+      ["antifungal", "진균"],
+      ["antiviral", "바이러스"],
+      ["other", "그 밖"],
+    ],
   },
 
   // ── 설계안 (C04)

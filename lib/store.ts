@@ -66,8 +66,23 @@ export async function findChunks(
   // 관할은 규칙이 하나 더 있다.
   // GLOBAL 은 "어느 나라에나 해당"이라는 뜻이라, KR 을 찾을 때도 걸려야 한다.
   // 카드 1,746장 중 1,506장이 GLOBAL 이다. 이걸 빼면 아무것도 안 나온다.
-  if (cond.jurisdiction)
-    q = q.or(`jurisdiction.is.null,jurisdiction.eq.GLOBAL,jurisdiction.eq.${cond.jurisdiction}`);
+  // 관할. "KR|US" 처럼 세로줄로 묶인 칸은 그중 하나만 맞아도 해당한다 —
+  // R01 12건 중 8건이 이 꼴이라 KR 로는 하나도 안 걸리고 있었다.
+  // like 로 거를 때 묶음 안의 다른 나라(예: "KRX")에 걸리지 않도록
+  // 세로줄을 앞뒤에 붙여 양끝을 맞춘다.
+  if (cond.jurisdiction) {
+    const j = cond.jurisdiction;
+    q = q.or(
+      [
+        "jurisdiction.is.null",
+        "jurisdiction.eq.GLOBAL",
+        `jurisdiction.eq.${j}`,
+        `jurisdiction.like.${j}|%`,
+        `jurisdiction.like.%|${j}`,
+        `jurisdiction.like.%|${j}|%`,
+      ].join(",")
+    );
+  }
 
   // 우선순위: 조건이 구체적인 것 → 신뢰 등급 높은 것 → 유효기간 긴 것
   q = q.order("trust_tier", { ascending: true })

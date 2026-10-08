@@ -19,6 +19,13 @@ export type FactInput = {
   /** 출구 전략 — license_out · self_develop */
   exit_route?: string;
 
+  /**
+   * 국내 희귀 요건 판정 — M02 가 만든다(사용자에게 묻지 않는다).
+   * 규제 규칙은 이제 rare 가 아니라 rare_kr 을 본다(대표님 20261004_1709).
+   * 모르면 'unknown' 을 넣는다 — 비우면 "판정 보류" 안내(R02-0016)도 안 나온다.
+   */
+  rare_kr?: string;
+
   // 설계안
   endpoint_type?: string;
   comparator?: string;
@@ -95,13 +102,16 @@ export function buildFacts(cond: Conditions, inp: FactInput = {}): Facts {
 export function factsFromInput(
   cond: Conditions,
   input: Record<string, unknown>,
-  engine: { rcr?: number; backup_n?: number } = {}
+  engine: { rcr?: number; backup_n?: number; rare_kr?: string } = {}
 ): Facts {
   const num = (v: unknown) => (typeof v === "number" ? v : undefined);
   const str = (v: unknown) => (typeof v === "string" && v !== "" ? v : undefined);
 
   return buildFacts(cond, {
     exit_route: str(input.exit_route),
+
+    // 회사가 직접 적었으면 그 값이 먼저다. 없으면 M02 판정을 쓴다.
+    rare_kr: str(input.rare_kr) ?? engine.rare_kr ?? "unknown",
 
     // 설계안 — 숫자 칸
     comparator: str(input.comparator),
