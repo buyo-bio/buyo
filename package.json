@@ -17,7 +17,9 @@
     "collect:kipris": "tsx scripts/collect-kipris.ts",
     "patents:check": "tsx scripts/check-patents.ts",
     "ref:load": "tsx scripts/load-ref.ts",
+    "companies:load": "tsx scripts/load-companies.ts",
     "aw:check": "tsx scripts/check-applies-when.ts",
+    "band:check": "tsx scripts/check-runway-band.ts",
     "cache:demos": "tsx scripts/cache-demos.ts",
     "golden": "tsx scripts/check-golden.ts"
   },

@@ -93,7 +93,11 @@ function lex(src: string): Tok[] {
 // ─────────────────────────────────────────────
 // 구문 나무
 // ─────────────────────────────────────────────
-type Val = { k: "name"; v: string } | { k: "lit"; v: string | number };
+type Val =
+  | { k: "name"; v: string }
+  | { k: "lit"; v: string | number }
+  /** 목록 그 자체를 값으로 비교할 때 — "grant_programs != []" */
+  | { k: "list"; v: Val[] };
 type Node =
   | { k: "always" }
   | { k: "and" | "or"; a: Node; b: Node }
@@ -127,6 +131,9 @@ export function parseAppliesWhen(src: string): Node {
   };
 
   const value = (): Val => {
+    // 목록이 비교 대상으로 올 수 있다 — "grant_programs != []" (비어 있지 않은가)
+    if (isOp("[")) return { k: "list", v: list() };
+
     const t = toks[p++];
     if (!t) throw new AppliesWhenError(`식이 중간에 끊겼습니다: ${src}`);
     if (t.t === "str" || t.t === "num") return { k: "lit", v: t.v };
@@ -205,10 +212,14 @@ export function fieldsUsed(src: string): string[] {
       case "and": case "or": walk(n.a); walk(n.b); return;
       case "not": walk(n.a); return;
       case "truthy": out.add(n.v); return;
-      case "cmp":
-        if (n.l.k === "name") out.add(n.l.v);
-        if (n.r.k === "name") out.add(n.r.v);
+      case "cmp": {
+        const walkVal = (v: Val) => {
+          if (v.k === "name") out.add(v.v);
+          else if (v.k === "list") v.v.forEach(walkVal);
+        };
+        walkVal(n.l); walkVal(n.r);
         return;
+      }
       case "in":
         if (n.l.k === "name") out.add(n.l.v);
         if (n.rhs.kind === "list") {
@@ -233,7 +244,21 @@ function has(facts: Facts, k: string): boolean {
   return v !== null && v !== undefined && v !== "";
 }
 
+/** 목록끼리는 길이와 각 칸을 글자로 비교한다 — "grant_programs != []" 가 주 용도다 */
+function sameList(a: unknown[], b: unknown[]): boolean {
+  return a.length === b.length && a.every((x, i) => String(x) === String(b[i]));
+}
+
 function cmp(op: string, a: unknown, b: unknown): Tri {
+  // 한쪽이 목록이면 목록끼리만 견준다
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b)) return op === "!=" ? true : false;
+    const same = sameList(a, b);
+    if (op === "==") return same;
+    if (op === "!=") return !same;
+    return null;   // 목록에 크기 비교는 뜻이 없다
+  }
+
   switch (op) {
     case "==": return a === b || String(a) === String(b);
     case "!=": return !(a === b || String(a) === String(b));
@@ -267,6 +292,11 @@ export function evalAppliesWhen(src: string, facts: Facts): EvalResult {
 
   const val = (v: Val): { ok: boolean; v: unknown } => {
     if (v.k === "lit") return { ok: true, v: v.v };
+    if (v.k === "list") {
+      const xs: unknown[] = [];
+      for (const x of v.v) { const e = val(x); if (!e.ok) return { ok: false, v: null }; xs.push(e.v); }
+      return { ok: true, v: xs };
+    }
     if (!has(facts, v.v)) { missing.add(v.v); return { ok: false, v: null }; }
     return { ok: true, v: facts[v.v] };
   };

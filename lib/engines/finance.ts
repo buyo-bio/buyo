@@ -16,6 +16,7 @@ import {
 } from "./base";
 import { resolveSlotFrom, type ResolveInput } from "../resolve";
 import { slot, levelNote } from "../slots";
+import { evalAppliesWhen } from "../applies-when";
 
 /** F01 규칙 카드 전부 (한 번 읽어 여러 엔진이 나눠 쓴다) */
 async function f01Rules(): Promise<Chunk[]> {
@@ -386,6 +387,37 @@ export async function FE_A04(
 // ─────────────────────────────────────────────
 export type Band = "양호" | "주의" | "미달";
 
+/**
+ * 커버리지 밴드 규칙 — 어느 청크가 밴드인지.
+ *
+ * ID 로 정한다. 대표님이 20261007 에 "chunk_id 는 바꾸지 않는다, 내용만
+ * 갱신한다" 고 밝혔다. 문장 머리표([F01-03])로 찾던 예전 방식은
+ * 문구가 바뀌면 조용히 깨진다 — 실제로 문구가 바뀔 예정이다.
+ *
+ * 순서가 뜻을 가진다: 위에서부터 조건이 참인 첫 장을 쓴다.
+ * 세 조건은 서로 겹치지 않게 적혀 있어 어느 값에서도 하나만 걸린다.
+ */
+const BAND_RULE_IDS = ["F01-0003", "F01-0004", "F01-0005"] as const;
+
+/**
+ * 참고 정보 — 변곡점 대비 비율(rcr)에 대한 설명 두 줄.
+ *
+ * 대표님이 20261007 에 비율을 색 판정에서 뺐다. 숫자는 그대로 보여 주되
+ * 양호·주의를 말하지 않는다. 두 청크 모두 neutral 이라 카드 색에 닿지 않는다.
+ */
+const RCR_NOTE_IDS = ["F01-0034", "F01-0035"] as const;
+
+/**
+ * 밴드 이름은 청크의 신호등에서 가져온다.
+ *   positive → 양호
+ *   caution  → 주의 (부족도 caution 이다 — 새 색을 만들지 않는다)
+ *
+ * "미달" 이라는 말은 대표님이 20261007 에 없앴다. 화면 문장은 청크가 들고 있다.
+ */
+function bandOf(c: Chunk): Band {
+  return field(c, "flag_hint") === "positive" ? "양호" : "주의";
+}
+
 /** 돈이 버텨야 하는 시점 하나 */
 export type Target = {
   /** 화면에 그대로 나가는 이름 — "IND 제출", "P1 완료" */
@@ -398,7 +430,8 @@ export type Target = {
 
 export type TargetResult = Target & {
   RCR: number;
-  band: Band;
+  /** 조건에 맞는 밴드 규칙이 없으면 null — 색을 켜지 않는다 */
+  band: Band | null;
   band_text: string | null;
   raises_needed: number | null;
 };
@@ -407,6 +440,8 @@ export type RcrValues = {
   targets: TargetResult[];
   /** 가장 나쁜 밴드 — 재무 칸 신호등이 이걸 따른다 */
   worst_band: Band | null;
+  /** 변곡점 대비 비율을 어떻게 읽는지 — 색에 쓰지 않는 설명 한 줄 */
+  rcr_note?: string | null;
   RCR_with_delay: number | null;
   delay_factor: number | null;
 };
@@ -421,6 +456,7 @@ export async function FE_A05(
 
   const empty: RcrValues = {
     targets: [], worst_band: null, RCR_with_delay: null, delay_factor: null,
+    rcr_note: null,
   };
 
   if (runway.runway_m_committed == null) return ctx.none(empty, "런웨이가 없습니다");
@@ -432,15 +468,55 @@ export async function FE_A05(
   for (const t of usable) {
     const rcr = runway.runway_m_committed / t.months;
 
-    let band: Band;
-    let rule: Chunk | null;
-    if (rcr >= 1.5) { band = "양호"; rule = byTag(rules, "F01-03"); }
-    else if (rcr >= 1.0) { band = "주의"; rule = byTag(rules, "F01-04"); }
-    else { band = "미달"; rule = byTag(rules, "F01-05"); }
-    ctx.use(rule);
+    // 밴드는 청크의 조건식으로 고른다 — 임계값을 코드에 적지 않는다.
+    //
+    // 예전에는 1.5·1.0 이 이 자리에 적혀 있었다. 그러면 대표님이 기준을
+    // 바꿀 때마다 코드를 고쳐야 하고, 청크와 코드가 어긋날 수 있다.
+    // 지금은 F01-0003·0004·0005 의 applies_when 을 그대로 평가해서
+    // 참이 되는 한 장을 고른다. 기준이 바뀌면 청크만 바뀌면 된다.
+    //
+    // 어느 청크가 밴드인지는 ID 로 정한다(대표님 20261007: ID 는 안 바뀐다).
+    // 문장 머리표([F01-03])로 찾던 예전 방식은 문구가 바뀌면 깨진다.
+    const facts = {
+      rcr,
+      // 판정용 런웨이(개월). 확정 조달이 있으면 그것을 포함한 값.
+      // 소수 첫째 자리로 반올림한 뒤 비교한다 — 11.96 은 12.0 으로 본다.
+      runway_months: Math.round(runway.runway_m_committed * 10) / 10,
+      cashout_months: runway.runway_m_committed,
+    };
 
-    // 미달이면 변곡점 전에 몇 번 더 조달해야 하는가 (F01-05)
-    const raises = band === "미달" && runway.runway_m_committed > 0
+    let band: Band | null = null;
+    let rule: Chunk | null = null;
+    const tried: string[] = [];
+
+    for (const id of BAND_RULE_IDS) {
+      const c = rules.find((x) => x.chunk_id === id);
+      if (!c) continue;
+      const aw = field(c, "applies_when");
+      if (typeof aw !== "string" || !aw.trim()) continue;
+      tried.push(id);
+      if (evalAppliesWhen(aw, facts).value !== true) continue;
+      rule = c;
+      band = bandOf(c);
+      break;
+    }
+
+    if (!rule) {
+      // 밴드 청크가 없거나 어느 것도 안 걸리면 숫자만 보여 주고 색은 안 켠다.
+      // 임계값을 코드에서 지어내 메우지 않는다.
+      ctx.lack(
+        tried.length
+          ? `${t.label} 의 커버리지 밴드 — 조건에 맞는 규칙이 없습니다`
+          : "커버리지 밴드 규칙(F01-0003~0005)이 자료에 없습니다"
+      );
+    } else {
+      ctx.use(rule);
+    }
+
+    // 변곡점 전에 몇 번 더 조달해야 하는가.
+    // 예전에는 밴드가 '미달'일 때만 셌는데, 대표님이 이 문장을 밴드에서
+    // 떼어 F01-0034(참고 정보)로 옮기기로 했다. 비율이 1 미만이면 센다.
+    const raises = rcr < 1 && runway.runway_m_committed > 0
       ? Math.ceil(t.months / runway.runway_m_committed) - 1
       : null;
 
@@ -448,6 +524,22 @@ export async function FE_A05(
     if (t.note) ctx.note(`${t.label}: ${t.note}`);
 
     out.push({ ...t, RCR: rcr, band, band_text: ruleText(rule), raises_needed: raises });
+  }
+
+  // 변곡점 대비 비율 설명 — 마지막 목표 시점의 비율로 고른다.
+  // 색에는 닿지 않는다(neutral). 숫자는 위에 이미 나와 있고 이건 읽는 법이다.
+  const lastRcr = out[out.length - 1]?.RCR;
+  let rcrNote: string | null = null;
+  if (typeof lastRcr === "number") {
+    for (const id of RCR_NOTE_IDS) {
+      const c = rules.find((x) => x.chunk_id === id);
+      const aw = c ? field(c, "applies_when") : null;
+      if (!c || typeof aw !== "string") continue;
+      if (evalAppliesWhen(aw, { rcr: lastRcr }).value !== true) continue;
+      ctx.use(c);
+      rcrNote = ruleText(c);
+      break;
+    }
   }
 
   const order: Band[] = ["미달", "주의", "양호"];
@@ -469,6 +561,7 @@ export async function FE_A05(
     worst_band: worst,
     RCR_with_delay: withDelay,
     delay_factor: delayRow ? num(delayRow) : null,
+    rcr_note: rcrNote,
   });
 }
 
