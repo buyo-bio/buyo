@@ -18,6 +18,15 @@ const JUDGE_SHAPE = Object.fromEntries(
 // ─────────────────────────────────────────────
 export const KINDS = ["parameter", "rule", "method", "mapping"] as const;
 export const FLAGS = ["positive", "caution", "neutral"] as const;
+/**
+ * 확률의 종류.
+ *
+ * 성공확률(C01)은 누적이냐 조건부냐를 반드시 밝혀야 한다(V-04).
+ * 다만 이 칸은 그 둘만 담지 않는다 — 표본수·검정력 엔진(CE-09~13)이
+ * 들어오면서 power·type_I_error·confidence_level·not_probability 가 생겼다.
+ * 값 목록을 여기에 박아 두면 대표님이 새 종류를 더할 때마다 적재가 막힌다.
+ * 그래서 글자로 받고, "누적/조건부 중 하나여야 하는 자리"만 V-04 로 거른다.
+ */
 export const BASIS = ["cumulative", "conditional"] as const;
 
 /** 화면에서 고르는 개발 단계 */
@@ -65,7 +74,7 @@ export const ChunkSchema = z.object({
   value: z.union([z.number(), z.string()]).nullable().optional(),
   statistic: z.string().nullable().optional(),
   unit: z.string().nullable().optional(),
-  probability_basis: z.enum(BASIS).nullable().optional(),
+  probability_basis: z.string().nullable().optional(),
   reported_n: z.number().nullable().optional(),
 
   // 필터 5개 (null = 모든 경우에 해당)
@@ -129,9 +138,21 @@ export function validateChunk(c: Chunk): string[] {
       e.push("V-03 parameter에 source_record_id 없음");
   }
 
-  // 범위 문자열은 statistic 으로 그 사실을 밝혀야 한다
-  if (typeof c.value === "string" && !/range/i.test(c.statistic ?? ""))
-    e.push(`값이 문자열(${c.value})인데 statistic에 range 표시가 없음`);
+  // 값이 숫자 하나가 아니면, 무엇인지 밝혀야 한다
+  //
+  // 검사의 뜻: value를 숫자로 읽는 엔진이 NaN을 집어 들지 않게 막는 것이다.
+  // 숫자 하나가 아닌 모양은 지금 두 가지뿐이다.
+  //   ① 범위 — statistic 에 range 라고 적어 밝힌다 ("10-20", statistic: "range")
+  //   ② 열거된 집합 — 쌍반점으로 잇는다 ("P3;NDA", "80;90")
+  // 쌍반점은 숫자 하나에도, 범위 표기에도 쓰이지 않으므로 그 자체가 표시다.
+  // 집합을 범위로 적으라고 하면 뜻이 달라진다 — "80;90"은 80 과 90 두 기준에서
+  // 각각 계산한다는 뜻이고, 80 에서 90 사이가 아니다.
+  if (typeof c.value === "string") {
+    const parts = c.value.split(";").map((x) => x.trim());
+    const isSet = parts.length >= 2 && parts.every(Boolean);
+    if (!isSet && !/range/i.test(c.statistic ?? ""))
+      e.push(`값이 문자열(${c.value})인데 statistic에 range 표시가 없음`);
+  }
 
   // V-04 확률이면 누적/조건부를 밝혀야 한다
   //
@@ -144,6 +165,16 @@ export function validateChunk(c: Chunk): string[] {
     !c.probability_basis
   )
     e.push("V-04 성공확률인데 probability_basis(누적/조건부) 없음");
+
+  // C01 성공확률 자리에는 누적·조건부만 온다. 다른 종류가 섞이면 곱셈 규칙이 깨진다.
+  if (
+    c.domain_id === "C01" &&
+    c.layer === "parameter" &&
+    c.unit === "%" &&
+    c.probability_basis &&
+    !(BASIS as readonly string[]).includes(c.probability_basis)
+  )
+    e.push(`V-04 성공확률의 probability_basis 가 누적/조건부가 아님: ${c.probability_basis}`);
 
   // V-05 rule 청크에는 숫자를 넣지 않는다
   if (c.layer === "rule" && c.value !== null && c.value !== undefined)

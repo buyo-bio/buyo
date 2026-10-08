@@ -95,6 +95,74 @@
     "null"
    ],
    "description": "규칙 적용 조건(build/conditions.py 문법)"
+  },
+  "display": {
+   "type": "object",
+   "description": "고객 화면용 쉬운 문장(conv_display.py). audience=internal이면 화면 비표시",
+   "required": [
+    "audience",
+    "title",
+    "body",
+    "meaning",
+    "action",
+    "source_label",
+    "badges_ko",
+    "terms",
+    "review",
+    "origin"
+   ],
+   "properties": {
+    "audience": {
+     "enum": [
+      "customer",
+      "internal"
+     ]
+    },
+    "title": {
+     "type": "string"
+    },
+    "body": {
+     "type": "string"
+    },
+    "meaning": {
+     "type": "string"
+    },
+    "action": {
+     "type": "string"
+    },
+    "source_label": {
+     "type": "string"
+    },
+    "source_note": {
+     "type": "string"
+    },
+    "badges_ko": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "terms": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "text": {
+        "type": "string"
+       },
+       "term": {
+        "type": "string"
+       }
+      }
+     }
+    },
+    "review": {
+     "type": "string"
+    },
+    "origin": {
+     "type": "string"
+    }
+   }
   }
  },
  "allOf": [

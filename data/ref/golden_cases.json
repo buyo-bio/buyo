@@ -1,5 +1,5 @@
 {
- "version": "golden_20261003",
+ "version": "golden_20261008",
  "how_to_test": "각 case의 input으로 lib/store.ts 조회를 실행해, 자리(slot)마다 반환한 청크가 accept_chunk_ids 안에 있고 level이 같으면 통과. 같은 level 안의 우선순위(default 역할·출처)는 TS 규칙을 따른다. level 9 = 빈 결과를 반환해야 통과, level 0 = '해당 없음'.",
  "levels": {
   "0": "해당 없음",

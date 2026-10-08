@@ -23,9 +23,16 @@ for (const f of files) {
 
   for (const line of lines) {
     total++;
-    const parsed = ChunkSchema.safeParse(JSON.parse(line));
+    const raw = JSON.parse(line) as { domain_id?: string; chunk_id?: string };
+    const parsed = ChunkSchema.safeParse(raw);
     if (!parsed.success) {
-      problems.push(`${f} · 스키마 불일치 · ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`);
+      problems.push(
+        `${raw.chunk_id ?? f} · 스키마 불일치 · ` +
+        `${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`
+      );
+      // 세는 것은 계속한다. 예전에는 여기서 건너뛰어서 스키마 문제가
+      // "도메인 개수 어긋남" 으로 둔갑했다 — 엉뚱한 곳을 찾게 된다.
+      if (raw.domain_id) byDomain[raw.domain_id] = (byDomain[raw.domain_id] ?? 0) + 1;
       continue;
     }
     const c = parsed.data;

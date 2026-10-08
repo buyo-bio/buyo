@@ -1,0 +1,335 @@
+[
+ {
+  "slot": "TOP",
+  "card": "공통",
+  "when": "항상",
+  "sentence": "{company} {asset} · {modality_ko} · {indication_ko} · {phase_ko}",
+  "meaning": "",
+  "fill": "company, asset, modality_ko, indication_ko, phase_ko",
+  "note": ""
+ },
+ {
+  "slot": "VERDICT-양호",
+  "card": "공통",
+  "when": "카드 판정이 양호",
+  "sentence": "양호 — 확인한 기준에서 걸리는 사항이 없습니다.",
+  "meaning": "",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "VERDICT-주의",
+  "card": "공통",
+  "when": "카드 판정이 주의",
+  "sentence": "주의 — 확인이 필요한 사항이 있습니다. 아래 항목을 먼저 보시기 바랍니다.",
+  "meaning": "",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "VERDICT-미달",
+  "card": "공통",
+  "when": "카드 판정이 미달",
+  "sentence": "미달 — 지금 계획대로라면 기준에 못 미칩니다. 아래 이유와 확인할 일을 보시기 바랍니다.",
+  "meaning": "",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "VERDICT-미확보",
+  "card": "공통",
+  "when": "카드에 근거가 없음",
+  "sentence": "판정하지 않음 — 판단에 필요한 자료나 입력이 없어 판정하지 않았습니다.",
+  "meaning": "",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "CHECK-필요",
+  "card": "공통",
+  "when": "규칙의 입력값이 비어 있음",
+  "sentence": "확인 필요 — {input_ko|을} 입력하시면 판단할 수 있습니다.",
+  "meaning": "",
+  "fill": "input_ko",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-1a",
+  "card": "임상",
+  "when": "값 있음",
+  "sentence": "{modality_ko} 신약 후보가 {phase_ko}에 들어간 뒤 최종 허가까지 간 비율은 {value}%입니다.",
+  "meaning": "과거 같은 종류의 후보 100개가 {phase_ko}에 들어갔다면 약 {per100}개가 허가를 받았다는 뜻입니다. 귀사 물질 하나의 성공 가능성을 정한 값은 아닙니다.",
+  "fill": "선택된 C01 청크 value, display.per100",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-1a-없음",
+  "card": "임상",
+  "when": "값 없음",
+  "sentence": "{modality_ko}만 따로 집계한 성공률 자료가 없어, 아래 질환군 기준 값으로 보여 드립니다.",
+  "meaning": "",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-1a-대체",
+  "card": "임상",
+  "when": "상위 분류 값으로 대체",
+  "sentence": "{modality_ko}만 따로 집계한 자료가 없어 {fallback_ko} 값({value}%)으로 보여 드립니다.",
+  "meaning": "같은 계열의 가장 가까운 분류 값이라 실제와 차이가 있을 수 있습니다.",
+  "fill": "fallback_ko(대체 모달리티 한국어 이름)",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-1b",
+  "card": "임상",
+  "when": "값 있음",
+  "sentence": "약의 종류를 가리지 않고 {group_ko} 질환 기준으로 보면 {value}%입니다.",
+  "meaning": "같은 질환군에서 {phase_ko}에 들어간 후보 100개 중 약 {per100}개가 허가를 받았습니다. 위 값과 평균 내지 말고, 두 값 사이에서 읽으시기 바랍니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-1c",
+  "card": "임상",
+  "when": "희귀질환일 때",
+  "sentence": "희귀질환 기준으로는 {value}%로 보고되었습니다.",
+  "meaning": "희귀질환 약만 따로 모은 통계입니다. 위 값들과 평균 내지 말고 함께 보시기 바랍니다.",
+  "fill": "",
+  "note": "희귀 둘째 줄"
+ },
+ {
+  "slot": "CLIN-1p",
+  "card": "임상",
+  "when": "비임상 단계",
+  "sentence": "비임상 단계에 들어간 후보 중 1상에 들어간 비율은 {value}%입니다.",
+  "meaning": "동물실험 등 비임상 시험을 진행한 후보 100개 중 약 {per100}개가 사람 대상 임상시험에 들어갔다는 뜻입니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-2",
+  "card": "임상",
+  "when": "값 있음",
+  "sentence": "{phase_ko|를} 시작해 다음 단계를 시작하기까지 업계 {stat_ko} {value}년(약 {months}개월)이 걸렸습니다.",
+  "meaning": "다음 단계로 넘어간 과제만 센 기간입니다. 귀사 계획 기간이 이보다 짧다면 그 근거를 확인하시기 바랍니다.",
+  "fill": "stat_ko(고른 청크 statistic → labels.json[\"통계\"])",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-3a",
+  "card": "임상",
+  "when": "값 있음",
+  "sentence": "같은 치료영역 {phase_ko} 시험 1건의 대상자 수는 {stat_ko} {value}명입니다.",
+  "meaning": "귀사 계획 대상자 수({planned_n}명)를 이 값과 비교해 시험 규모가 업계 수준인지 봅니다.",
+  "fill": "planned_n, stat_ko(고른 청크 statistic → labels.json[\"통계\"])",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-3b",
+  "card": "임상",
+  "when": "실시간 조회 결과",
+  "sentence": "같은 적응증 {phase_ko} 시험 {pool_n}건의 대상자 수 중앙값은 {median}명이며, 귀사 계획 {planned_n}명은 작은 쪽부터 {pct}% 위치입니다.",
+  "meaning": "비슷한 시험 100건을 대상자 수가 작은 순서로 세웠을 때 귀사 계획이 {pct}번째쯤이라는 뜻입니다.",
+  "fill": "pool_n, median, planned_n, pct",
+  "note": ""
+ },
+ {
+  "slot": "CLIN-4",
+  "card": "임상",
+  "when": "실시간 조회 결과",
+  "sentence": "같은 적응증에서 지금 진행 중인 2상 시험이 {p2}건, 3상 시험이 {p3}건 있습니다.",
+  "meaning": "같은 적응증에서 진행 중인 2상·3상 시험 건수입니다. 한 후보가 여러 시험을 하거나 이미 허가된 약의 추가 시험도 들어 있어 경쟁 후보 수와 같지는 않습니다. 건수가 많을수록 귀사보다 먼저 출시되는 약과 경쟁하게 될 가능성이 큽니다.",
+  "fill": "p2, p3",
+  "note": ""
+ },
+ {
+  "slot": "MKT-2",
+  "card": "시장",
+  "when": "비교 딜 5건 이상",
+  "sentence": "같은 종류·단계 기술이전 {pool_n}건의 계약금 중앙값은 {med}이며, 가운데 절반은 {q1}~{q3} 사이입니다.",
+  "meaning": "비슷한 계약 100건을 계약금이 작은 순서로 세웠을 때 대략 25번째부터 75번째까지가 {q1}~{q3}이라는 뜻입니다. 총 계약 규모는 모든 목표를 달성했을 때의 상한입니다.",
+  "fill": "pool_n, med, q1, q3",
+  "note": ""
+ },
+ {
+  "slot": "MKT-2-적음",
+  "card": "시장",
+  "when": "비교 딜 5건 미만",
+  "sentence": "같은 조건의 공개 기술이전이 {pool_n}건뿐이라, 분포를 계산하지 않고 사례 목록으로 보여 드립니다.",
+  "meaning": "사례가 적으면 한두 건의 계약에 따라 중앙값과 범위가 크게 달라지기 때문입니다.",
+  "fill": "pool_n",
+  "note": ""
+ },
+ {
+  "slot": "MKT-2-보수",
+  "card": "시장",
+  "when": "phase_gap_label=earlier",
+  "sentence": "비교한 계약들은 귀사의 예상 기술이전 시점보다 앞 단계 자산의 계약이라, 이 금액은 보수적인 하한 참고값입니다.",
+  "meaning": "자산이 개발 후기 단계일수록 계약금이 커지는 경향이 있어, 귀사 시점의 계약금은 이보다 클 수 있습니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "MKT-2-낙관",
+  "card": "시장",
+  "when": "phase_gap_label=later",
+  "sentence": "비교한 계약들은 귀사의 예상 기술이전 시점보다 뒤 단계 자산의 계약이라, 이 금액은 낙관적인 상한 참고값입니다.",
+  "meaning": "귀사 시점에 계약하면 계약금이 이보다 작을 수 있습니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "MKT-4",
+  "card": "시장",
+  "when": "값 있음",
+  "sentence": "국내에서 {indication_ko|로} 건강보험 진료를 받은 환자는 {year}년 기준 {value}명입니다.",
+  "meaning": "건강보험 청구 기준이라 병원을 찾지 않은 환자는 빠져 있습니다. 한 해 동안 한 번이라도 진료받은 사람 수입니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "MKT-4-없음",
+  "card": "시장",
+  "when": "값 없음",
+  "sentence": "이 적응증의 국내 환자 수 자료를 아직 확보하지 못했습니다.",
+  "meaning": "적응증의 질병 코드(KCD)가 정해지면 건강보험심사평가원 통계로 확인할 수 있습니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "REG-2v-below",
+  "card": "규제",
+  "when": "rare_judgement=below_threshold",
+  "sentence": "국내 환자 수가 {value}명으로, 희귀의약품 지정의 환자 수 기준(2만 명 이하)에 해당하는 근거가 있습니다.",
+  "meaning": "환자 수 외에 다른 요건도 함께 심사받습니다. 희귀질환관리법상 희귀질환이 아니면 대체 치료법이 없거나 기존 치료보다 현저히 개선되었다는 자료가 필요합니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "REG-2v-above",
+  "card": "규제",
+  "when": "rare_judgement=above_threshold",
+  "sentence": "국내 환자 수가 {value}명으로, 희귀의약품 지정의 환자 수 기준(2만 명 이하)을 넘습니다.",
+  "meaning": "국내에서는 희귀의약품 지정을 전제로 한 개발 계획을 세우기 어렵다는 뜻입니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "REG-2v-broader",
+  "card": "규제",
+  "when": "rare_judgement=above_threshold_code_broader",
+  "sentence": "확인한 질병 코드({kcd})가 귀사 적응증보다 넓은 범위를 포함해, 이 숫자({value}명)로는 희귀 기준 해당 여부를 판정하지 않았습니다.",
+  "meaning": "실제 적응증 환자 수는 이보다 적을 수 있습니다. 적응증만 따로 센 역학 자료가 있으면 판정할 수 있습니다.",
+  "fill": "kcd",
+  "note": ""
+ },
+ {
+  "slot": "REG-2v-partial",
+  "card": "규제",
+  "when": "rare_judgement=below_threshold_code_partial",
+  "sentence": "확인한 질병 코드({kcd})가 귀사 적응증의 일부만 포함해, 이 숫자({value}명)로는 희귀 기준 해당 여부를 판정하지 않았습니다.",
+  "meaning": "실제 적응증 환자 수는 이보다 많을 수 있습니다.",
+  "fill": "kcd",
+  "note": ""
+ },
+ {
+  "slot": "FIN-1",
+  "card": "재무",
+  "when": "값 있음",
+  "sentence": "지금 쓸 수 있는 현금 {cash|로} 매달 {burn}씩 쓴다면 약 {runway_m}개월, 즉 {cashout_date}까지 운영할 수 있습니다.",
+  "meaning": "런웨이는 새 투자나 수입 없이 회사를 운영할 수 있는 기간입니다. 사용처가 정해진 정부과제 자금은 빼고 계산했습니다.",
+  "fill": "cash, burn, runway_m, cashout_date",
+  "note": ""
+ },
+ {
+  "slot": "FIN-1-마감",
+  "card": "재무",
+  "when": "값 있음",
+  "sentence": "부요 운영 기준으로 현금이 떨어지기 6개월 전인 {raise_deadline}까지는 다음 투자 유치를 시작해야 합니다.",
+  "meaning": "투자 유치에는 준비부터 입금까지 시간이 걸리기 때문입니다. 이 6개월은 공식 통계가 아닌 부요 운영 기준입니다.",
+  "fill": "raise_deadline",
+  "note": ""
+ },
+ {
+  "slot": "FIN-1-없음",
+  "card": "재무",
+  "when": "값 없음",
+  "sentence": "현금과 월 지출이 입력되지 않아 런웨이를 계산하지 않았습니다.",
+  "meaning": "최근 재무제표의 현금성 자산과 한 달 평균 지출을 입력하시면 계산합니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "FIN-3-다음단계",
+  "card": "재무",
+  "when": "값 있음",
+  "sentence": "지금 단계를 시작해 다음 임상 단계를 시작하기까지 걸리는 업계 평균 기간과 비교하면, 지금 자금은 그 기간의 {rcr_next_phase}배입니다.",
+  "meaning": "런웨이를 그 기간으로 나눈 값입니다. 1배 미만이면 다음 단계를 시작하기 전에 추가 조달이 필요하다는 뜻입니다. 회사가 다음 단계까지의 계획 기간을 입력하면 그 기간으로 계산합니다.",
+  "fill": "rcr_next_phase (= 런웨이 ÷ 다음 단계까지 기간. trace_case.py calc와 같음)",
+  "note": ""
+ },
+ {
+  "slot": "FIN-3-변곡점",
+  "card": "재무",
+  "when": "값 있음",
+  "sentence": "{inflection_ko}까지 걸리는 업계 평균 기간과 비교하면, 지금 자금은 그 기간의 {rcr_inflection}배입니다. 지금 지출 속도라면 그 전에 약 {raises_needed}번의 추가 조달이 필요합니다.",
+  "meaning": "{inflection_ko|은} 회사 가치가 크게 달라지는 다음 개발 성과입니다. 이 숫자는 참고 정보이며 카드 판정 색에는 쓰지 않습니다.",
+  "fill": "rcr_inflection, raises_needed, inflection_ko",
+  "note": ""
+ },
+ {
+  "slot": "FIN-2a",
+  "card": "재무",
+  "when": "값 있음",
+  "sentence": "설계안 기준 임상시험 예상 비용은 {need_design}입니다(대상자 {n}명 × 환자 1명당 {cpp}).",
+  "meaning": "환자 1명당 비용에 시험기관 운영비가 이미 들어 있어 다시 더하지 않습니다. 시험약 제조(CMC) 비용은 들어 있지 않으니 따로 확인하시기 바랍니다.",
+  "fill": "need_design, n, cpp",
+  "note": ""
+ },
+ {
+  "slot": "FIN-2b",
+  "card": "재무",
+  "when": "값 있음",
+  "sentence": "업계 {stat_ko|로}는 {phase_ko} 단계에 {money|이} 들었습니다.",
+  "meaning": "대형 제약사 자료가 많이 들어 있어 초기 바이오텍의 실제 지출보다 클 수 있습니다. 위 설계안 기준 비용과 더하지 않고 나란히 봅니다.",
+  "fill": "money, stat_ko(고른 청크 statistic → labels.json[\"통계\"])",
+  "note": ""
+ },
+ {
+  "slot": "PAT-1",
+  "card": "특허",
+  "when": "값 있음",
+  "sentence": "물질특허가 {expiry}년에 만료되고 업계 평균 기간대로 개발하면 {launch}년에 출시되어, 출시 뒤 특허로 보호받는 기간은 약 {years}년입니다.",
+  "meaning": "이 기간에는 원칙적으로 같은 성분의 복제약이 특허를 침해하지 않고 출시되기 어렵습니다. 다만 특허 무효 심판 등으로 더 일찍 나올 수 있고, 다른 성분의 경쟁 약은 막지 못합니다. 5년보다 짧으면 존속기간 연장과 자료 보호 기간을 함께 확인해야 합니다.",
+  "fill": "expiry, launch, years",
+  "note": ""
+ },
+ {
+  "slot": "PAT-1-없음",
+  "card": "특허",
+  "when": "값 없음",
+  "sentence": "물질특허 만료 연도가 입력되지 않아 출시 뒤 남는 특허 기간을 계산하지 않았습니다.",
+  "meaning": "물질특허의 출원 연도나 만료 예정 연도를 입력하시면 계산합니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "PAT-2",
+  "card": "특허",
+  "when": "게이트키퍼 있음",
+  "sentence": "{modality_ko}에는 핵심 특허를 가진 회사가 알려져 있어, 실시 자유(FTO) 검토가 필요합니다.",
+  "meaning": "FTO는 타사 특허를 침해하지 않고 제품을 만들어 팔 수 있는지 확인하는 검토입니다. 기술이전 협상에서 상대 회사가 가장 먼저 확인하는 항목 중 하나입니다.",
+  "fill": "",
+  "note": ""
+ },
+ {
+  "slot": "PAT-2-없음",
+  "card": "특허",
+  "when": "게이트키퍼 없음",
+  "sentence": "{modality_ko} 분야에서 부요가 확인한 대표적인 핵심 특허 보유 회사는 없습니다.",
+  "meaning": "개별 물질의 특허 검토가 필요 없다는 뜻은 아닙니다.",
+  "fill": "",
+  "note": ""
+ }
+]

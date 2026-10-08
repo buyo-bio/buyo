@@ -1,5 +1,5 @@
 {
- "version": "enums_20261003_1501",
+ "version": "enums_20261008_0336",
  "modality": [
   {
    "tag": "small_molecule",
@@ -294,13 +294,16 @@
   "C03",
   "C04",
   "C06",
+  "C07",
   "F01",
+  "F02",
   "F04",
   "F06",
   "F07",
   "M01",
   "M02",
   "M03",
+  "M04",
   "M05",
   "M06",
   "N02",
@@ -309,12 +312,15 @@
   "R02X",
   "R03",
   "R06",
+  "R07",
   "T01",
   "T02",
+  "T03",
   "T04",
   "T05",
   "T06",
-  "T07"
+  "T07",
+  "T08"
  ],
  "layer": [
   "parameter",
@@ -328,7 +334,9 @@
   "neutral"
  ],
  "badges": [
+  "base_year_converted",
   "base_year_unreported",
+  "cash_asof_stale",
   "claims_based",
   "code_broader",
   "code_partial",
@@ -339,52 +347,250 @@
   "kcd_crosswalk",
   "limited_mapping",
   "no_successor_reference",
+  "no_verdict",
+  "operating_standard",
+  "provisional_index",
   "review_year_basis",
   "secondary_summary",
   "shared_code",
+  "small_pool",
   "small_sample",
   "sum_of_phase_means",
   "ta_merged",
   "working_paper"
  ],
+ "badge_labels": {
+  "operating_standard": "운영 기준",
+  "no_verdict": "판정 없음(계산값)",
+  "cash_asof_stale": "기준일 경과",
+  "small_pool": "표본 적음",
+  "base_year_converted": "기준연도 환산*",
+  "provisional_index": "잠정 지수 적용"
+ },
  "applies_when_fields": [
+  "anti_infective_type",
+  "arms_n",
+  "assumption_available",
   "backup_n",
   "blinding",
+  "cash_asof_age_months",
   "cashout_months",
   "chronic",
+  "ci_half_width",
+  "claim_types",
   "committed_raise",
   "companion_dx",
   "comparator",
   "cosmetic",
   "ctgov_n_q1",
+  "ctgov_pool_n",
   "design_type",
+  "dilution_max_pct",
+  "dilution_min_pct",
   "disease_group",
+  "dropout_rate",
   "duration_months",
   "endpoint_type",
   "exit_route",
   "financial_state",
+  "followon_status",
+  "fto_status",
+  "grant_cliff_before_inflection",
+  "grant_programs",
+  "grant_usable_known",
+  "has_convertible",
+  "has_grant",
+  "has_precedent_effect",
+  "has_refix_floor",
   "has_target_evidence",
   "improvement_claim",
+  "inflection_cost_ratio",
   "jurisdictions",
+  "liability_clause",
   "life_threatening",
   "margin_specified",
+  "match_cash_known",
+  "match_gap_short",
+  "mcid",
   "modality",
   "multiplicity_plan",
+  "national_phase_gap",
   "no_alternative",
   "novelty",
   "parent_modality",
+  "patent_legal_status",
   "pediatric_plan",
   "phase",
+  "phase_gap_label",
   "planned_n",
   "platform_flag",
   "population",
   "population_type",
+  "power",
+  "premoney_basis",
   "primary_endpoints_n",
   "raise_after_cashout",
   "rare",
+  "rare_eu",
+  "rare_jp",
+  "rare_kr",
+  "rare_us",
+  "rcps_no_profit",
   "rcr",
+  "recurring_income_monthly",
+  "redeem_before_inflection",
+  "redeem_cash_short",
+  "refix_below",
+  "runway_months",
   "sanjeong_teukrye",
+  "sd_scope",
   "serious_unmet",
-  "ta"
- ]
+  "short_debt_gt_cash",
+  "ta",
+  "target_diff",
+  "trial_purpose"
+ ],
+ "applies_when_field_values": {
+  "rare_kr": [
+   "Y",
+   "N",
+   "unknown"
+  ],
+  "rare_us": [
+   "Y",
+   "N",
+   "unknown"
+  ],
+  "rare_eu": [
+   "Y",
+   "N",
+   "unknown"
+  ],
+  "rare_jp": [
+   "Y",
+   "N",
+   "unknown"
+  ],
+  "anti_infective_type": [
+   "antibacterial",
+   "antifungal",
+   "antiviral",
+   "other"
+  ],
+  "claim_types": [
+   "substance",
+   "use",
+   "formulation",
+   "process"
+  ],
+  "patent_legal_status": [
+   "filed_unpublished",
+   "published",
+   "registered",
+   "lapsed"
+  ],
+  "fto_status": [
+   "done",
+   "not_done",
+   "in_progress"
+  ],
+  "national_phase_gap": [
+   "Y",
+   "N"
+  ],
+  "premoney_basis": [
+   "exact",
+   "band",
+   "last_post",
+   "none"
+  ],
+  "has_convertible": [
+   "Y",
+   "N"
+  ],
+  "refix_below": [
+   "Y",
+   "N"
+  ],
+  "has_refix_floor": [
+   "Y",
+   "N"
+  ],
+  "redeem_before_inflection": [
+   "Y",
+   "N"
+  ],
+  "redeem_cash_short": [
+   "Y",
+   "N"
+  ],
+  "rcps_no_profit": [
+   "Y",
+   "N"
+  ],
+  "liability_clause": [
+   "Y",
+   "N",
+   "unknown"
+  ],
+  "has_grant": [
+   "Y",
+   "N"
+  ],
+  "grant_programs": [
+   "KDDF",
+   "TIPS",
+   "multi_ministry",
+   "local",
+   "other"
+  ],
+  "match_cash_known": [
+   "Y",
+   "N"
+  ],
+  "match_gap_short": [
+   "Y",
+   "N"
+  ],
+  "grant_usable_known": [
+   "Y",
+   "N"
+  ],
+  "grant_cliff_before_inflection": [
+   "Y",
+   "N"
+  ],
+  "followon_status": [
+   "confirmed",
+   "applied",
+   "none"
+  ],
+  "phase_gap_label": [
+   "earlier",
+   "same",
+   "later"
+  ],
+  "short_debt_gt_cash": [
+   "Y",
+   "N"
+  ],
+  "has_precedent_effect": [
+   "Y",
+   "N"
+  ],
+  "assumption_available": [
+   "Y",
+   "N"
+  ],
+  "trial_purpose": [
+   "confirmatory",
+   "poc",
+   "dose_finding"
+  ],
+  "sd_scope": [
+   "same_indication",
+   "other_indication",
+   "company_input"
+  ]
+ }
 }
