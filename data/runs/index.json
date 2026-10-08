@@ -1,25 +1,25 @@
 {
- "built_at": "2026-10-04T03:16:49.882Z",
- "chunks": 2475,
- "manifest": "1e6cddd5c7e5",
+ "built_at": "2026-10-08T16:01:11.980Z",
+ "chunks": 2596,
+ "manifest": "72b0e08a3c1b",
  "runs": [
   {
    "run_id": "case-A",
    "label": "A · ABL503",
    "cards": 6,
-   "basis": 39
+   "basis": 45
   },
   {
    "run_id": "case-B",
    "label": "B · SB17170",
    "cards": 6,
-   "basis": 37
+   "basis": 41
   },
   {
    "run_id": "case-C",
    "label": "C · LMB-201",
    "cards": 6,
-   "basis": 48
+   "basis": 53
   }
  ]
 }

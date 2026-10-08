@@ -40,13 +40,21 @@ export type MatchValues = {
    * 묻지 않은 조건을 충족한 것처럼 적으면 거짓 판정이 된다.
    */
   need_input?: { chunk_id: string; text: string; missing: string[] }[];
+  /**
+   * applies_when 이 거짓으로 나온 규칙 — 이 회사에는 해당이 없다.
+   *
+   * 화면에 문장으로 띄우지는 않지만 개수는 센다. "몇 개를 보고
+   * 몇 개가 걸렸는가" 를 말하려면 안 걸린 것도 세야 한다(C04-0105).
+   * 세지 않으면 "지적 사항 없음" 과 "볼 것이 없었음" 이 구별되지 않는다.
+   */
+  not_applicable?: string[];
 };
 
 /** 규칙 엔진 등록부 — 어느 엔진이 어느 도메인을 보는가 */
 export const MATCH_ENGINES: Record<
   string,
   {
-    domain: string; name: string; ignore?: string[]; slot?: string;
+    domain: string | string[]; name: string; ignore?: string[]; slot?: string;
     /**
      * applies_when 이 적힌 청크만 쓴다.
      *
@@ -57,8 +65,17 @@ export const MATCH_ENGINES: Record<
     require_when?: boolean;
   }
 > = {
-  "RE-02": { domain: "R02", name: "희귀 지정·독점권 제도", ignore: ["jurisdiction"] },
-  "RE-04": { domain: "R02", name: "신속 프로그램 적격", ignore: ["jurisdiction"] },
+  // 규제 카드는 세 묶음을 함께 본다 (대표님 20261004_1709).
+  //   R01   허가 경로·자료요건·급여 절차
+  //   R02   제도(우선심사·조건부·희귀지정 등)
+  //   R02X  독점권·자료 보호
+  //   R03   모달리티별 제조·품질(CMC) — 전부 GLOBAL 이라 관할과 무관
+  // 전에는 R02 만 보고 있어서 R01·R02X·R03 42건이 화면에 아예 안 나왔다.
+  //
+  // 관할(jurisdiction)은 무시하지 않는다 — 국내 진단에 미국 제도를 섞으면 안 된다.
+  // 조회 쪽에서 "KR|US" 같은 묶음 칸도 KR 로 걸리게 고쳐 두었다.
+  "RE-02": { domain: ["R01", "R02", "R02X", "R03"], name: "규제 경로·제도·독점권·품질" },
+  "RE-04": { domain: "R02", name: "신속 프로그램 적격" },
   // 자리 정의가 있는 엔진은 사다리로 고른다.
   // T02 는 모달리티 전용 로스터와 모든 약에 걸리는 공통 규칙(F1~F4 앵커)이 섞여 있다.
   // 예전처럼 둘을 한 통에 넣고 앞에서 2건만 자르면 공통 규칙이 영영 안 보였다.
@@ -159,6 +176,8 @@ export async function matchRules(
   //   거짓  → 안 보여 준다 (이 회사에 해당이 없는 제도다)
   //   모름  → need_input 으로 따로 — 어느 칸을 안 받았는지 같이 적는다
   const need: NonNullable<MatchValues["need_input"]> = [];
+  /** 조건이 거짓이어서 뺀 규칙 — 개수만 쓴다(C04-0105 요약) */
+  const notApplicable: string[] = [];
   if (spec.require_when)
     rows = rows.filter((c) => {
       const aw = field(c, "applies_when");
@@ -186,6 +205,7 @@ export async function matchRules(
       if (r.value === true) pass.push(c);
       else if (r.value === null)
         need.push({ chunk_id: c.chunk_id, text: c.text, missing: r.missing });
+      else notApplicable.push(c.chunk_id);
     }
     rows = pass;
   }
@@ -206,11 +226,11 @@ export async function matchRules(
 
   if (rules.length === 0)
     return ctx.none(
-      { rules, flag, level, need_input: need },
+      { rules, flag, level, need_input: need, not_applicable: notApplicable },
       need.length
         ? `${spec.domain} 에서 ${need.length}건은 입력이 더 필요해 판정하지 않았습니다`
         : `${spec.domain} 에 이 조건으로 걸리는 규칙 카드가 없습니다`
     );
 
-  return ctx.done({ rules, flag, level, need_input: need });
+  return ctx.done({ rules, flag, level, need_input: need, not_applicable: notApplicable });
 }

@@ -161,9 +161,23 @@ const T = {
   duration: (years: string, inflection: string) =>
     `${inflection}까지 ${years}년으로 잡힙니다(프로그램 기준).`,
 
+  // 회사 조회 — 기업 마스터에서 찾은 것 그대로. 판단하지 않는다.
+  company: (name: string, market: string, code: string) =>
+    `${name} · ${market} ${code}`,
+  company_flag: (flag: string) => `거래 상태: ${flag}`,
+  company_pool: (n: string, caution: string) =>
+    `국내 상장 신약개발 비교군 풀은 ${n}사입니다(그중 주의 플래그 ${caution}사).`,
+  company_none: (name: string, n: string) =>
+    `${name}${josa(name, "은", "는")} 기업 마스터 ${n}사에 없습니다 — ` +
+    `비상장이거나 아직 등재 전입니다.`,
+
   runway: (m: string) => `가용 현금으로 ${m}개월 버팁니다.`,
   cover_one: (label: string, rcr: string, months: string, band: string) =>
     `${label}까지 자금 충족 비율 ${rcr} — ${band} (필요 기간 ${months}개월)`,
+  // 밴드 규칙이 안 걸리면 숫자만 적고 양호·주의를 말하지 않는다.
+  // 임계값을 코드에서 지어내 메우지 않는다.
+  cover_plain: (label: string, rcr: string, months: string) =>
+    `${label}까지 자금 충족 비율 ${rcr} (필요 기간 ${months}개월)`,
   cover_raises: (n: string) => `변곡점 전에 추가 조달이 ${n}회 필요합니다.`,
   need: (usd: string) => `설계안 기준 임상 직접비는 최소 ${usd}입니다.`,
   // 비임상·허가 단계에는 환자가 없다. 자료가 빠진 것이 아니라 해당이 없는 것이다.
@@ -206,6 +220,16 @@ const T = {
   // 사용자가 적을 수 없는 칸이면 "적으면" 이라고 하지 않는다 — 우리 자료가 없는 것이다
   rule_pending: (title: string, fields: string) =>
     `${title} — ${fields} 자료를 아직 수집하지 않아 판정하지 않았습니다.`,
+  // ── 설계 검토 요약(C04-0105)
+  //
+  // 대표님 지시: 상태별 개수로 요약하고, 판정 보류나 입력 없음이 하나라도
+  // 있으면 "지적 사항 없음" 이라고 쓰지 않는다. 그래서 문장 틀을 둘로 나눈다.
+  // 개수만 끼우고 평가하는 말은 보태지 않는다.
+  design_sum: (parts: string) => `설계 검토 — ${parts}`,
+  design_clean: (checked: string) =>
+    `설계 검토 — ${checked}개 항목을 모두 확인했고 지적 사항이 없습니다.`,
+  design_more: (n: string) =>
+    `아래로 ${n}건 더 — '근거 보기'에서 전부 확인할 수 있습니다.`,
   no_card: (why: string) => why,
 } as const;
 
@@ -264,15 +288,20 @@ export async function assemble(
     } | null;
     /** 설계안 칸 — matchRules("CE-04") 결과 */
     design?: {
-      rules: { chunk_id: string; text: string }[];
+      rules: { chunk_id: string; text: string; flag?: Flag | null }[];
       need_input?: { chunk_id: string; text: string; missing: string[] }[];
+      /** 조건이 거짓이어서 뺀 규칙 — 요약에서 '해당 없음' 으로 센다(C04-0105) */
+      not_applicable?: string[];
     } | null;
     /** 특허 칸 — matchRules("TE-02") 결과 */
     patentRules?: { rules: { chunk_id: string; text: string }[] } | null;
     patent_expiry_year?: number;
+    /** 회사 이름 — 기업 마스터에서 못 찾았을 때 문장에 쓴다 */
+    corp_name?: string;
   } = {}
 ): Promise<Board> {
   const cards: BoardCard[] = [];
+  const corpName = extra.corp_name ?? null;
 
   // ── 임상
   {
@@ -344,12 +373,54 @@ export async function assemble(
   {
     const rules = extra.design?.rules ?? [];
     const need = extra.design?.need_input ?? [];
+    const naN = (extra.design?.not_applicable ?? []).length;
     const basis = rules.map((x) => x.chunk_id);
 
-    const lines: CardLine[] = rules.map((x) => ({
-      text: ruleSentence(x.text), basis: [x.chunk_id],
-    }));
-    for (const x of need.slice(0, 4)) lines.push(needLine(x));
+    // 못 판정한 까닭을 둘로 나눈다 — 사용자가 손쓸 수 있는 쪽과 그렇지 않은 쪽.
+    //   입력 없음  … 설계안 칸을 적으면 판정된다
+    //   판정 보류  … 우리 자료가 아직 없다. 적으라고 하면 핀잔이 된다
+    const blank = need.filter((x) => !allEngineSide(x.missing));
+    const held = need.filter((x) => allEngineSide(x.missing));
+
+    // 상태별 개수 — 값이 0인 상태는 적지 않는다(없는 것을 세어 보여 줄 이유가 없다)
+    //
+    // 대표님이 적어 둔 상태는 넷(지적·해당 없음·판정 보류·입력 없음)인데
+    // 걸린 규칙에는 양호·참고도 있다. 그 둘을 '해당 없음' 에 넣으면 거짓말이 된다
+    // — 조건이 참이어서 화면에 문장까지 나간 규칙이기 때문이다. 따로 센다.
+    // '해당 없음' 은 조건이 거짓이어서 뺀 것만 가리킨다.
+    const n = (f: string) => rules.filter((x) => x.flag === f).length;
+    const counts: string[] = [];
+    const flagged = n("caution");
+    if (flagged) counts.push(`지적 ${flagged}건`);
+    if (n("positive")) counts.push(`양호 ${n("positive")}건`);
+    if (n("neutral")) counts.push(`참고 ${n("neutral")}건`);
+    if (naN) counts.push(`해당 없음 ${naN}건`);
+    if (held.length) counts.push(`판정 보류 ${held.length}건`);
+    if (blank.length) counts.push(`입력 없음 ${blank.length}건`);
+
+    const lines: CardLine[] = [];
+
+    // 요약을 맨 위에 둔다.
+    // "지적 사항 없음" 은 지적도 없고 보류·입력 없음도 없을 때만 쓸 수 있다.
+    const nothingPending = held.length === 0 && blank.length === 0;
+    const checked = rules.length + naN;
+    if (checked || need.length)
+      lines.push({
+        text: flagged === 0 && nothingPending && checked
+          ? T.design_clean(String(checked))
+          : T.design_sum(counts.join(" · ")),
+        basis: [],
+      });
+
+    for (const x of rules) lines.push({ text: ruleSentence(x.text), basis: [x.chunk_id] });
+
+    // 적으면 판정되는 것을 먼저, 우리가 못 하는 것을 뒤에.
+    // 잘라낸 나머지는 개수로 밝힌다 — 예전에는 11건이 말없이 사라졌다.
+    const SHOW = 4;
+    const queue = [...blank, ...held];
+    for (const x of queue.slice(0, SHOW)) lines.push(needLine(x));
+    if (queue.length > SHOW)
+      lines.push({ text: T.design_more(String(queue.length - SHOW)), basis: [] });
 
     cards.push({
       key: "design", title: "설계안",
@@ -463,9 +534,10 @@ export async function assemble(
   {
     const run = r.runway.values as { runway_m: number | null; cash_available: number | null };
     const rcr = r.rcr.values as {
-      targets: { label: string; months: number; RCR: number; band: string;
+      targets: { label: string; months: number; RCR: number; band: string | null;
                  band_text: string | null; raises_needed: number | null }[];
       worst_band: string | null;
+      rcr_note?: string | null;
     };
     const need = r.need.values as {
       need_current_phase_usd: number | null; missing_items: string[];
@@ -478,7 +550,35 @@ export async function assemble(
     };
     const down = r.downside.values as { sentence: string | null };
 
+    const co = r.company.values as {
+      self: { name: string; market: string | null; stock_code: string;
+              trade_flag: string | null; in_pool: boolean; caution: boolean } | null;
+      pool_n: number; pool_caution_n: number; master_n: number;
+    };
+
     const lines: CardLine[] = [];
+
+    // ── 회사 — 기업 마스터에서 찾은 것. 못 찾으면 못 찾았다고 쓴다.
+    if (co.self) {
+      lines.push({
+        text: T.company(co.self.name, co.self.market ?? "—", co.self.stock_code),
+        basis: [],
+        badges: [
+          co.self.in_pool ? "비교군 풀" : "풀 밖",
+          ...(co.self.caution ? ["주의 플래그"] : []),
+        ],
+      });
+      // 관리종목·투자주의환기종목은 그대로 올린다 — 투자 판단에 직접 쓰인다
+      if (co.self.trade_flag && co.self.trade_flag !== "특이사항 없음(확인 범위 내)")
+        lines.push({ text: T.company_flag(co.self.trade_flag), basis: [], badges: ["주의"] });
+    } else if (corpName) {
+      lines.push({ text: T.company_none(corpName, String(co.master_n)), basis: [] });
+    }
+    if (co.pool_n > 0)
+      lines.push({
+        text: T.company_pool(String(co.pool_n), String(co.pool_caution_n)),
+        basis: r.company.basis_chunks,
+      });
 
     if (run.runway_m !== null)
       lines.push({ text: T.runway(f1(run.runway_m)), basis: r.runway.basis_chunks });
@@ -486,9 +586,11 @@ export async function assemble(
     // 목표 시점마다 한 줄씩 — "IND까지는 되는데 P1 완료는 안 된다" 를 말할 수 있어야 한다
     for (const t of rcr.targets ?? []) {
       lines.push({
-        text: T.cover_one(t.label, t.RCR.toFixed(2), f1(t.months), t.band),
+        text: t.band
+          ? T.cover_one(t.label, t.RCR.toFixed(2), f1(t.months), t.band)
+          : T.cover_plain(t.label, t.RCR.toFixed(2), f1(t.months)),
         basis: r.rcr.basis_chunks,
-        badges: [t.band],
+        badges: t.band ? [t.band] : [],
       });
       if (t.raises_needed !== null && t.raises_needed > 0)
         lines.push({ text: T.cover_raises(String(t.raises_needed)), basis: [] });
@@ -496,6 +598,9 @@ export async function assemble(
 
     // 비임상·NDA 는 FIN-2a·CLIN-3a 자리가 '해당 없음' 이다(자리 정의의 na_phases)
     const needNa = (slot("FIN-2a").na_phases ?? []).includes(cond.phase);
+    // 변곡점 대비 비율을 읽는 법 — 색에 쓰지 않는 설명
+    if (rcr.rcr_note) lines.push({ text: rcr.rcr_note, basis: r.rcr.basis_chunks });
+
     if (need.need_current_phase_usd === null && needNa)
       lines.push({ text: T.need_na(PHASE_KO[cond.phase] ?? cond.phase), basis: [] });
 
@@ -526,6 +631,7 @@ export async function assemble(
     if (down.sentence) lines.push({ text: down.sentence, basis: r.downside.basis_chunks });
 
     const basis = [
+      ...r.company.basis_chunks,
       ...r.runway.basis_chunks, ...r.rcr.basis_chunks, ...r.need.basis_chunks,
       ...r.bench.basis_chunks, ...r.gap.basis_chunks, ...r.downside.basis_chunks,
     ];
