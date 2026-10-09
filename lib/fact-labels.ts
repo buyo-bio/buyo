@@ -3,10 +3,21 @@
  *
  * 평가기가 "serious_unmet 을 못 봤다" 고 돌려주면 화면에는
  * "중대한 미충족 수요 여부를 적어 주세요" 로 나가야 한다.
- * 칸 이름은 enums_v1.json 의 applies_when_fields 가 정본이고,
- * 이 파일은 그 이름에 붙일 한글 이름표다.
+ *
+ * 이름표의 정본은 대표님 labels.json 의 "입력 이름" 이다(81개).
+ * 아래 표는 그 파일에 없는 이름만 메우는 보충이다 — 이름을 우리가 짓지 않는다.
+ *
+ * 전에는 이 표만 썼다. 그래서 묶음이 새 칸을 들고 올 때마다 화면에
+ * 영어 칸 이름이 그대로 나갔다(실제로 trial_purpose · power 가 설계안
+ * 카드에 노출됐다). 이제 labels.json 을 먼저 보므로 그 일이 안 생긴다.
  */
-export const FACT_LABEL: Record<string, string> = {
+import labels from "../data/ref/labels.json";
+
+const FROM_RELEASE: Record<string, string> =
+  (labels as Record<string, Record<string, string>>)["입력 이름"] ?? {};
+
+/** labels.json 에 없는 칸만 — 있으면 대표님 이름이 이깁니다 */
+const EXTRA: Record<string, string> = {
   "serious_unmet": "중대한 미충족 수요 여부",
   "life_threatening": "생명을 위협하는 질환 여부",
   "no_alternative": "대체 치료제 유무",
@@ -63,6 +74,19 @@ export function allEngineSide(fields: string[]): boolean {
 /** 사용자가 적을 수 있는 칸만 — 섞여 있으면 적을 수 있는 쪽만 묻는다 */
 export function userSide(fields: string[]): string[] {
   return fields.filter((f) => !ENGINE_FACTS.has(f));
+}
+
+/**
+ * 칸 이름 → 한글. labels.json 이 먼저, 없으면 보충표, 그것도 없으면 칸 이름.
+ *
+ * 마지막 갈래(칸 이름 그대로)는 화면에 영어가 나가는 경우다. 남겨 두지만
+ * `npm run aw:check` 가 그런 칸이 있으면 알려 준다 — 조용히 새면 안 된다.
+ */
+export const FACT_LABEL: Record<string, string> = { ...EXTRA, ...FROM_RELEASE };
+
+/** 이름표가 없는 칸 — 검사에서 쓴다 */
+export function unlabeled(fields: string[]): string[] {
+  return fields.filter((f) => !FACT_LABEL[f]);
 }
 
 /** 못 받은 칸들을 "A · B · C" 로 — 이름표가 없으면 칸 이름 그대로 */

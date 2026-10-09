@@ -24,8 +24,10 @@ import { slot } from "./slots";
 import { factLabels, allEngineSide, userSide } from "./fact-labels";
 
 /** 판정 못 한 규칙 한 줄 — 왜 못 했는지에 따라 문구가 다르다 */
-function needLine(x: { text: string; missing: string[] }): CardLine {
-  const title = ruleTitle(x.text);
+function needLine(x: { text: string; missing: string[]; title?: string }): CardLine {
+  // 청크가 고객용 제목을 들고 있으면 그것을 쓴다. text 를 자르면 내부 변수
+  // 이름이 새고(power_band.good_min) 조건만 다른 규칙이 같은 줄로 보인다.
+  const title = x.title ?? ruleTitle(x.text);
   // 우리 자료와 사용자 입력이 섞여 있으면 사용자가 적을 수 있는 쪽만 묻는다 —
   // 적을 수 없는 숫자를 적으라고 하면 안내가 아니라 핀잔이 된다.
   const mine = userSide(x.missing);
@@ -258,9 +260,12 @@ async function flagOf(basis: string[]): Promise<CardFlag> {
 
 /** 받침이 있으면 앞엣것, 없으면 뒤엣것 — "비용이" / "계수가" */
 function josa(word: string, withFinal: string, without: string): string {
-  const last = word.trim().slice(-1).charCodeAt(0);
-  if (last < 0xac00 || last > 0xd7a3) return without;
-  return (last - 0xac00) % 28 === 0 ? without : withFinal;
+  // 끝의 한글 한 자를 본다. 괄호·따옴표가 붙어 있으면 건너뛴다 —
+  // "시험 목적(확증·개념증명·용량 탐색)" 은 ')' 가 아니라 '색' 으로 판단해야
+  // "…탐색)을" 이 된다. 괄호를 그대로 읽어 "탐색)를" 로 나가고 있었다.
+  const m = /[가-힣](?=[^가-힣]*$)/.exec(word.trim());
+  if (!m) return without;
+  return (m[0].charCodeAt(0) - 0xac00) % 28 === 0 ? without : withFinal;
 }
 
 const pct = (v: number) => `${v}%`;
@@ -284,12 +289,12 @@ export async function assemble(
     /** 규제 칸 — matchRules("RE-02") 결과 */
     regulatory?: {
       rules: { chunk_id: string; text: string; jurisdiction: string | null }[];
-      need_input?: { chunk_id: string; text: string; missing: string[] }[];
+      need_input?: { chunk_id: string; text: string; title?: string; missing: string[] }[];
     } | null;
     /** 설계안 칸 — matchRules("CE-04") 결과 */
     design?: {
       rules: { chunk_id: string; text: string; flag?: Flag | null }[];
-      need_input?: { chunk_id: string; text: string; missing: string[] }[];
+      need_input?: { chunk_id: string; text: string; title?: string; missing: string[] }[];
       /** 조건이 거짓이어서 뺀 규칙 — 요약에서 '해당 없음' 으로 센다(C04-0105) */
       not_applicable?: string[];
     } | null;

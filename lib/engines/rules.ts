@@ -39,7 +39,19 @@ export type MatchValues = {
    * "○○를 적으면 이 제도를 판정할 수 있습니다" 로 따로 보여 준다.
    * 묻지 않은 조건을 충족한 것처럼 적으면 거짓 판정이 된다.
    */
-  need_input?: { chunk_id: string; text: string; missing: string[] }[];
+  need_input?: {
+    chunk_id: string;
+    text: string;
+    /**
+     * 고객 화면용 제목 — 청크의 display.title.
+     *
+     * 이게 없으면 화면이 text 를 앞에서 30자 잘라 쓰는데, 그러면
+     * "목표 차이의 검정력이 power_band.good_mi" 처럼 내부 변수 이름이
+     * 그대로 새고, 조건만 다른 규칙 두 장이 같은 줄로 보인다(실제로 그랬다).
+     */
+    title?: string;
+    missing: string[];
+  }[];
   /**
    * applies_when 이 거짓으로 나온 규칙 — 이 회사에는 해당이 없다.
    *
@@ -100,6 +112,14 @@ export function mergeFlags(flags: (Flag | null)[]): Flag | "no_evidence" {
   if (real.includes("caution")) return "caution";
   if (real.every((f) => f === "positive")) return "positive";
   return "neutral";
+}
+
+/** 청크의 고객용 제목 — 없거나 내부용이면 돌려주지 않는다 */
+function displayTitle(c: Chunk): string | undefined {
+  const d = field(c, "display") as { title?: string; audience?: string } | undefined;
+  if (!d || d.audience === "internal") return undefined;
+  const t = typeof d.title === "string" ? d.title.trim() : "";
+  return t || undefined;
 }
 
 export async function matchRules(
@@ -204,7 +224,12 @@ export async function matchRules(
       }
       if (r.value === true) pass.push(c);
       else if (r.value === null)
-        need.push({ chunk_id: c.chunk_id, text: c.text, missing: r.missing });
+        need.push({
+          chunk_id: c.chunk_id,
+          text: c.text,
+          title: displayTitle(c),
+          missing: r.missing,
+        });
       else notApplicable.push(c.chunk_id);
     }
     rows = pass;
