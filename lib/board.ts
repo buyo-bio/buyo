@@ -8,6 +8,7 @@
  * 이번이 네 번째였다. 고르는 자리를 하나로 줄인다.
  */
 import { matchRules, type RunOutput } from "./engines";
+import { reviewTimes } from "./engines/rules";
 import { assemble, type Board } from "./assemble";
 import { factsFromInput } from "./facts";
 import { dealExitPhase, dealPoolPhase, phaseGapOf } from "./engines/market";
@@ -50,7 +51,9 @@ export async function buildBoard(
   });
 
   const design = await matchRules("CE-04", cond, { limit: 6, facts });
-  const regulatory = await matchRules("RE-02", cond, { limit: 4, facts });
+  // 관할을 한국·미국 둘 다 보면서 10~12건이 걸린다. 4건으로 자르면
+  // 미국 제도가 통째로 밀려 안 보인다.
+  const regulatory = await matchRules("RE-02", cond, { limit: 14, facts });
   const patentRules = await matchRules("TE-02", cond, { limit: 2, facts });
   // MKT-5 — 딜 비교 풀 규칙(M03-1001~1008)과 출구 시점 규칙(M05).
   // 딜 기록(M03-0001~0247)은 layer 가 parameter 라 여기 걸리지 않는다.
@@ -58,6 +61,9 @@ export async function buildBoard(
   // 재무 카드 규칙 — F01·F02·F06(대표님 20261007 에 F02 추가)
   // 재무는 14건까지 걸린다. 자르면 뒤쪽 규칙이 말없이 사라진다.
   const financeRules = await matchRules("FE-RULES", cond, { limit: 16, facts });
+  // R07 심사 기간 — 규제 카드 상세의 참고 줄(대표님 결정 20261009). 숫자 카드라
+  // 신호등은 켜지 않는다.
+  const review = await reviewTimes(facts);
 
   return assemble(cond, badges, engines, {
     corp_name: extra.corp_name ?? (input.corp_name as string | undefined),
@@ -69,6 +75,7 @@ export async function buildBoard(
     patentRules: patentRules.values,
     marketRules: marketRules.values,
     financeRules: financeRules.values,
+    reviewTimes: review.values.rows,
     phase_gap_label,
   });
 }

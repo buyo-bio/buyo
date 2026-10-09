@@ -94,7 +94,9 @@ export function buildFacts(cond: Conditions, inp: FactInput = {}): Facts {
   put("ta", cond.therapeutic_area);
   put("financial_state", cond.fin_state);
   // 관할은 목록으로 묻는다 — "'KR' in jurisdictions"
-  put("jurisdictions", cond.jurisdiction ? [cond.jurisdiction] : undefined);
+  // 대표님 결정 20261009: 한국·미국 둘 다. 전에는 cond.jurisdiction 하나만 넣어
+  // 미국 제도 규칙이 전부 '해당 없음' 으로 떨어졌다.
+  put("jurisdictions", cond.jurisdictions?.length ? cond.jurisdictions : undefined);
 
   // ── 화면·엔진에서 온 것
   for (const [k, v] of Object.entries(inp)) put(k, v);

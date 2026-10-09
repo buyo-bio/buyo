@@ -205,11 +205,13 @@ export async function matchRules(
 
   // 무시하라고 한 조건은 빼고 건다.
   // 모달리티는 여기서 걸지 않는다 — 상위 태그도 허용해야 해서 아래에서 따로 거른다.
+  // 관할로 거르지 않는다 — 대표님 결정 20261009.
+  // 규칙표의 jurisdiction 열이 아니라 applies_when 결과로 고른다. 열로 거르면
+  // "KR|US" 처럼 쌍으로 적힌 행이 빠지고, 미국 제도가 통째로 사라진다.
   const q: Partial<Conditions> = {
     indication_code: cond.indication_code ?? undefined,
     phase: cond.phase,
     rare: cond.rare,
-    jurisdiction: cond.jurisdiction,
   };
   for (const k of spec.ignore ?? []) delete (q as Record<string, unknown>)[k];
 
@@ -348,4 +350,57 @@ export async function matchRules(
     );
 
   return ctx.done({ rules, flag, level, need_input: need, not_applicable: notApplicable });
+}
+
+/**
+ * R07 심사 기간 — 규제 카드 상세의 참고 줄 (대표님 결정 20261009)
+ *
+ * 규칙(rule)이 아니라 숫자 카드(parameter)라 신호등을 켜지 않는다.
+ * "미국 표준 심사 10개월" 처럼 값과 단위를 들고 있고, 어느 제도가 우리에게
+ * 해당하는지는 applies_when 이 정한다.
+ *
+ * 조건을 못 읽거나 "확인 필요" 로 나오면 띄우지 않는다 — 심사 기간은 숫자라,
+ * 해당하는지 모르는 채로 보여 주면 그 기간이 우리 것인 줄 읽힌다.
+ */
+export type ReviewTime = {
+  chunk_id: string;
+  title: string;
+  body: string;
+  value: string;
+  unit: string;
+  jurisdiction: string | null;
+  source_label: string;
+};
+
+export async function reviewTimes(facts: Facts): Promise<EngineResult<{ rows: ReviewTime[] }>> {
+  const ctx = new Ctx("RE-07");
+  const src = await chunkSource();
+  const rows: ReviewTime[] = [];
+
+  for (const c of await src.find({}, { domain: "R07", kind: "parameter" })) {
+    const d = displayOf(c);
+    if (!d) continue;                       // 내부용이거나 띄울 문장이 없다
+    const aw = field(c, "applies_when");
+    if (typeof aw !== "string" || !aw.trim()) continue;
+    try {
+      if (evalAppliesWhen(aw, facts).value !== true) continue;
+    } catch {
+      continue;                             // 식을 못 읽으면 숫자를 띄우지 않는다
+    }
+    ctx.use(c);
+    rows.push({
+      chunk_id: c.chunk_id,
+      title: d.title,
+      body: d.body,
+      value: String(field(c, "value") ?? ""),
+      unit: String(field(c, "unit") ?? ""),
+      jurisdiction: (field(c, "jurisdiction") as string) ?? null,
+      source_label: d.source_label,
+    });
+  }
+
+  rows.sort((a, b) => a.chunk_id.localeCompare(b.chunk_id));
+  return rows.length
+    ? ctx.done({ rows })
+    : ctx.none({ rows }, "이 조건에 해당하는 심사 기간 카드가 없습니다");
 }

@@ -42,6 +42,11 @@ const VERDICT_KO: Record<string, string> =
 const GAP_KO: Record<string, string> =
   (labelsJson as Record<string, Record<string, string>>)["단계 차이"] ?? {};
 
+/** 기간 단위 — R07 의 months·days·working_days 를 화면 글자로 */
+const UNIT_KO: Record<string, string> = {
+  months: "개월", days: "일", working_days: "근무일", years: "년",
+};
+
 /** 권리 범위 — 표의 all/limited 를 화면 글자로 */
 const RIGHTS_KO: Record<string, string> = { all: "전체 적응증", limited: "일부 적응증" };
 
@@ -390,6 +395,8 @@ const T = {
     `설계 검토 — ${checked}개 항목을 모두 확인했고 지적 사항이 없습니다.`,
   design_more: (n: string) =>
     `아래로 ${n}건 더 — '근거 보기'에서 전부 확인할 수 있습니다.`,
+  // R07 심사 기간 참고 줄 — 값과 단위만 끼운다
+  review_time: (title: string, value: string, unit: string) => `${title} — ${value}${unit}`,
   no_card: (why: string) => why,
 } as const;
 
@@ -474,6 +481,11 @@ export async function assemble(
                display?: Display; badges?: unknown }[];
       need_input?: { chunk_id: string; text: string; title?: string; missing: string[] }[];
     } | null;
+    /** R07 심사 기간 — 규제 카드 상세의 참고 줄 */
+    reviewTimes?: {
+      chunk_id: string; title: string; body: string;
+      value: string; unit: string; jurisdiction: string | null; source_label: string;
+    }[];
     /** ME-17 단계 차이 — 헤드라인에 분위값을 쓸지 정한다 */
     phase_gap_label?: "earlier" | "same" | "later" | null;
     patent_expiry_year?: number;
@@ -718,13 +730,28 @@ export async function assemble(
     const basis = rules.map((x) => x.chunk_id);
 
     // 걸린 규칙은 display 문장으로 낸다. 관할(KR·US)은 꼬리표로 덧붙인다.
+    // 관할이 "KR|US" 처럼 쌍으로 적힌 행이 있다. 세로줄은 자료 표기이므로
+    // 쪼개서 각각 한글로 바꾼다 — 안 그러면 화면에 "KR|US" 가 그대로 나간다.
+    const regionKo = (j: string) =>
+      j.split("|").map((x) => REGION_KO[x.trim()] ?? x.trim()).filter(Boolean).join("·");
     const lines: CardLine[] = rules.map((x) =>
-      ruleLine(x, x.jurisdiction ? [REGION_KO[x.jurisdiction] ?? x.jurisdiction] : [])
+      ruleLine(x, x.jurisdiction ? [regionKo(x.jurisdiction)] : [])
     );
 
     // 아직 묻지 않은 칸이 있어 판정하지 못한 제도 — 걸린 것으로 세지 않는다.
     // 신호등도 켜지 않는다(basis 에 넣지 않는다). "적으면 판정합니다" 로만 적는다.
     for (const x of need.slice(0, 4)) lines.push(needLine(x));
+
+    // 심사 기간(R07) — 맨 아래 참고 줄. 숫자 카드라 신호등에 닿지 않는다.
+    for (const t of extra.reviewTimes ?? [])
+      lines.push({
+        text: T.review_time(t.title, t.value, UNIT_KO[t.unit] ?? t.unit),
+        basis: [t.chunk_id],
+        title: t.title,
+        body: `${t.value}${UNIT_KO[t.unit] ?? t.unit} — ${t.body}`,
+        ...(t.jurisdiction ? { badges: [REGION_KO[t.jurisdiction] ?? t.jurisdiction] } : {}),
+        ...(t.source_label ? { source_label: t.source_label } : {}),
+      });
 
     cards.push({
       key: "regulatory", title: "규제",

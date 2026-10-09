@@ -21,6 +21,7 @@ const COND: Conditions = {
   phase: "P1",
   rare: "N",
   jurisdiction: "KR",
+  jurisdictions: ["KR", "US"],
 };
 
 const TARGET = ["C01-0092", "C01-0096", "C01-0012"];

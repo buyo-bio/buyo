@@ -273,7 +273,12 @@ export type Conditions = {
   /** 임상 값이 붙는 단계 — 비임상이면 P1. 확률·기간·비용 조회는 이걸 쓴다 */
   clinical_phase?: string;
   rare: "Y" | "N";
-  jurisdiction: string;        // "KR"
+  jurisdiction: string;        // "KR" — 화면 정렬·표시용 대표 관할(국내 먼저)
+  /**
+   * 판정에 쓰는 관할 목록 — 대표님 결정 20261009: 한국과 미국 둘 다.
+   * 규칙 고르기는 규칙표의 jurisdiction 열이 아니라 applies_when 결과로 한다.
+   */
+  jurisdictions: string[];
   fin_state?: string;          // S1~S6
   next_inflection?: string;
 };

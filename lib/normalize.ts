@@ -347,6 +347,9 @@ export async function normalize(
     clinical_phase: cp.phase,
     rare: ind.rare,
     jurisdiction: "KR",
+    // 판정은 한국·미국 둘 다 본다(대표님 결정 20261009). 위 jurisdiction 은
+    // 화면에서 국내 규칙을 먼저 보여 주기 위한 정렬 기준으로만 남긴다.
+    jurisdictions: ["KR", "US"],
     fin_state: fin.state,
     next_inflection: nx.inflection,
   };

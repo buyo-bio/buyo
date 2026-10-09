@@ -114,7 +114,9 @@ export const DEMO_CASES: Record<DemoKey, { label: string; run_id: string; form: 
       picked: { code: "MeSH:D054990", disease_group: "기타", therapeutic_area: "respiratory",
                 query_en: "Idiopathic Pulmonary Fibrosis", rare: "Y", layer: 1 },
       phase: "P2", exit_route: "license_out",
-      endpoint: "FVC 변화량", comparator: "placebo", n: "120", duration_m: "52", primary_endpoints_n: "1",
+      // 기간 3개월 — 대표님 결정 20261009. 전에 52 였는데 그건 3상 확증 시험
+      // 관행(52주)이고 B 는 2상이라 12주, 즉 3개월이다. 작업대 파일과 맞춘 값이다.
+      endpoint: "FVC 변화량", comparator: "placebo", n: "120", duration_m: "3", primary_endpoints_n: "1",
       cash: "120", restricted_cash: "", monthly_burn: "8",
       committed_raise: "0", planned_raise: "0",
       listed: false, license_income_ttm: "",
