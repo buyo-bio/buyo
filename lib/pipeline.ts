@@ -11,7 +11,8 @@ import { DiagnoseInput } from "./types";
 import { normalize, nextInflection } from "./normalize";
 import { factsFromInput } from "./facts";
 import { runEngines, matchRules, resetReads, readStats } from "./engines";
-import { assemble, type Board } from "./assemble";
+import { type Board } from "./assemble";
+import { buildBoard } from "./board";
 import { loadPatents } from "./collect/patents-cache";
 import { countChunks, saveRun } from "./store";
 
@@ -118,22 +119,6 @@ export async function runDiagnose(
     planned_raise_date: opts.planned_raise_date as string | undefined,
   });
 
-  // 규칙의 applies_when 이 묻는 칸들을 모은다.
-  // 화면에서 안 받은 칸은 넣지 않는다 — 추정해 채우면 거짓 판정이 된다.
-  const rcrWorst = (engines.rcr.values as {
-    targets?: { RCR: number }[];
-  }).targets?.slice(-1)[0]?.RCR;
-  const facts = factsFromInput(cond, { ...input, ...opts }, {
-    rcr: rcrWorst,
-    backup_n: ((opts.backup_assets as string[]) ?? []).length,
-    // 국내 희귀 판정은 M02 가 만든다 — 묻지 않는다
-    rare_kr: (engines.patients.values as { rare_kr?: string }).rare_kr,
-  });
-
-  const design = await matchRules("CE-04", cond, { limit: 6, facts });
-  const regulatory = await matchRules("RE-02", cond, { limit: 4, facts });
-  const patentRules = await matchRules("TE-02", cond, { limit: 2, facts });
-
   const seen = readStats().unique;
   let total: number | null = null;
   try { total = await countChunks(); } catch { /* 셀 수 없으면 분모는 생략 */ }
@@ -146,12 +131,8 @@ export async function runDiagnose(
   await step("engines", "런웨이 · 성공확률 · 기간 · 갭 · 딜 컴프 · 특허 정렬");
 
   // ⑤ 조립 — 문장 틀에 위 결과만 끼운다. 여기서 DB를 다시 보지 않는다.
-  const board = await assemble(cond, badges, engines, {
-    corp_name: input.corp_name,
-    design: design.values,
-    regulatory: regulatory.values,
-    patentRules: patentRules.values,
-  });
+  // 규칙 엔진을 고르는 자리는 lib/board.ts 하나다 — 검사 스크립트도 같은 함수를 쓴다.
+  const board = await buildBoard(cond, badges, engines, { ...input, ...opts });
 
   const basis = [...new Set(board.cards.flatMap((c) => c.basis_chunks))];
   await step("assemble", `카드 ${board.cards.length}장 · 근거 ${basis.length}건 연결`);

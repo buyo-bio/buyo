@@ -10,7 +10,8 @@
  */
 import { useFileChunks } from "./_file-source";
 import { runEngines, matchRules } from "../lib/engines";
-import { assemble, type BoardCard } from "../lib/assemble";
+import { type BoardCard } from "../lib/assemble";
+import { buildBoard } from "../lib/board";
 import { normalize, nextInflection } from "../lib/normalize";
 import { factsFromInput } from "../lib/facts";
 import { loadPatents } from "../lib/collect/patents-cache";
@@ -57,20 +58,13 @@ async function runCase(k: DemoKey) {
     patent_records: patents.records,
     stages,
   } as never);
-  // 사실 묶음은 파이프라인과 같은 함수로 만든다 — 따로 적으면 칸이 조용히 빠진다
-  const rcrWorst = (engines.rcr.values as { targets?: { RCR: number }[] }).targets?.slice(-1)[0]?.RCR;
-  const facts = factsFromInput(cond, req as unknown as Record<string, unknown>, {
-    rcr: rcrWorst,
-    backup_n: (req.backup_assets ?? []).length,
-    rare_kr: (engines.patients.values as { rare_kr?: string }).rare_kr,
-  });
-  const des = await matchRules("CE-04", cond, { limit: 6, facts });
-  const reg = await matchRules("RE-02", cond, { limit: 4, facts });
-  const pat = await matchRules("TE-02", cond, { limit: 2, facts });
-  const board = await assemble(cond, badges, engines, {
-    corp_name: req.corp_name,
-    design: des.values as never, regulatory: reg.values as never, patentRules: pat.values as never,
-  });
+  // 카드 만들기는 파이프라인과 **같은 함수**를 쓴다(lib/board.ts).
+  // 여기서 규칙 엔진을 따로 부르면 한쪽에만 엔진이 늘어나 검사와 화면이 갈린다 —
+  // 실제로 시장 규칙(ME-17)을 넣었을 때 이 검사만 못 보고 지나갔다.
+  const board = await buildBoard(
+    cond, badges, engines,
+    { ...(req as unknown as Record<string, unknown>), patent_records: patents.records }
+  );
   return { cond, board };
 }
 

@@ -22,20 +22,153 @@ const PHASE_KO: Record<string, string> = {
 };
 import { slot } from "./slots";
 import { factLabels, allEngineSide, userSide } from "./fact-labels";
+import type { Display } from "./engines/rules";
+import labelsJson from "../data/ref/labels.json";
+import { renderSlot } from "./slot-texts";
+import glossaryJson from "../data/ref/glossary.json";
 
-/** 판정 못 한 규칙 한 줄 — 왜 못 했는지에 따라 문구가 다르다 */
+/**
+ * 꼬리표 이름표 — 청크의 badges(영문) → 화면 글자.
+ * 정본은 대표님 labels.json 의 "표시 꼬리표" 다(19개).
+ */
+const BADGE_KO: Record<string, string> =
+  (labelsJson as Record<string, Record<string, string>>)["표시 꼬리표"] ?? {};
+
+/** 규칙 판정 이름 — flag_hint → 화면 글자. 정본은 labels.json "판정 표시". */
+const VERDICT_KO: Record<string, string> =
+  (labelsJson as Record<string, Record<string, string>>)["판정 표시"] ?? {};
+
+/** 단계 차이 꼬리표 — 정본은 labels.json "단계 차이" */
+const GAP_KO: Record<string, string> =
+  (labelsJson as Record<string, Record<string, string>>)["단계 차이"] ?? {};
+
+/** 권리 범위 — 표의 all/limited 를 화면 글자로 */
+const RIGHTS_KO: Record<string, string> = { all: "전체 적응증", limited: "일부 적응증" };
+
+/** 지역 이름 — "KR" 을 화면에 그대로 내지 않는다 */
+const REGION_KO: Record<string, string> =
+  (labelsJson as Record<string, Record<string, string>>)["지역"] ?? {};
+
+/** 용어 사전 — 낱말 하나에 풀이와 보기. 406개. */
+type GlossEntry = { term: string; aliases?: string[]; explain?: string; example?: string };
+const GLOSSARY: Map<string, GlossEntry> = (() => {
+  const m = new Map<string, GlossEntry>();
+  for (const e of glossaryJson as GlossEntry[]) {
+    if (!e?.term) continue;
+    m.set(e.term, e);
+    for (const a of e.aliases ?? []) if (!m.has(a)) m.set(a, e);
+  }
+  return m;
+})();
+
+/**
+ * 화면에 띄울 용어 풀이 — display.terms 에 적힌 낱말 중 사전에 있는 것만.
+ *
+ * 사전 406개를 화면으로 다 내보내지 않는다. 그 줄에 실제로 쓰인 낱말만
+ * 골라 붙인다(한 줄에 많아도 네 개 안쪽이다).
+ */
+function termsOf(d: Display | undefined, sentence: string): CardTerm[] | undefined {
+  if (!d?.terms.length) return undefined;
+  const out: CardTerm[] = [];
+  const seen = new Set<string>();
+  for (const t of d.terms) {
+    // 문장에 그 낱말이 실제로 보여야 밑줄을 그을 수 있다
+    if (!sentence.includes(t.text) || seen.has(t.text)) continue;
+    const g = GLOSSARY.get(t.term) ?? GLOSSARY.get(t.text);
+    const explain = g?.explain?.trim();
+    if (!explain) continue;
+    seen.add(t.text);
+    out.push({ text: t.text, explain, example: g?.example?.trim() || undefined });
+  }
+  return out.length ? out : undefined;
+}
+
+/** 청크 badges(영문) → 화면 글자. 이름표가 없는 꼬리표는 띄우지 않는다. */
+function badgesKo(d: Display | undefined, raw: unknown): string[] {
+  // display 가 들고 있는 한글 꼬리표가 먼저다 — 대표님이 직접 적어 두신 것이다.
+  if (d?.badges_ko.length) return d.badges_ko;
+  if (!Array.isArray(raw)) return [];
+  return raw.map((b) => BADGE_KO[String(b)]).filter((x): x is string => Boolean(x));
+}
+
+/**
+ * 규칙 한 줄의 화면 문장 — display 가 있으면 그것, 없으면 text 를 다듬어서.
+ *
+ * display.title 과 body 를 잇는다. 초안 청크는 body 가 비어 있어 제목만 나간다.
+ * meaning·action 은 줄을 길게 만들어 카드가 읽히지 않으므로 여기서는 쓰지 않고,
+ * 화면이 '자세히' 로 펼칠 수 있게 따로 넘긴다.
+ */
+/**
+ * 규칙 한 장 → 카드 한 줄.
+ *
+ * display 가 있으면 층을 나눠 담고, 없으면 예전처럼 text 를 다듬어 title 에만 넣는다.
+ * 어느 쪽이든 chunk_id 는 문장에 넣지 않는다 — 출처는 source_label 로 띄운다.
+ */
+function ruleLine(
+  x: {
+    chunk_id: string; text: string; flag?: Flag | null;
+    display?: Display; badges?: unknown;
+  },
+  extraBadges: string[] = []
+): CardLine {
+  const d = x.display;
+  const text = ruleLineText(d, x.text);
+  const badges = [...badgesKo(d, x.badges), ...extraBadges];
+  const terms = termsOf(d, [d?.title, d?.body, d?.meaning, d?.action].join(" ") || text);
+  return {
+    text,
+    basis: [x.chunk_id],
+    title: d?.title || text,
+    ...(d?.body ? { body: d.body } : {}),
+    ...(d?.meaning ? { meaning: d.meaning } : {}),
+    ...(d?.action ? { action: d.action } : {}),
+    ...(d?.source_label ? { source_label: d.source_label } : {}),
+    ...(d?.source_note ? { source_note: d.source_note } : {}),
+    ...(x.flag ? { verdict: VERDICT_KO[x.flag] ?? undefined } : {}),
+    ...(badges.length ? { badges } : {}),
+    ...(terms ? { terms } : {}),
+  };
+}
+
+/**
+ * 한 줄로 읽을 때의 문장.
+ *
+ * title 과 body 를 이어 붙이면 한 줄이 200자를 넘어 카드가 읽히지 않는다.
+ * 화면은 층을 나눠 그리므로(제목·본문·뜻) 여기서는 제목만 쓴다.
+ * display 가 없으면 예전처럼 text 를 다듬는다.
+ */
+function ruleLineText(d: Display | undefined, text: string): string {
+  if (!d) return ruleSentence(text);
+  return d.title || d.body;
+}
+
+/**
+ * 판정 못 한 규칙 한 줄 — 왜 못 했는지에 따라 문구가 다르다.
+ *
+ * 사용자가 적을 수 있는 칸이 빈 것이면 대표님 CHECK-필요 틀을 쓴다(표시 규칙 3장).
+ * 우리 자료가 없어서 못 한 것이면 "적으면" 이라고 하지 않는다 — 적을 수 없는
+ * 숫자를 적으라고 하면 안내가 아니라 핀잔이 된다. 그 문구는 틀에 없어서 우리 것을 쓴다.
+ */
 function needLine(x: { text: string; missing: string[]; title?: string }): CardLine {
   // 청크가 고객용 제목을 들고 있으면 그것을 쓴다. text 를 자르면 내부 변수
   // 이름이 새고(power_band.good_min) 조건만 다른 규칙이 같은 줄로 보인다.
   const title = x.title ?? ruleTitle(x.text);
-  // 우리 자료와 사용자 입력이 섞여 있으면 사용자가 적을 수 있는 쪽만 묻는다 —
-  // 적을 수 없는 숫자를 적으라고 하면 안내가 아니라 핀잔이 된다.
   const mine = userSide(x.missing);
+
+  if (allEngineSide(x.missing))
+    return { text: T.rule_pending(title, factLabels(x.missing)), basis: [], title };
+
+  const asked = renderSlot("CHECK-필요", { input_ko: factLabels(mine) });
+  // 화면은 제목과 본문을 층으로 나눠 그리므로 본문에 틀을 그대로 둔다.
+  // 한 줄로 읽는 text 에서는 "확인 필요 —" 를 뺀다 — 안 빼면 줄표가 두 번 나온다
+  // ("제목 — 확인 필요 — …을 입력하시면"). 검사와 굳힌 결과가 이 text 를 본다.
   return {
-    text: allEngineSide(x.missing)
-      ? T.rule_pending(title, factLabels(x.missing))
+    text: asked
+      ? `${title} — ${asked.text.replace(/^확인 필요\s*—\s*/, "")}`
       : T.rule_need(title, factLabels(mine)),
     basis: [],
+    title,
+    ...(asked ? { body: asked.text } : {}),
   };
 }
 
@@ -87,10 +220,33 @@ function ruleTitle(text: string): string {
 
 export type CardFlag = Flag | "no_evidence";
 
+/** 밑줄 그어 풀이를 보여 줄 낱말 하나 */
+export type CardTerm = { text: string; explain: string; example?: string };
+
+/**
+ * 카드 한 줄.
+ *
+ * `text` 는 한 줄로 읽을 때의 문장이다(검사 스크립트와 굳힌 결과가 이걸 본다).
+ * 아래 title·body·meaning·action 은 대표님 display 규칙대로 화면이 층을 나눠
+ * 그리기 위한 것이다 — 제목은 굵게, 본문, 뜻은 회색, action 은 "확인할 일:".
+ * display 없는 청크(옛 묶음 잔여)는 title 만 채워진다.
+ */
 export type CardLine = {
   text: string;
   basis: string[];
   badges?: string[];
+  /** 용어 풀이 — 화면이 밑줄과 설명으로 그린다 */
+  terms?: CardTerm[];
+  title?: string;
+  body?: string;
+  meaning?: string;
+  action?: string;
+  /** 출처 이름 — 화면에는 chunk_id 대신 이것을 띄운다 */
+  source_label?: string;
+  /** 출처 한 줄 설명(툴팁) */
+  source_note?: string;
+  /** 규칙 줄의 판정 이름 — 긍정 요인 · 주의 · 참고 */
+  verdict?: string;
 };
 
 export type BoardCard = {
@@ -196,6 +352,8 @@ const T = {
   deal_head: (n: string) => `같은 약 종류·단계의 기술이전 사례가 ${n}건 있습니다.`,
   deal_row: (licensor: string, cp: string, signed: string, upfront: string) =>
     `${licensor} → ${cp} (${signed}) 계약금 ${upfront}`,
+  // 딜 상세 꼬리 — 값이 있는 것만 이어 붙인다(대표님 20261007 새 열)
+  deal_more: (bits: string) => bits,
   deal_quart: (q1: string, med: string, q3: string) =>
     `계약금 사분위 ${q1}억 · 중앙 ${med}억 · ${q3}억`,
   market_rest: () => `급여 경로는 M01 카드가 들어오면 채워집니다.`,
@@ -288,18 +446,36 @@ export async function assemble(
   extra: {
     /** 규제 칸 — matchRules("RE-02") 결과 */
     regulatory?: {
-      rules: { chunk_id: string; text: string; jurisdiction: string | null }[];
+      rules: { chunk_id: string; text: string; jurisdiction: string | null;
+               display?: Display; badges?: unknown }[];
       need_input?: { chunk_id: string; text: string; title?: string; missing: string[] }[];
     } | null;
     /** 설계안 칸 — matchRules("CE-04") 결과 */
     design?: {
-      rules: { chunk_id: string; text: string; flag?: Flag | null }[];
+      rules: { chunk_id: string; text: string; flag?: Flag | null;
+               display?: Display; badges?: unknown }[];
       need_input?: { chunk_id: string; text: string; title?: string; missing: string[] }[];
       /** 조건이 거짓이어서 뺀 규칙 — 요약에서 '해당 없음' 으로 센다(C04-0105) */
       not_applicable?: string[];
     } | null;
     /** 특허 칸 — matchRules("TE-02") 결과 */
-    patentRules?: { rules: { chunk_id: string; text: string }[] } | null;
+    patentRules?: {
+      rules: { chunk_id: string; text: string; display?: Display; badges?: unknown }[];
+    } | null;
+    /** 시장 칸 MKT-5 — matchRules("ME-17") 결과 */
+    marketRules?: {
+      rules: { chunk_id: string; text: string; flag?: Flag | null;
+               display?: Display; badges?: unknown }[];
+      need_input?: { chunk_id: string; text: string; title?: string; missing: string[] }[];
+    } | null;
+    /** 재무 칸 — matchRules("FE-RULES") 결과 */
+    financeRules?: {
+      rules: { chunk_id: string; text: string; flag?: Flag | null;
+               display?: Display; badges?: unknown }[];
+      need_input?: { chunk_id: string; text: string; title?: string; missing: string[] }[];
+    } | null;
+    /** ME-17 단계 차이 — 헤드라인에 분위값을 쓸지 정한다 */
+    phase_gap_label?: "earlier" | "same" | "later" | null;
     patent_expiry_year?: number;
     /** 회사 이름 — 기업 마스터에서 못 찾았을 때 문장에 쓴다 */
     corp_name?: string;
@@ -417,7 +593,7 @@ export async function assemble(
         basis: [],
       });
 
-    for (const x of rules) lines.push({ text: ruleSentence(x.text), basis: [x.chunk_id] });
+    for (const x of rules) lines.push(ruleLine(x));
 
     // 적으면 판정되는 것을 먼저, 우리가 못 하는 것을 뒤에.
     // 잘라낸 나머지는 개수로 밝힌다 — 예전에는 11건이 말없이 사라졌다.
@@ -441,8 +617,12 @@ export async function assemble(
   // ── 시장
   {
     const d = r.deals.values as {
-      deals: { licensor: string; counterparty: string; signed: string;
-               upfront_text: string; chunk_id: string }[];
+      deals: {
+        licensor: string; counterparty: string; signed: string; stage: string;
+        upfront_text: string; chunk_id: string;
+        stage_in_territory: string | null; royalty: string | null;
+        rights_scope: string | null; exclusivity: string | null; territory: string | null;
+      }[];
       n_total: number; n_disclosed: number;
       quartiles_krw_억: { q1: number; med: number; q3: number } | null;
       excluded: { chunk_id: string; licensor: string; reason: string }[];
@@ -469,11 +649,30 @@ export async function assemble(
     if (d.n_total > 0) {
       lines.push({ text: T.deal_head(String(d.n_total)), basis: r.deals.basis_chunks });
       // 딜은 카드에 적힌 그대로 옮긴다. 금액을 환산하거나 평균내지 않는다.
-      for (const x of d.deals.slice(0, 5))
+      for (const x of d.deals.slice(0, 5)) {
+        // 늘어난 열은 값이 있을 때만 적는다. 비어 있는 열을 "—" 로 채우면
+        // 247건 중 3건만 값이 있는 '계약 지역 기준 단계' 가 온통 줄표로 나간다.
+        const bits = [
+          // 표는 여러 단계를 "preclinical|P1" 로 적는다. 세로줄은 자료 표기라
+          // 화면에 그대로 내지 않는다.
+          x.stage !== "—" && `단계 ${x.stage.replace(/\|/g, "·")}`,
+          x.stage_in_territory &&
+            `계약 지역 기준 단계 ${x.stage_in_territory.replace(/\|/g, "·")}`,
+          x.royalty && `로열티 ${x.royalty}`,
+          x.rights_scope && `권리 범위 ${RIGHTS_KO[x.rights_scope] ?? x.rights_scope}`,
+          x.exclusivity && `독점 ${x.exclusivity}`,
+          x.territory && `지역 ${x.territory}`,
+        ].filter((b): b is string => Boolean(b));
         lines.push({
           text: T.deal_row(x.licensor, x.counterparty, x.signed, x.upfront_text),
           basis: [x.chunk_id],
+          ...(bits.length ? { body: T.deal_more(bits.join(" · ")) } : {}),
         });
+      }
+      // 분위값은 비교 딜이 우리와 같은 단계일 때만 헤드라인으로 쓴다(M03-1007·1008).
+      // 이른 단계 딜이면 하한, 늦은 단계면 상한이라 그대로 견주면 틀린 기대를 준다.
+      // 숫자를 지우지는 않는다 — 꼬리표를 달아 어느 쪽으로 치우쳤는지 밝힌다.
+      const gap = extra.phase_gap_label ?? null;
       if (d.quartiles_krw_억)
         lines.push({
           text: T.deal_quart(
@@ -482,8 +681,12 @@ export async function assemble(
             String(Math.round(d.quartiles_krw_억.q3))
           ),
           basis: r.deals.basis_chunks,
+          ...(gap && gap !== "same" ? { badges: [GAP_KO[gap]] } : {}),
         });
     }
+
+    // MKT-5 — 딜 비교 풀 규칙. 단계 차이 설명(M03-1007·1008)이 여기서 나온다.
+    for (const x of extra.marketRules?.rules ?? []) lines.push(ruleLine(x));
 
     // 기술도입·제네릭·계열사 딜은 셈에서 뺐다. 왜 뺐는지는 적는다.
     if (d.excluded?.length)
@@ -514,12 +717,10 @@ export async function assemble(
     const need = extra.regulatory?.need_input ?? [];
     const basis = rules.map((x) => x.chunk_id);
 
-    // 걸린 규칙은 문장을 그대로 낸다
-    const lines: CardLine[] = rules.map((x) => ({
-      text: ruleSentence(x.text),
-      basis: [x.chunk_id],
-      badges: x.jurisdiction ? [x.jurisdiction] : [],
-    }));
+    // 걸린 규칙은 display 문장으로 낸다. 관할(KR·US)은 꼬리표로 덧붙인다.
+    const lines: CardLine[] = rules.map((x) =>
+      ruleLine(x, x.jurisdiction ? [REGION_KO[x.jurisdiction] ?? x.jurisdiction] : [])
+    );
 
     // 아직 묻지 않은 칸이 있어 판정하지 못한 제도 — 걸린 것으로 세지 않는다.
     // 신호등도 켜지 않는다(basis 에 넣지 않는다). "적으면 판정합니다" 로만 적는다.
@@ -640,6 +841,18 @@ export async function assemble(
       ...r.runway.basis_chunks, ...r.rcr.basis_chunks, ...r.need.basis_chunks,
       ...r.bench.basis_chunks, ...r.gap.basis_chunks, ...r.downside.basis_chunks,
     ];
+
+    // 재무 규칙(F01·F02·F06) — 위 숫자 줄이 이미 쓴 청크는 빼고 넣는다.
+    // 런웨이 밴드(F01-0003~0005)는 FE-A05 가 색으로 이미 말했으므로 같은 문장을
+    // 또 쓰면 카드가 같은 말을 두 번 한다.
+    const used = new Set([...basis, ...lines.flatMap((l) => l.basis)]);
+    for (const x of extra.financeRules?.rules ?? []) {
+      if (used.has(x.chunk_id)) continue;
+      used.add(x.chunk_id);
+      lines.push(ruleLine(x));
+      basis.push(x.chunk_id);
+    }
+
     cards.push({
       key: "finance", title: "재무",
       flag: lines.length ? await flagOf(basis) : "no_evidence",
@@ -696,7 +909,10 @@ export async function assemble(
     // 그대로 펼치면 화면이 {'5': '...', '4': '...'} 로 덮인다. 제목만 낸다.
     for (const x of rules)
       lines.push({
-        text: isAnchorCard(x.text) ? T.pat_anchor(ruleTitle(x.text)) : ruleSentence(x.text),
+        // 1~5 눈금표 카드는 본문이 사전 모양이라 펼치지 않고 제목만
+        text: isAnchorCard(x.text)
+          ? T.pat_anchor(x.display?.title || ruleTitle(x.text))
+          : ruleLineText(x.display, x.text),
         basis: [x.chunk_id],
       });
 

@@ -233,6 +233,9 @@ export const DiagnoseInput = z.object({
   comparator: z.string().optional(),
   n: z.number().optional(),
   duration_m: z.number().optional(),
+  /** 이번 라운드 희석률(%) — F02-0004~0006 이 쓴다 */
+  dilution_min_pct: z.number().optional(),
+  dilution_max_pct: z.number().optional(),
   primary_endpoints_n: z.number().optional(),
 
   // 판정 자기신고 — 칸 이름과 고를 수 있는 값은 lib/judge-fields.ts 등록부가 정본이다.

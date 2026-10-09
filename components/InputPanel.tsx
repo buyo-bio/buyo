@@ -246,6 +246,11 @@ export default function InputPanel({
               <input id="planned" inputMode="numeric" value={form.planned_raise}
                 onChange={(e) => set("planned_raise", e.target.value)} />
             </div>
+            <div className="field">
+              <label htmlFor="dil">이번 라운드 희석률 (%)</label>
+              <input id="dil" inputMode="numeric" value={form.dilution_pct}
+                onChange={(e) => set("dilution_pct", e.target.value)} />
+            </div>
           </div>
         </div>
 

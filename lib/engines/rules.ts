@@ -19,11 +19,37 @@ import type { Facts } from "../applies-when";
 
 export type Flag = "positive" | "caution" | "neutral";
 
+/**
+ * 고객 화면용 문장 묶음 — 청크의 display 객체.
+ *
+ * 대표님이 20261008 묶음에서 모든 청크에 붙여 주셨다. 화면에는 text 가 아니라
+ * 이것을 띄운다. text 는 조건식·근거 메모가 붙은 내부용 문장이라, 그대로 내면
+ * "[설계 플래그 C04-D01] 조건: endpoint_type == 'surrogate' …" 가 고객에게 보인다.
+ */
+export type Display = {
+  title: string;
+  body: string;
+  meaning: string;
+  action: string;
+  /** internal 이면 화면에 띄우지 않는다 */
+  audience: string;
+  /** 화면 꼬리표 — "운영 기준" 등 */
+  badges_ko: string[];
+  /** 출처 이름 — 화면에는 chunk_id 대신 이것을 띄운다 */
+  source_label: string;
+  /** 출처 한 줄 설명 — 툴팁 */
+  source_note: string;
+  /** 용어 풀이를 달 낱말 — glossary 와 짝짓는다 */
+  terms: { text: string; term: string }[];
+};
+
 export type MatchedRule = {
   chunk_id: string;
   text: string;
   flag: Flag | null;
   jurisdiction: string | null;
+  /** 없거나 internal 이면 undefined — 그때는 화면이 text 로 돌아간다 */
+  display?: Display;
 };
 
 export type MatchValues = {
@@ -96,30 +122,74 @@ export const MATCH_ENGINES: Record<
   "TE-05": { domain: "T04", name: "evidence_tier 부여" },
   "CE-04": { domain: "C04", name: "설계안 플래그", require_when: true },
   "ME-03": { domain: "M01", name: "급여 채널 판정" },
+  // MKT-5 — 딜 비교 풀 규칙(M03-1001~1008). 딜 기록(M03-0001~0247)은 layer 가
+  // parameter 라 여기 걸리지 않는다. M05 는 출구 시점 규칙.
+  "ME-17": { domain: ["M03", "M05"], name: "딜 비교 풀·단계 차이", require_when: true },
   "FE-C0x": { domain: "F06", name: "비교군 규칙" },
+  // 재무 카드 규칙 — F01(런웨이·조달) · F02(희석·상환) · F06(비교군).
+  // F02 는 대표님이 20261007 에 더하라고 하신 도메인이다.
+  "FE-RULES": { domain: ["F01", "F02", "F06"], name: "재무 규칙", require_when: true },
 };
 
 /**
- * 여러 규칙의 신호등을 하나로 합친다.
- *   주의가 하나라도 있으면 → 주의
- *   전부 양호면            → 양호
- *   걸린 규칙이 없으면      → 근거 없음
+ * 여러 규칙의 신호등을 하나로 합친다 — 대표님 기준(trace_case.py 315~335줄).
+ *
+ *   주의가 하나라도 있으면        → 주의
+ *   없고 양호가 하나라도 있으면    → 양호
+ *   그 밖에 걸린 규칙이 있으면     → 중립
+ *   걸린 규칙이 0개면            → 근거 없음
+ *
+ * 2026-10-09 고침: 전에는 "**전부** 양호여야 양호" 였다. 규칙 253장 중 양호가
+ * 9장뿐이라, 양호 한 장과 중립 여러 장이 함께 걸리면 늘 중립으로 내려앉았다.
+ * 대표님이 "양호가 한 번도 안 뜬다" 고 지적하신 까닭의 절반이 이것이다.
+ *
+ * ⚠️ 아직 못 한 것: 대표님은 "판정색은 mvp=Y 규칙만으로" 라고 하셨는데,
+ * 20261008_0336 묶음의 **규칙 청크에는 mvp 칸이 없다**(method 청크 77장에만 있다).
+ * 그래서 지금은 걸린 규칙을 전부 센다. 규칙에 mvp 가 실려 오면 바로 거른다.
+ *
  * 숫자 카드는 신호등을 켜지 않는다(여기 들어오지도 않는다).
  */
 export function mergeFlags(flags: (Flag | null)[]): Flag | "no_evidence" {
   const real = flags.filter((f): f is Flag => f !== null);
   if (real.length === 0) return "no_evidence";
   if (real.includes("caution")) return "caution";
-  if (real.every((f) => f === "positive")) return "positive";
+  if (real.includes("positive")) return "positive";
   return "neutral";
 }
 
-/** 청크의 고객용 제목 — 없거나 내부용이면 돌려주지 않는다 */
+/**
+ * 청크의 고객용 문장 묶음. 없거나 audience 가 internal 이면 undefined.
+ *
+ * 빈 글자는 없는 것으로 본다 — 초안 청크는 title 만 있고 body 가 "" 인 것이 많다.
+ */
+export function displayOf(c: Chunk): Display | undefined {
+  const d = field(c, "display") as Record<string, unknown> | undefined;
+  if (!d || typeof d !== "object") return undefined;
+  if (d.audience === "internal") return undefined;
+  const str = (k: string) => (typeof d[k] === "string" ? (d[k] as string).trim() : "");
+  const title = str("title");
+  const body = str("body");
+  // 제목도 본문도 없으면 띄울 것이 없다
+  if (!title && !body) return undefined;
+  return {
+    title, body,
+    meaning: str("meaning"),
+    action: str("action"),
+    audience: str("audience") || "customer",
+    source_label: str("source_label"),
+    source_note: str("source_note"),
+    badges_ko: Array.isArray(d.badges_ko) ? (d.badges_ko as string[]).filter(Boolean) : [],
+    terms: Array.isArray(d.terms)
+      ? (d.terms as { text?: string; term?: string }[])
+          .filter((t) => t?.text && t?.term)
+          .map((t) => ({ text: t.text as string, term: t.term as string }))
+      : [],
+  };
+}
+
+/** 청크의 고객용 제목만 — '확인 필요' 줄에 쓴다 */
 function displayTitle(c: Chunk): string | undefined {
-  const d = field(c, "display") as { title?: string; audience?: string } | undefined;
-  if (!d || d.audience === "internal") return undefined;
-  const t = typeof d.title === "string" ? d.title.trim() : "";
-  return t || undefined;
+  return displayOf(c)?.title || undefined;
 }
 
 export async function matchRules(
@@ -188,6 +258,25 @@ export async function matchRules(
           a.chunk_id.localeCompare(b.chunk_id)
       );
 
+  // ── 내부용 규칙은 고객 화면에서 뺀다 (대표님 표시 규칙 20261008 · 2장)
+  //
+  // display.audience 가 internal 인 규칙 79장이 있다. 대부분 본문이 비어 있는
+  // 메모다 — 예: T02-0010 "[M6 ADC F3 모달리티 기본가정]" 은 제목뿐이고 문장이 없다.
+  // 화면에 띄울 글이 없으므로 띄우지 않는다.
+  //
+  // 신호등에서도 뺀다. 그중 7장이 caution 이라 특허 카드를 주의로 켜고 있었는데,
+  // 정작 왜 주의인지 보여 줄 문장이 없어 "까닭 없이 주황" 이 됐다. 보이지 않는
+  // 근거로 색을 켜지 않는다 — 빠진 판단이 있으면 대표님이 문장을 붙여 주시면 된다.
+  const hidden: string[] = [];
+  rows = rows.filter((c) => {
+    const a = (field(c, "display") as { audience?: string } | undefined)?.audience;
+    if (a !== "internal") return true;
+    hidden.push(c.chunk_id);
+    return false;
+  });
+  if (hidden.length)
+    ctx.note(`내부용 규칙 ${hidden.length}건은 화면에 띄우지 않았습니다 (${hidden.slice(0, 4).join(", ")}${hidden.length > 4 ? " 외" : ""})`);
+
   // ── applies_when — "이 규칙이 언제 걸리는가" 가 청크에 글자로 적혀 있다.
   //
   // 사실(facts)을 안 넘기면 걸러내지 않는다. 묻지도 않고 떨어뜨리면
@@ -244,6 +333,7 @@ export async function matchRules(
       text: c.text,
       flag: (field(c, "flag_hint") as Flag) ?? null,
       jurisdiction: (field(c, "jurisdiction") as string) ?? null,
+      display: displayOf(c),
     };
   });
 

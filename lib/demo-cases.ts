@@ -40,6 +40,8 @@ export type DiagnoseForm = {
   comparator: string;
   n: string;
   duration_m: string;
+  /** 이번 라운드 희석률(%) — F02 규칙이 쓴다 */
+  dilution_pct: string;
   primary_endpoints_n: string;
   cash: string;
   restricted_cash: string;
@@ -62,7 +64,7 @@ export type DiagnoseForm = {
 
 export const EMPTY_FORM: DiagnoseForm = {
   modality: "", indication: "", picked: null, manual_group: "", manual_rare: "N", phase: "", exit_route: "license_out", exit_point: "",
-  endpoint: "", comparator: "", n: "", duration_m: "", primary_endpoints_n: "",
+  endpoint: "", comparator: "", n: "", duration_m: "", primary_endpoints_n: "", dilution_pct: "",
   cash: "", restricted_cash: "", monthly_burn: "", committed_raise: "", planned_raise: "",
   listed: false, convertible: false, license_income_ttm: "", corp_name: "",
   backup_assets: [], targets: [],
@@ -192,6 +194,11 @@ export function toRequest(f: DiagnoseForm, runId?: string) {
     comparator: f.comparator || undefined,
     n: n(f.n),
     duration_m: n(f.duration_m),
+    // 희석률은 하나만 받는다. F02 규칙은 범위(min·max)로 물으므로 같은 값을 둘 다 넣는다 —
+    // 구간 입력은 대표님이 F02-0003 에 "구간으로 넣으면 범위로 보여 준다" 로 적어 두셨고
+    // 그건 아직 화면에 없다.
+    dilution_min_pct: n(f.dilution_pct),
+    dilution_max_pct: n(f.dilution_pct),
     primary_endpoints_n: n(f.primary_endpoints_n),
     cash: n(f.cash),
     restricted_cash: n(f.restricted_cash),

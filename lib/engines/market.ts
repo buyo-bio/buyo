@@ -15,10 +15,25 @@ import { Ctx, chunkSource, field, num, type EngineResult } from "./base";
 import { resolveSlotFrom, type ResolveInput, LEVEL } from "../resolve";
 import { slot } from "../slots";
 
+/**
+ * 딜 표 한 줄 — 이름은 대표님 deal_master.csv 의 열 이름 그대로다.
+ *
+ * 예전에는 counterparty·signed·deal_stage 로 읽고 있었는데 표에는 그런 열이 없다.
+ * 그래서 화면에 "아델 → — (—)" 처럼 상대방과 날짜가 줄표로 나갔다.
+ */
 type Deal = {
-  licensor?: string; counterparty?: string; partner_tier?: string;
-  asset?: string; signed?: string; deal_stage?: string;
-  upfront?: string; tdv_total?: string; territory?: string;
+  licensor?: string; licensee?: string; licensee_country?: string;
+  asset?: string; announce_date?: string; phase_at_deal?: string;
+  upfront?: string; upfront_currency?: string; upfront_krw_at_announce?: string;
+  total_deal?: string; total_currency?: string; territory?: string;
+  deal_type?: string; status?: string;
+  // 20261007 에 늘어난 열 — 로열티·권리 범위·검증
+  royalty_disclosed?: string; royalty_low?: string; royalty_high?: string;
+  royalty_structure?: string; royalty_note?: string;
+  rights_indication_scope?: string; exclusivity?: string;
+  verified_by?: string; verified_date?: string;
+  /** 넘긴 권리 지역 기준 단계. 비어 있으면 표시하지 않는다(247건 중 3건만 채워짐) */
+  phase_in_licensed_territory?: string;
 };
 
 export type DealComp = {
@@ -33,6 +48,17 @@ export type DealComp = {
   upfront_krw_억: number | null;
   upfront_usd_m: number | null;
   disclosed: boolean;
+  /** 계약 지역 기준 단계 — 값이 있을 때만 phase_at_deal 옆에 병기 */
+  stage_in_territory: string | null;
+  /**
+   * 로열티. 숫자를 추정하지 않는다(M03-1002) — "mid-teens" 처럼 말로만 공개한
+   * 딜은 범위가 비어 있고 표현만 있다. 그때는 표현을 그대로 적는다.
+   */
+  royalty: string | null;
+  /** 권리 범위 — 전체 적응증인지 일부인지 */
+  rights_scope: string | null;
+  exclusivity: string | null;
+  territory: string | null;
 };
 
 export type DealValues = {
@@ -47,17 +73,62 @@ export type DealValues = {
   excluded: { chunk_id: string; licensor: string; reason: string }[];
 };
 
-/** "$130.4M(1304억)" → { usd_m: 130.4, krw: 1304 } */
-function parseUpfront(t: string | undefined): { usd_m: number | null; krw: number | null; disclosed: boolean } {
-  if (!t || /base_required|비공개|미보고/.test(t))
-    return { usd_m: null, krw: null, disclosed: false };
+/**
+ * 계약금을 읽는다.
+ *
+ * 표의 upfront 는 두 모양으로 온다 — 옛 표기 "$130.4M(1304억)" 과
+ * 20261007 뒤의 숫자만 적은 "80000000"(통화는 upfront_currency).
+ * 숫자만 온 것을 글자로 그대로 내보내 화면에 "계약금 80000000" 이 찍히고 있었다.
+ */
+function parseUpfront(
+  t: string | undefined,
+  currency?: string,
+  krwAtAnnounce?: string
+): { usd_m: number | null; krw: number | null; disclosed: boolean; text: string } {
+  if (!t || !t.trim() || /base_required|비공개|미보고/.test(t))
+    return { usd_m: null, krw: null, disclosed: false, text: "비공개" };
+
+  // ① 숫자만 — 통화 열과 함께 온다
+  if (/^[\d,.]+$/.test(t.trim())) {
+    const n = Number(t.replace(/,/g, ""));
+    const krw억 = krwAtAnnounce && /^[\d,.]+$/.test(krwAtAnnounce)
+      ? Math.round(Number(krwAtAnnounce.replace(/,/g, "")) / 1e8)
+      : null;
+    const cur = (currency ?? "").toUpperCase();
+    if (cur === "KRW") {
+      const 억 = Math.round(n / 1e8);
+      return { usd_m: null, krw: 억, disclosed: true, text: `${억.toLocaleString()}억 원` };
+    }
+    const m = n / 1e6;
+    const head = `$${m % 1 === 0 ? m : m.toFixed(1)}M`;
+    return {
+      usd_m: m, krw: krw억, disclosed: true,
+      text: krw억 ? `${head}(${krw억.toLocaleString()}억 원)` : head,
+    };
+  }
+
+  // ② 옛 표기 — 글자 안에 금액이 적혀 있다
   const krw = t.match(/([\d,.]+)\s*억/);
   const usd = t.match(/[$＄]\s*([\d,.]+)\s*M/i);
   return {
     usd_m: usd ? Number(usd[1].replace(/,/g, "")) : null,
     krw: krw ? Number(krw[1].replace(/,/g, "")) : null,
     disclosed: true,
+    text: t,
   };
+}
+
+/**
+ * 로열티 한 줄. 숫자를 지어내지 않는다(M03-1002).
+ * 범위가 있으면 범위를, 말로만 공개됐으면 그 표현을 그대로 적는다.
+ */
+function royaltyText(d: Deal): string | null {
+  const lo = d.royalty_low?.trim();
+  const hi = d.royalty_high?.trim();
+  if (lo && hi) return `${lo}~${hi}%`;
+  if (lo) return `${lo}%`;
+  const s = d.royalty_structure?.trim() || d.royalty_note?.trim();
+  return s || null;
 }
 
 function quartiles(xs: number[]) {
@@ -96,17 +167,23 @@ export async function ME_08(cond: Conditions): Promise<EngineResult<DealValues>>
   const deals: DealComp[] = r.chunks.map((c) => {
     ctx.use(c);
     const d = (field(c, "deal") ?? {}) as Deal;
-    const u = parseUpfront(d.upfront);
+    const u = parseUpfront(d.upfront, d.upfront_currency, d.upfront_krw_at_announce);
+    const some = (v: string | undefined) => (v && v.trim() ? v.trim() : null);
     return {
       chunk_id: c.chunk_id,
       licensor: d.licensor ?? "—",
-      counterparty: d.counterparty ?? "—",
-      signed: d.signed ?? "—",
-      stage: d.deal_stage ?? "—",
-      upfront_text: u.disclosed ? (d.upfront ?? "미보고") : "비공개",
+      counterparty: some(d.licensee) ?? "—",
+      signed: some(d.announce_date) ?? "—",
+      stage: some(d.phase_at_deal) ?? "—",
+      upfront_text: u.text,
       upfront_krw_억: u.krw,
       upfront_usd_m: u.usd_m,
       disclosed: u.disclosed,
+      stage_in_territory: some(d.phase_in_licensed_territory),
+      royalty: royaltyText(d),
+      rights_scope: some(d.rights_indication_scope),
+      exclusivity: some(d.exclusivity),
+      territory: some(d.territory),
     };
   });
 
@@ -299,4 +376,73 @@ export async function ME_02(cond: Conditions): Promise<EngineResult<PatientsValu
     held_sentence: firstLine ? null : HELD,
     rare_kr,
   });
+}
+
+// ─────────────────────────────────────────────
+// ME-17 단계 차이 표시 (phase_gap_label)
+//
+// 비교로 쓴 딜들이 "우리가 팔려는 시점" 보다 이른 단계의 딜이면, 그 금액은
+// 하한으로 봐야 한다. 늦은 단계면 상한이다. 같은 단계일 때만 그대로 견준다.
+//
+// 라벨만 낸다. 보수적·낙관적이라는 말은 M03-1007·1008 청크가 들고 있고,
+// 그 두 규칙이 phase_gap_label 을 조건으로 걸린다 — 여기서 문장을 짓지 않는다.
+//
+// 대표님 기준 구현: trace/trace_case.py 의 deal_phase_gap()
+// ─────────────────────────────────────────────
+
+/** 단계 순서 — 차이의 부호가 뜻을 가진다 */
+const PHASE_ORDER = ["preclinical", "P1", "P2", "P3", "NDA", "approved"] as const;
+
+export type PhaseGap = "earlier" | "same" | "later";
+
+/**
+ * 기술이전이 일어날 때 자산이 있을 단계.
+ *
+ * 자가개발이면 기술이전 시점이 없다 — 계산하지 않는다(규칙은 '확인 필요'로 남는다).
+ */
+export function dealExitPhase(
+  phase: string,
+  exitRoute: string | undefined,
+  exitPoint: string | undefined
+): string | null {
+  if (exitRoute !== "license_out") return null;
+
+  // 회사가 목표 시점을 적었으면 그것을 쓴다.
+  // 화면 입력은 "P1_complete", 대표님 문서는 "P1_end" — 둘 다 받는다.
+  const m = /^(P[123])_(end|complete)$/.exec(exitPoint ?? "");
+  if (m) return m[1];
+
+  // 기본 규칙(FE-D02·M-D05): 2상 개념증명 뒤에 기술이전하는 것이 일반적이다
+  if (phase === "preclinical" || phase === "P1" || phase === "P2") return "P2";
+  if (phase === "P3" || phase === "NDA") return phase;
+  return null;
+}
+
+/**
+ * 비교 딜 풀의 단계.
+ *
+ * 딜 하나가 "preclinical|P1" 처럼 단계를 둘 이상 들고 있을 수 있다.
+ * 모든 딜이 지금 단계를 품고 있으면 지금 단계로 본다. 섞여 있으면 판단하지 않는다 —
+ * 섞인 풀에 하나의 단계를 붙이면 없는 사실을 만들어 내는 것이다.
+ */
+export function dealPoolPhase(stages: string[], currentPhase: string): string | null {
+  const sets = stages
+    .filter((s) => s && s !== "—")
+    .map((s) => s.split("|").map((x) => x.trim()).filter(Boolean));
+  if (!sets.length) return null;
+
+  const single = new Set(sets.filter((s) => s.length === 1).map((s) => s[0]));
+  if (single.size === 1 && sets.every((s) => s.length === 1)) return [...single][0];
+
+  if (sets.every((s) => s.includes(currentPhase))) return currentPhase;
+  return null;
+}
+
+/** 풀 단계 − 출구 단계 */
+export function phaseGapOf(poolPhase: string | null, exitPhase: string | null): PhaseGap | null {
+  if (!poolPhase || !exitPhase) return null;
+  const a = PHASE_ORDER.indexOf(poolPhase as (typeof PHASE_ORDER)[number]);
+  const b = PHASE_ORDER.indexOf(exitPhase as (typeof PHASE_ORDER)[number]);
+  if (a < 0 || b < 0) return null;
+  return a < b ? "earlier" : a > b ? "later" : "same";
 }

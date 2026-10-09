@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { Board, BoardCard, CardFlag, Evidence } from "@/lib/assemble";
+import type { Board, BoardCard, CardFlag, CardLine, CardTerm, Evidence } from "@/lib/assemble";
 
 const TAG: Record<CardFlag, [string, string]> = {
   positive: ["t-ok", "양호"],
@@ -35,19 +35,84 @@ function Detail({ ids, evidence }: { ids: string[]; evidence: Record<string, Evi
   );
 }
 
-/** 문장 한 줄 + 그 줄만의 근거 */
+/**
+ * 용어에 밑줄을 긋고 풀이를 달아 준다.
+ *
+ * 문장을 낱말 경계로 쪼개 그 자리에만 <abbr> 를 넣는다. 문장을 다시 쓰지 않는다 —
+ * 글자는 청크가 들고 있는 그대로여야 한다.
+ */
+function withTerms(text: string, terms?: CardTerm[], used?: Set<string>) {
+  if (!terms?.length) return text;
+  // 긴 낱말부터 — "임상 1상" 이 "1상" 보다 먼저 잡혀야 한다
+  const sorted = [...terms]
+    .filter((t) => !used?.has(t.text))
+    .sort((a, b) => b.text.length - a.text.length);
+  if (!sorted.length) return text;
+  let parts: (string | CardTerm)[] = [text];
+  for (const t of sorted) {
+    const next: (string | CardTerm)[] = [];
+    for (const p of parts) {
+      if (typeof p !== "string") { next.push(p); continue; }
+      const i = p.indexOf(t.text);
+      // 한 줄에 같은 낱말이 여러 번 나와도 첫 번째에만 — 밑줄이 도배되지 않게
+      if (i < 0) { next.push(p); continue; }
+      if (i > 0) next.push(p.slice(0, i));
+      next.push(t);
+      // 한 줄 안에서 같은 낱말에 두 번 밑줄을 긋지 않는다. 제목·본문·뜻에 거듭
+      // 나오면 카드가 점선으로 뒤덮여 읽기 어려워진다 — 처음 한 번만 긋는다.
+      used?.add(t.text);
+      const tail = p.slice(i + t.text.length);
+      if (tail) next.push(tail);
+    }
+    parts = next;
+  }
+  return parts.map((p, i) =>
+    typeof p === "string" ? (
+      <span key={i}>{p}</span>
+    ) : (
+      <abbr key={i} className="term" title={p.example ? `${p.explain}\n\n예: ${p.example}` : p.explain}>
+        {p.text}
+      </abbr>
+    )
+  );
+}
+
+/**
+ * 문장 한 줄 + 그 줄만의 근거.
+ *
+ * 대표님 표시 규칙(20261008): 제목 굵게 · 본문 · 뜻은 회색 · action 은 "확인할 일:".
+ * 출처는 chunk_id 가 아니라 source_label 로 띄운다 — 창고 번호는 고객 화면에
+ * 쓰지 않는다. 번호는 '근거 보기' 를 펼쳤을 때 원문과 함께만 보인다.
+ */
 function Line({
-  text, basis, badges, evidence, delay,
-}: {
-  text: string; basis: string[]; badges?: string[];
-  evidence: Record<string, Evidence>; delay: number;
-}) {
+  line, evidence, delay,
+}: { line: CardLine; evidence: Record<string, Evidence>; delay: number }) {
   const [open, setOpen] = useState(false);
+  const { basis, badges, terms } = line;
+  // 제목·본문·뜻·확인할 일을 가로질러 낱말 하나에 밑줄 한 번
+  const used = new Set<string>();
+  // display 가 있으면 제목이 본문과 따로 온다. 없으면 title 에 한 줄이 다 들어 있다.
+  const head = line.title ?? line.text;
+  const layered = Boolean(line.body || line.meaning || line.action);
 
   return (
     <div className="ev" style={{ animationDelay: `${delay}ms` }}>
-      <p className="txt">{text}</p>
-      {badges?.length ? <span className="chip-warn">{badges.join(" · ")}</span> : null}
+      <p className={layered ? "txt head" : "txt"}>{withTerms(head, terms, used)}</p>
+      {line.body ? <p className="txt">{withTerms(line.body, terms, used)}</p> : null}
+      {line.meaning ? <p className="txt sub">{withTerms(line.meaning, terms, used)}</p> : null}
+      {line.action ? (
+        <p className="txt todo">확인할 일: {withTerms(line.action, terms, used)}</p>
+      ) : null}
+
+      <span className="chips">
+        {line.verdict ? <span className="chip-verdict">{line.verdict}</span> : null}
+        {badges?.length ? <span className="chip-warn">{badges.join(" · ")}</span> : null}
+        {line.source_label ? (
+          <span className="src-label" title={line.source_note || undefined}>
+            {line.source_label}
+          </span>
+        ) : null}
+      </span>
 
       {basis.length ? (
         <>
@@ -84,10 +149,7 @@ function Card({
       </div>
 
       {card.lines.map((l, i) => (
-        <Line
-          key={i} text={l.text} basis={l.basis} badges={l.badges}
-          evidence={evidence} delay={delay + 140 + i * 55}
-        />
+        <Line key={i} line={l} evidence={evidence} delay={delay + 140 + i * 55} />
       ))}
 
       {card.pending ? <p className="blankcard">{card.pending}</p> : null}

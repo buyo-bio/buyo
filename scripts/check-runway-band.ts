@@ -103,5 +103,50 @@ for (let m = 0; m <= 360; m++) {
 if (overlap) bad++;
 console.log(`  ${overlap ? "❌" : "✅"} ${key} 0.0~36.0 구간 361개 지점 — 겹치거나 빈 곳 ${overlap}개`);
 
+// ─────────────────────────────────────────────
+// 희석률 밴드 (F02-0004~0006) — 대표님 20261007 에 20/30 에서 25/30 으로 바뀜
+//
+// 런웨이 밴드와 같은 종류라 같은 자리에서 본다. 기준값을 코드에 적지 않고
+// 청크의 applies_when 을 그대로 평가한다.
+// ─────────────────────────────────────────────
+console.log("\n━ 희석률 밴드 (F02-0004~0006) ━");
+{
+  const ids: string[] = ["F02-0004", "F02-0005", "F02-0006"];
+  const rules: { id: string; when: string }[] = [];
+  for (const id of ids) {
+    const c = ALL.find((x) => x.chunk_id === id);
+    if (!c) continue;
+    const when = String(f(c, "applies_when") ?? "");
+    if (when) rules.push({ id, when });
+  }
+
+  if (rules.length !== 3) {
+    console.log(`  ❌ 희석률 밴드 청크가 ${rules.length}개입니다(기대 3개)`);
+    bad++;
+  } else {
+    // 대표님 경계표: 통상 범위 ≤25 · 상단 25~30 · 초과 >30
+    const edges: [number, string][] = [
+      [10, "F02-0004"], [25, "F02-0004"],
+      [25.1, "F02-0005"], [28, "F02-0005"], [30, "F02-0005"],
+      [30.1, "F02-0006"], [45, "F02-0006"],
+    ];
+    for (const [pct, want] of edges) {
+      const hit = rules.filter(
+        (r) => evalAppliesWhen(r.when, { dilution_min_pct: pct, dilution_max_pct: pct }).value === true
+      );
+      const got = hit.length === 1 ? hit[0].id : `${hit.length}개`;
+      const ok = got === want;
+      if (!ok) bad++;
+      console.log(`  ${ok ? "✅" : "❌"} 희석률 ${pct}% → ${got}${ok ? "" : ` (기대 ${want})`}`);
+    }
+
+    // 값이 없으면 셋 다 '확인 필요' — 임의로 통상 범위라고 하지 않는다
+    const none = rules.map((r) => evalAppliesWhen(r.when, {}).value);
+    const allNull = none.every((v) => v === null);
+    if (!allNull) bad++;
+    console.log(`  ${allNull ? "✅" : "❌"} 희석률을 안 받으면 셋 다 확인 필요`);
+  }
+}
+
 console.log("\n" + (bad ? "⚠️ 위 ❌ 를 확인하세요." : "✅ 통과"));
 if (bad) process.exitCode = 1;

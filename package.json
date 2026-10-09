@@ -21,7 +21,9 @@
     "aw:check": "tsx scripts/check-applies-when.ts",
     "band:check": "tsx scripts/check-runway-band.ts",
     "cache:demos": "tsx scripts/cache-demos.ts",
-    "golden": "tsx scripts/check-golden.ts"
+    "golden": "tsx scripts/check-golden.ts",
+    "slots:check": "tsx scripts/check-slot-texts.ts",
+    "gap:check": "tsx scripts/check-phase-gap.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

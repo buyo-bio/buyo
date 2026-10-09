@@ -56,11 +56,21 @@ export type FactInput = {
   has_target_evidence?: string;
 
   // 재무 — 엔진 결과
+  /** 확정 조달 포함 런웨이(개월). F01-0003~0005 밴드 규칙이 이것을 묻는다 */
+  runway_months?: number;
   rcr?: number;
   cashout_months?: number;
   committed_raise?: number;
   raise_after_cashout?: string;
   backup_n?: number;
+
+  // 시장 — 엔진 결과
+  /** ME-17 단계 차이 — earlier / same / later. M03-1007·1008 의 조건 */
+  phase_gap_label?: string;
+
+  // 재무 — 희석률(F02-0004~0006)
+  dilution_min_pct?: number;
+  dilution_max_pct?: number;
 };
 
 /**
@@ -102,7 +112,12 @@ export function buildFacts(cond: Conditions, inp: FactInput = {}): Facts {
 export function factsFromInput(
   cond: Conditions,
   input: Record<string, unknown>,
-  engine: { rcr?: number; backup_n?: number; rare_kr?: string } = {}
+  engine: {
+    runway_months?: number;
+    rcr?: number; backup_n?: number; rare_kr?: string;
+    /** ME-17 — M03-1007·1008 이 이 값을 조건으로 건다 */
+    phase_gap_label?: string;
+  } = {}
 ): Facts {
   const num = (v: unknown) => (typeof v === "number" ? v : undefined);
   const str = (v: unknown) => (typeof v === "string" && v !== "" ? v : undefined);
@@ -117,13 +132,18 @@ export function factsFromInput(
     comparator: str(input.comparator),
     planned_n: num(input.planned_n) ?? num(input.n),
     duration_months: num(input.duration_m),
+    dilution_min_pct: num(input.dilution_min_pct),
+    dilution_max_pct: num(input.dilution_max_pct),
     primary_endpoints_n: num(input.primary_endpoints_n),
     ctgov_n_q1: num(input.ctgov_n_q1),
 
     // 재무 — 엔진이 낸 값
+    runway_months: engine.runway_months,
     rcr: engine.rcr,
+    phase_gap_label: engine.phase_gap_label,
     committed_raise: num(input.committed_raise),
-    cashout_months: num(input.cashout_months),
+    // 회사가 적었으면 그 값, 없으면 엔진이 낸 런웨이
+    cashout_months: num(input.cashout_months) ?? engine.runway_months,
     raise_after_cashout: str(input.raise_after_cashout),
     backup_n: engine.backup_n
       ?? (Array.isArray(input.backup_assets) ? input.backup_assets.length : undefined),
