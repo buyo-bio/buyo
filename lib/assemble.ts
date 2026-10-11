@@ -11,7 +11,7 @@
  */
 import type { Chunk, Conditions } from "./types";
 import { chunkSource, field, kindOf } from "./engines/base";
-import { mergeFlags, type Flag } from "./engines/rules";
+import { mergeFlags, type Flag, countsForFlag } from "./engines/rules";
 import type { RunOutput } from "./engines";
 import { INFLECTION_KO } from "./normalize";
 
@@ -281,9 +281,9 @@ export type Evidence = {
  * "무엇이 제일 급한가" 같은 판단은 넣지 않는다 — 근거가 없다.
  */
 export type Summary = {
-  counts: { positive: number; caution: number; neutral: number; no_evidence: number };
-  /** 🟠 주의가 켜진 칸. 카드 순서 그대로다(중요도 순이 아니다) */
-  attention: { key: BoardCard["key"]; title: string; line: string }[];
+  counts: { positive: number; caution: number; shortfall: number; neutral: number; no_evidence: number };
+  /** 🟠 주의·미달이 켜진 칸. 카드 순서 그대로다(중요도 순이 아니다) */
+  attention: { key: BoardCard["key"]; title: string; line: string; flag: CardFlag }[];
   /**
    * 주의가 아닌 칸은 이름만. 문장까지 올리면 다섯 칸을 다 적는 셈이라
    * 요약이 목록이 되어 버린다 — 어디에 불이 안 켜졌는지만 알려 준다.
@@ -415,6 +415,7 @@ async function flagOf(basis: string[]): Promise<CardFlag> {
   for (const id of basis) {
     const c: Chunk | undefined = got[id];
     if (!c || kindOf(c) !== "rule") continue; // 숫자 카드는 신호등을 안 켠다
+    if (!countsForFlag(c)) continue; // mvp 거짓 — 문장은 보이지만 색은 안 켠다
     flags.push((field(c, "flag_hint") as Flag) ?? null);
   }
 
@@ -584,6 +585,7 @@ export async function assemble(
     const n = (f: string) => rules.filter((x) => x.flag === f).length;
     const counts: string[] = [];
     const flagged = n("caution");
+    if (n("shortfall")) counts.push(`미달 ${n("shortfall")}건`);
     if (flagged) counts.push(`지적 ${flagged}건`);
     if (n("positive")) counts.push(`양호 ${n("positive")}건`);
     if (n("neutral")) counts.push(`참고 ${n("neutral")}건`);
@@ -993,17 +995,18 @@ export async function assemble(
   }
 
   // ── 맨 윗줄 요약 — 세기와 옮겨 적기만 한다
-  const counts = { positive: 0, caution: 0, neutral: 0, no_evidence: 0 };
+  const counts = { positive: 0, caution: 0, shortfall: 0, neutral: 0, no_evidence: 0 };
   for (const c of cards) counts[c.flag] += 1;
 
   const summary: Summary = {
     counts,
+    // 미달은 주의보다 센 단계다. 둘 다 맨 윗줄에서 짚어 준다.
     attention: cards
-      .filter((c) => c.flag === "caution")
-      .map((c) => ({ key: c.key, title: c.title, line: c.lines[0]?.text ?? "" }))
+      .filter((c) => c.flag === "caution" || c.flag === "shortfall")
+      .map((c) => ({ key: c.key, title: c.title, line: c.lines[0]?.text ?? "", flag: c.flag }))
       .filter((a) => a.line !== ""),
     rest: cards
-      .filter((c) => c.flag !== "caution")
+      .filter((c) => c.flag !== "caution" && c.flag !== "shortfall")
       .map((c) => ({ key: c.key, title: c.title, flag: c.flag })),
   };
 

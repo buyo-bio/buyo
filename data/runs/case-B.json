@@ -58,7 +58,7 @@
   ]
  },
  "cards": {
-  "as_of": "2026-10-09",
+  "as_of": "2026-10-11",
   "conditions": {
    "modality": "small_molecule",
    "indication_code": "MeSH:D054990",
@@ -82,6 +82,7 @@
    "counts": {
     "positive": 1,
     "caution": 3,
+    "shortfall": 0,
     "neutral": 2,
     "no_evidence": 0
    },
@@ -89,17 +90,20 @@
     {
      "key": "design",
      "title": "설계안",
-     "line": "설계 검토 — 지적 2건 · 해당 없음 8건 · 판정 보류 1건 · 입력 없음 13건"
+     "line": "설계 검토 — 지적 2건 · 해당 없음 8건 · 판정 보류 1건 · 입력 없음 13건",
+     "flag": "caution"
     },
     {
      "key": "finance",
      "title": "재무",
-     "line": "SPARK Biopharma는 기업 마스터 508사에 없습니다 — 비상장이거나 아직 등재 전입니다."
+     "line": "SPARK Biopharma는 기업 마스터 508사에 없습니다 — 비상장이거나 아직 등재 전입니다.",
+     "flag": "caution"
     },
     {
      "key": "patent",
      "title": "특허",
-     "line": "단백질 분해제는 E3 리가제 결합부 특허 확인"
+     "line": "단백질 분해제는 E3 리가제 결합부 특허 확인",
+     "flag": "caution"
     }
    ],
    "rest": [
@@ -947,7 +951,7 @@
       ]
      },
      {
-      "text": "조달은 2027-07-10까지 착수해야 합니다(조달 소요 6개월 기준).",
+      "text": "조달은 2027-07-12까지 착수해야 합니다(조달 소요 6개월 기준).",
       "basis": [
        "F01-0010",
        "F01-0006"
@@ -1609,7 +1613,7 @@
   "F06-0011",
   "T02-0023"
  ],
- "as_of": "2026-10-09",
+ "as_of": "2026-10-11",
  "engines_blocked": [
   {
    "id": "CE-03",
@@ -1662,7 +1666,7 @@
    "id": "normalize",
    "label": "조건 정규화",
    "detail": "small_molecule · 기타 · P2 · 희귀 Y · KR",
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "retrieve",
@@ -1684,5 +1688,5 @@
   }
  ],
  "cached": true,
- "cached_at": "2026-10-09T10:13:03.270Z"
+ "cached_at": "2026-10-11T13:54:46.604Z"
 }

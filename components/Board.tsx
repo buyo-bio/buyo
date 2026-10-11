@@ -5,6 +5,7 @@ import type { Board, BoardCard, CardFlag, CardLine, CardTerm, Evidence } from "@
 const TAG: Record<CardFlag, [string, string]> = {
   positive: ["t-ok", "양호"],
   caution: ["t-caution", "주의"],
+  shortfall: ["t-bad", "미달"],
   neutral: ["t-none", "중립"],
   no_evidence: ["t-none", "근거 없음"],
 };
@@ -177,7 +178,7 @@ function Summary({ board }: { board: Board }) {
   const { counts, attention, rest } = board.summary;
 
   const tally = ([
-    ["caution", "주의"], ["positive", "양호"],
+    ["shortfall", "미달"], ["caution", "주의"], ["positive", "양호"],
     ["neutral", "중립"], ["no_evidence", "근거 없음"],
   ] as const).filter(([k]) => counts[k] > 0);
 
@@ -201,7 +202,7 @@ function Summary({ board }: { board: Board }) {
         <ul className="summary-list">
           {attention.map((a) => (
             <li key={a.key}>
-              <button onClick={() => jump(a.key)}>
+              <button onClick={() => jump(a.key)} className={`at-${a.flag}`}>
                 <b>{a.title}</b>
                 <span>{a.line}</span>
               </button>
@@ -209,7 +210,7 @@ function Summary({ board }: { board: Board }) {
           ))}
         </ul>
       ) : (
-        <p className="summary-none">주의로 켜진 칸이 없습니다.</p>
+        <p className="summary-none">주의·미달로 켜진 칸이 없습니다.</p>
       )}
 
       {rest.length ? (

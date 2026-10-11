@@ -17,7 +17,9 @@ const JUDGE_SHAPE = Object.fromEntries(
 // 값 목록
 // ─────────────────────────────────────────────
 export const KINDS = ["parameter", "rule", "method", "mapping"] as const;
-export const FLAGS = ["positive", "caution", "neutral"] as const;
+// 미달(shortfall)은 20261011_2152 묶음에서 생긴 단계다.
+// 현금 위기(런웨이 6개월 미만, F01-0049)에만 붙는다 — 지금은 재무 카드만 미달이 날 수 있다.
+export const FLAGS = ["positive", "caution", "shortfall", "neutral"] as const;
 /**
  * 확률의 종류.
  *

@@ -17,7 +17,7 @@ import { slot } from "../slots";
 import { evalAppliesWhen, AppliesWhenError } from "../applies-when";
 import type { Facts } from "../applies-when";
 
-export type Flag = "positive" | "caution" | "neutral";
+export type Flag = "positive" | "caution" | "shortfall" | "neutral";
 
 /**
  * 고객 화면용 문장 묶음 — 청크의 display 객체.
@@ -143,15 +143,29 @@ export const MATCH_ENGINES: Record<
  * 9장뿐이라, 양호 한 장과 중립 여러 장이 함께 걸리면 늘 중립으로 내려앉았다.
  * 대표님이 "양호가 한 번도 안 뜬다" 고 지적하신 까닭의 절반이 이것이다.
  *
- * ⚠️ 아직 못 한 것: 대표님은 "판정색은 mvp=Y 규칙만으로" 라고 하셨는데,
- * 20261008_0336 묶음의 **규칙 청크에는 mvp 칸이 없다**(method 청크 77장에만 있다).
- * 그래서 지금은 걸린 규칙을 전부 센다. 규칙에 mvp 가 실려 오면 바로 거른다.
+ * mvp 칸: 20261011_2152 묶음부터 규칙 청크에도 실려 온다(참 177 · 거짓 16 · 없음 77).
+ * 대표님 결정은 "판정색은 mvp 규칙만으로" 다. 지금은 **거짓만 뺀다** — 없음(null) 77장을
+ * 빼는지 두는지 대표님께 물어 둔 상태라, 답이 오기 전에 빼면 카드가 통째로 회색이 된다.
+ * 답이 오면 countsForFlag 의 한 줄만 고치면 된다.
  *
  * 숫자 카드는 신호등을 켜지 않는다(여기 들어오지도 않는다).
  */
+/**
+ * 이 규칙이 카드 색을 정하는 데 쓰이는가.
+ *
+ * mvp 칸이 거짓인 규칙은 화면에는 문장으로 나오지만 색은 정하지 않는다.
+ * 칸이 없으면(null) 지금은 센다 — 위 설명 참고.
+ */
+export function countsForFlag(c: Chunk): boolean {
+  return field(c, "mvp") !== false;
+}
+
 export function mergeFlags(flags: (Flag | null)[]): Flag | "no_evidence" {
   const real = flags.filter((f): f is Flag => f !== null);
   if (real.length === 0) return "no_evidence";
+  // 대표님이 정한 순서 — 미달 > 주의 > 양호 > 중립 > 규칙 없음.
+  // 미달은 현금 위기 하나뿐이라 가장 센 단계로 둔다(docs/jinmo_todo_finance_20261010.md).
+  if (real.includes("shortfall")) return "shortfall";
   if (real.includes("caution")) return "caution";
   if (real.includes("positive")) return "positive";
   return "neutral";
@@ -339,7 +353,7 @@ export async function matchRules(
     };
   });
 
-  const flag = mergeFlags(rules.map((r) => r.flag));
+  const flag = mergeFlags(rows.filter(countsForFlag).map((c) => (field(c, "flag_hint") as Flag) ?? null));
 
   if (rules.length === 0)
     return ctx.none(
